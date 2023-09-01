@@ -1,0 +1,67 @@
+2023-03-01 12:03:40.721 [main] ERROR com.opper.idir.run.PopulateTable - readPropertiesFile: 
+2023-04-01 12:04:51.230 [main] INFO  com.opper.idir.run.EntryPoint - START BATCH
+2023-04-01 12:04:51.232 [main] INFO  com.opper.idir.run.PopulateTable - opper
+2023-04-01 12:04:51.232 [main] INFO  com.opper.idir.run.PopulateTable - opper2023
+2023-04-01 12:04:51.232 [main] INFO  com.opper.idir.run.PopulateTable - jdbc:sqlserver://svrsqltest.idirspa.local:1433;instanceName=MSSQLSERVER;databaseName=opper;encrypt=true;trustServerCertificate=true
+2023-06-01 12:06:10.422 [main] INFO  com.opper.idir.run.EntryPoint - START BATCH
+2023-06-01 12:06:10.424 [main] INFO  com.opper.idir.run.PopulateTable - opper
+2023-06-01 12:06:10.425 [main] INFO  com.opper.idir.run.PopulateTable - opper2023
+2023-06-01 12:06:10.425 [main] INFO  com.opper.idir.run.PopulateTable - jdbc:sqlserver://svrsqltest.idirspa.local:1433;instanceName=MSSQLSERVER;databaseName=opper;encrypt=true;trustServerCertificate=true
+2023-06-01 12:06:31.241 [main] INFO  com.opper.idir.run.EntryPoint - START BATCH
+2023-06-01 12:06:35.344 [main] INFO  com.opper.idir.run.PopulateTable - opper
+2023-06-01 12:06:35.344 [main] INFO  com.opper.idir.run.PopulateTable - opper2023
+2023-06-01 12:06:35.344 [main] INFO  com.opper.idir.run.PopulateTable - jdbc:sqlserver://svrsqltest.idirspa.local:1433;instanceName=MSSQLSERVER;databaseName=opper;encrypt=true;trustServerCertificate=true
+2023-07-01 12:07:07.579 [main] INFO  com.opper.idir.run.EntryPoint - START BATCH
+2023-07-01 12:07:07.582 [main] INFO  com.opper.idir.run.PopulateTable - opper
+2023-07-01 12:07:07.582 [main] INFO  com.opper.idir.run.PopulateTable - opper2023
+2023-07-01 12:07:07.582 [main] INFO  com.opper.idir.run.PopulateTable - jdbc:sqlserver://svrsqltest.idirspa.local:1433;instanceName=MSSQLSERVER;databaseName=opper;encrypt=true;trustServerCertificate=true
+2023-07-01 12:07:07.582 [main] INFO  com.opper.idir.run.PopulateTable - java.lang.NullPointerException
+2023-07-01 12:07:42.809 [main] INFO  com.opper.idir.run.EntryPoint - START BATCH
+2023-07-01 12:07:42.812 [main] INFO  com.opper.idir.run.PopulateTable - opper
+2023-07-01 12:07:42.812 [main] INFO  com.opper.idir.run.PopulateTable - opper2023
+2023-07-01 12:07:42.812 [main] INFO  com.opper.idir.run.PopulateTable - jdbc:sqlserver://svrsqltest.idirspa.local:1433;instanceName=MSSQLSERVER;databaseName=opper;encrypt=true;trustServerCertificate=true
+2023-07-01 12:07:42.813 [main] INFO  com.opper.idir.run.PopulateTable - [Ljava.lang.StackTraceElement;@7ee8290b
+2023-08-01 12:08:56.140 [main] INFO  com.opper.idir.run.EntryPoint - START BATCH
+2023-08-01 12:08:56.143 [main] INFO  com.opper.idir.run.PopulateTable - opper
+2023-08-01 12:08:56.143 [main] INFO  com.opper.idir.run.PopulateTable - opper2023
+2023-08-01 12:08:56.143 [main] INFO  com.opper.idir.run.PopulateTable - jdbc:sqlserver://svrsqltest.idirspa.local:1433;instanceName=MSSQLSERVER;databaseName=opper;encrypt=true;trustServerCertificate=true
+2023-08-01 12:08:56.144 [main] INFO  com.opper.idir.run.PopulateTable - java.lang.NullPointerException
+	at java.base/java.io.FileInputStream.<init>(FileInputStream.java:145)
+	at java.base/java.io.FileReader.<init>(FileReader.java:75)
+	at com.opper.idir.run.PopulateTable.executeSqlScript(PopulateTable.java:33)
+	at com.opper.idir.run.EntryPoint.main(EntryPoint.java:14)
+
+2023-10-01 12:10:35.122 [main] INFO  com.opper.idir.run.EntryPoint - START BATCH
+2023-10-01 12:10:35.124 [main] INFO  com.opper.idir.run.PopulateTable - opper
+2023-10-01 12:10:35.125 [main] INFO  com.opper.idir.run.PopulateTable - opper2023
+2023-10-01 12:10:35.125 [main] INFO  com.opper.idir.run.PopulateTable - jdbc:sqlserver://svrsqltest.idirspa.local:1433;instanceName=MSSQLSERVER;databaseName=opper;encrypt=true;trustServerCertificate=true
+2023-10-01 12:10:35.126 [main] INFO  com.opper.idir.run.EntryPoint - java.lang.NullPointerException
+	at java.base/java.io.FileInputStream.<init>(FileInputStream.java:145)
+	at java.base/java.io.FileReader.<init>(FileReader.java:75)
+	at com.opper.idir.run.PopulateTable.executeSqlScript(PopulateTable.java:32)
+	at com.opper.idir.run.EntryPoint.main(EntryPoint.java:18)
+
+2023-11-01 12:11:54.576 [main] INFO  com.opper.idir.run.EntryPoint - START BATCH
+2023-11-01 12:11:54.578 [main] INFO  com.opper.idir.run.PopulateTable - opper
+2023-11-01 12:11:54.578 [main] INFO  com.opper.idir.run.PopulateTable - opper2023
+2023-11-01 12:11:54.578 [main] INFO  com.opper.idir.run.PopulateTable - jdbc:sqlserver://svrsqltest.idirspa.local:1433;instanceName=MSSQLSERVER;databaseName=opper;encrypt=true;trustServerCertificate=true
+2023-11-01 12:11:54.579 [main] INFO  com.opper.idir.run.EntryPoint - java.lang.NullPointerException
+	at java.base/java.io.FileInputStream.<init>(FileInputStream.java:145)
+	at java.base/java.io.FileReader.<init>(FileReader.java:75)
+	at com.opper.idir.run.PopulateTable.executeSqlScript(PopulateTable.java:32)
+	at com.opper.idir.run.EntryPoint.main(EntryPoint.java:18)
+
+2023-25-01 12:25:06.807 [main] INFO  com.opper.idir.run.EntryPoint - START BATCH
+2023-25-01 12:25:06.809 [main] INFO  com.opper.idir.run.PopulateTable - opper
+2023-25-01 12:25:06.809 [main] INFO  com.opper.idir.run.PopulateTable - opper2023
+2023-25-01 12:25:06.810 [main] INFO  com.opper.idir.run.PopulateTable - jdbc:sqlserver://svrsqldwh.idirspa.local:1433;instanceName=MSSQLSERVER;databaseName=opper;encrypt=true;trustServerCertificate=true
+2023-25-01 12:25:07.600 [main] ERROR com.opper.idir.run.PopulateTable - Running script from file: C:\CREDEM\idr\target\classes\populate.sql
+2023-39-01 12:39:11.474 [main] INFO  com.opper.idir.run.PopulateTable - Done.
+2023-39-01 12:39:11.481 [main] INFO  com.opper.idir.run.EntryPoint - END BATCH
+2023-40-01 12:40:44.350 [main] INFO  com.opper.idir.run.EntryPoint - START BATCH
+2023-40-01 12:40:44.353 [main] INFO  com.opper.idir.run.PopulateTable - opper
+2023-40-01 12:40:44.353 [main] INFO  com.opper.idir.run.PopulateTable - opper2023
+2023-40-01 12:40:44.353 [main] INFO  com.opper.idir.run.PopulateTable - jdbc:sqlserver://svrsqldwh.idirspa.local:1433;instanceName=MSSQLSERVER;databaseName=opper;encrypt=true;trustServerCertificate=true
+2023-40-01 12:40:45.011 [main] ERROR com.opper.idir.run.PopulateTable - Running script from file: C:\CREDEM\idr\target\classes\populate.sql
+2023-55-01 12:55:24.880 [main] INFO  com.opper.idir.run.PopulateTable - Done.
+2023-55-01 12:55:24.896 [main] INFO  com.opper.idir.run.EntryPoint - END BATCH
