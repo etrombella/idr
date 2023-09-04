@@ -19,11 +19,12 @@ public class EntryPoint {
 			populateTable.executeSqlScript();
 			logger.info("END BATCH");
 		}catch(Exception e) {
+			logger.error("ERRORE BATCH: " + e.getMessage() + " ////////// " + e.getLocalizedMessage());
 			StringWriter sw = new StringWriter();
 			PrintWriter pw = new PrintWriter(sw);
 			e.printStackTrace(pw);
 			String sStackTrace = sw.toString(); // stack trace as a string
-			logger.info(sStackTrace);
+			logger.error(sStackTrace);
 		}
 	}
 }

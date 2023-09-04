@@ -36,7 +36,7 @@ public class PopulateTable {
 		try(Connection conn = getConnection();){
 			File file = getScriptSqlFile();
 			try (Reader reader = new BufferedReader(new FileReader(file))) {
-				logger.error("Running script from file: " + file.getCanonicalPath());
+				logger.info("Running script from file: " + file.getCanonicalPath());
 				ScriptRunner sr = new ScriptRunner(conn);
 				sr.setAutoCommit(true);
 				sr.setStopOnError(true);

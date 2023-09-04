@@ -1,23 +1,3 @@
-TRUNCATE TABLE opper.dbo.IDIR_GIACENZA;
-
-insert into opper.dbo.IDIR_GIACENZA
-(
-	DATA_LISTA
-	,MAGAZZINI_ID
-	,PRECODICE_ID
-	,ARTICOLO_ID
-	,MAGAZZINO_CODICE
-	,ESISTENZA
-)
-SELECT DataLista
-      ,MagazziniID
-      ,PrecodiceID
-      ,ArticoloID
-      ,MagazzinoCodice
-      ,Esistenza
-FROM  Vision.dbo._Maurizio_Giacenza_Alla_Data_Per_Magazzino
-WHERE ESISTENZA > 0;
-
 TRUNCATE TABLE opper.dbo.IDIR_AGENTE;
 
 insert into opper.dbo.IDIR_AGENTE 
@@ -357,7 +337,7 @@ where     Vision.dbo.Liste.ID = Vision.dbo.ListeRighe.ListeID
 AND      Vision.dbo.Liste.CausaliMagazzinoID                             IN (30,1030,1128)
 AND Vision.dbo.Liste.CausaliMagazzinoID   = Vision.dbo.CausaliMagazzino.ID
 AND        Vision.dbo.Liste.ClientiFornitoriID                        = opper.dbo.IDIR_FORNITORI.ID_CLIENTEFORNITORE
-AND        Vision.dbo.ListeRighe.Precodice                                    = Vision.dbo.Precodici.Codice
+AND        Vision.dbo.ListeRighe.Precodice                                    = Vision.dbo.Precodici.Codice;
 AND Vision.dbo.Liste.ID = Vision.dbo.ListeDocumenti.ListeID;
 
 
@@ -380,142 +360,32 @@ insert into opper.dbo.IDIR_FATTO_CARICHI
 	,DATA_DOCUMENTO
 	,IMPORTO
 	,PARENT_LISTE_RIGHE_ID
-	,TIPO_OPERAZIONE
-	,TIPO_MERCE
 ) 
-SELECT  Vision.dbo.ListeRighe.id                                 as listarigaid
-		,Vision.dbo.Liste.id                                      as listaid
-		,Vision.dbo.ListeRighe.DATAinserimento                  
-		,Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquistoQuantita                   as QTA
+SELECT  Vision.dbo.ListeRighe.id                                 
+		,Vision.dbo.Liste.id                                      
+		,Vision.dbo.ListeRighe.DATAinserimento                   
+		,Vision.dbo.ListeRighe.Quantita                   
 		,Vision.dbo.ListeRighe.PREZZO                    
 		,Vision.dbo.ListeRighe.Listinocosto                
-		,Vision.dbo.Liste.DataRiferimento      as DataD          
+		,Vision.dbo.Liste.DataRiferimento                
 		,Vision.dbo.ListeRighe.Dataconsegna              
-		,Vision.dbo.ListeRighe.Articoloid         
-		,opper.dbo.IDIR_FORNITORI.ID 
+		,Vision.dbo.ListeRighe.Articoloid                
+		,opper.dbo.IDIR_FORNITORI.ID                     
 		,Vision.dbo.Liste.MagazziniID  
 		,Vision.dbo.CausaliMagazzino.Descrizione
-		,Vision.dbo.ListeDocumenti.DataDocumento 
-		,Vision.dbo.ListeRighe.Importo * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquisto as IMPORTO
+		,Vision.dbo.ListeDocumenti.DataDocumento
+		,Vision.dbo.ListeRighe.Importo
 		,Vision.dbo.ListeRighe.ParentListeRigheID
-		, 'Acquisti' AS TipoOperazione
-		,'Nuova' AS TipoMerce
-FROM            Vision.dbo.CausaliMagazzino INNER JOIN
-                         Vision.dbo.Liste ON Vision.dbo.CausaliMagazzino.ID = Vision.dbo.Liste.CausaliMagazzinoID INNER JOIN
-                         Vision.dbo.ListeRighe ON Vision.dbo.Liste.ID = Vision.dbo.ListeRighe.ListeID LEFT JOIN
-						opper.dbo.IDIR_FORNITORI ON Vision.dbo.Liste.ClientiFornitoriID     = opper.dbo.IDIR_FORNITORI.ID_CLIENTEFORNITORE INNER JOIN
-                         Vision.dbo.ListeDocumenti ON Vision.dbo.Liste.ID = Vision.dbo.ListeDocumenti.ListeID INNER JOIN
-                         Vision.dbo.CausaliMagazzinoListeRigheTipo ON Vision.dbo.ListeRighe.CausaliMagazzinoListeRigheTipoID = Vision.dbo.CausaliMagazzinoListeRigheTipo.ID INNER JOIN
-                         Vision.dbo.ClientiFornitori ON Vision.dbo.Liste.ClientiFornitoriID = Vision.dbo.ClientiFornitori.ID INNER JOIN
-                         Vision.dbo.Articoli ON Vision.dbo.ListeRighe.ArticoloID = Vision.dbo.Articoli.ID LEFT OUTER JOIN
-                             (SELECT        MagazziniID
-                               FROM            Vision.dbo.MagazziniClassiRaggruppamenti
-                               WHERE        (MagazziniClassiID = 409)) AS MagazziniDifettosi ON Vision.dbo.Liste.MagazziniID = MagazziniDifettosi.MagazziniID
-WHERE        (Vision.dbo.CausaliMagazzino.ID = 10) 
-AND (MagazziniDifettosi.MagazziniID IS NULL) 
-AND (Vision.dbo.ListeRighe.ArticoloID > 0) AND 
-                         (NOT (Vision.dbo.ListeRighe.Precodice IN ('SOVRAP', 'SOVRAB'))) AND (Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquistoQuantita > 0)
-
-UNION
-SELECT  Vision.dbo.ListeRighe.id                                 as listarigaid
-		,Vision.dbo.Liste.id                                      as listaid
-		,Vision.dbo.ListeRighe.DATAinserimento                  
-		,Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquistoQuantita                   as QTA
-		,Vision.dbo.ListeRighe.PREZZO                    
-		,Vision.dbo.ListeRighe.Listinocosto                
-		,Vision.dbo.Liste.DataRiferimento      as DataD          
-		,Vision.dbo.ListeRighe.Dataconsegna              
-		,Vision.dbo.ListeRighe.Articoloid  
-		,opper.dbo.IDIR_FORNITORI.ID 
-		,Vision.dbo.Liste.MagazziniID  
-		,Vision.dbo.CausaliMagazzino.Descrizione
-		,Vision.dbo.ListeDocumenti.DataDocumento 
-		,Vision.dbo.ListeRighe.Importo * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquisto as IMPORTO
-		,Vision.dbo.ListeRighe.ParentListeRigheID
-		, 'Acquisti' AS TipoOperazione
-		,'Difettosa' AS TipoMerce
-FROM            Vision.dbo.CausaliMagazzino INNER JOIN
-                         Vision.dbo.Liste ON Vision.dbo.CausaliMagazzino.ID = Vision.dbo.Liste.CausaliMagazzinoID INNER JOIN
-                         Vision.dbo.ListeRighe ON Vision.dbo.Liste.ID = Vision.dbo.ListeRighe.ListeID LEFT JOIN
-						opper.dbo.IDIR_FORNITORI ON Vision.dbo.Liste.ClientiFornitoriID     = opper.dbo.IDIR_FORNITORI.ID_CLIENTEFORNITORE INNER JOIN
-                         Vision.dbo.ListeDocumenti ON Vision.dbo.Liste.ID = Vision.dbo.ListeDocumenti.ListeID INNER JOIN
-                         Vision.dbo.CausaliMagazzinoListeRigheTipo ON Vision.dbo.ListeRighe.CausaliMagazzinoListeRigheTipoID = Vision.dbo.CausaliMagazzinoListeRigheTipo.ID INNER JOIN
-                         Vision.dbo.ClientiFornitori ON Vision.dbo.Liste.ClientiFornitoriID = Vision.dbo.ClientiFornitori.ID INNER JOIN
-                         Vision.dbo.Articoli ON Vision.dbo.ListeRighe.ArticoloID = Vision.dbo.Articoli.ID INNER JOIN
-                             (SELECT        MagazziniID
-                               FROM            Vision.dbo.MagazziniClassiRaggruppamenti
-                               WHERE        (MagazziniClassiID = 409)) AS MagazziniDifettosi ON Vision.dbo.Liste.MagazziniID = MagazziniDifettosi.MagazziniID
-WHERE        (Vision.dbo.CausaliMagazzino.ID = 10) AND (Vision.dbo.ListeRighe.ArticoloID > 0) AND (NOT (Vision.dbo.ListeRighe.Precodice IN ('SOVRAP', 'SOVRAB'))) AND 
-                         (Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquistoQuantita > 0)
-
-						 
-
-UNION
-SELECT  Vision.dbo.ListeRighe.id                                 as listarigaid
-		,Vision.dbo.Liste.id                                      as listaid
-		,Vision.dbo.ListeRighe.DATAinserimento                  
-		,Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquistoQuantita                   as QTA
-		,Vision.dbo.ListeRighe.PREZZO                    
-		,Vision.dbo.ListeRighe.Listinocosto                
-		,Vision.dbo.Liste.DataRiferimento      as DataD          
-		,Vision.dbo.ListeRighe.Dataconsegna              
-		,Vision.dbo.ListeRighe.Articoloid       
-		,opper.dbo.IDIR_FORNITORI.ID 
-		,Vision.dbo.Liste.MagazziniID  
-		,Vision.dbo.CausaliMagazzino.Descrizione
-		,Vision.dbo.ListeDocumenti.DataDocumento 
-		,Vision.dbo.ListeRighe.Importo * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquisto as IMPORTO
-		,Vision.dbo.ListeRighe.ParentListeRigheID
-		, 'Resi' AS TipoOperazione
-		,'Nuova' AS TipoMerce
-FROM            Vision.dbo.CausaliMagazzino INNER JOIN
-                         Vision.dbo.Liste ON Vision.dbo.CausaliMagazzino.ID = Vision.dbo.Liste.CausaliMagazzinoID INNER JOIN
-                         Vision.dbo.ListeRighe ON Vision.dbo.Liste.ID = Vision.dbo.ListeRighe.ListeID LEFT JOIN
-						opper.dbo.IDIR_FORNITORI ON Vision.dbo.Liste.ClientiFornitoriID     = opper.dbo.IDIR_FORNITORI.ID_CLIENTEFORNITORE INNER JOIN
-                         Vision.dbo.ListeDocumenti ON Vision.dbo.Liste.ID = Vision.dbo.ListeDocumenti.ListeID INNER JOIN
-                         Vision.dbo.CausaliMagazzinoListeRigheTipo ON Vision.dbo.ListeRighe.CausaliMagazzinoListeRigheTipoID = Vision.dbo.CausaliMagazzinoListeRigheTipo.ID INNER JOIN
-                         Vision.dbo.ClientiFornitori ON Vision.dbo.Liste.ClientiFornitoriID = Vision.dbo.ClientiFornitori.ID INNER JOIN
-                         Vision.dbo.Articoli ON Vision.dbo.ListeRighe.ArticoloID = Vision.dbo.Articoli.ID LEFT OUTER JOIN
-                             (SELECT        MagazziniID
-                               FROM            Vision.dbo.MagazziniClassiRaggruppamenti
-                               WHERE        (MagazziniClassiID = 409)) AS MagazziniDifettosi ON Vision.dbo.Liste.MagazziniID = MagazziniDifettosi.MagazziniID
-WHERE        (Vision.dbo.CausaliMagazzino.ID = 15) 
-AND (Vision.dbo.ListeRighe.ArticoloID > 0) 
-AND (NOT (Vision.dbo.ListeRighe.Precodice IN ('SOVRAP', 'SOVRAB'))) 
-AND (MagazziniDifettosi.MagazziniID IS NULL) AND 
-                         (Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquistoQuantita < 0)
-
-						UNION
-SELECT  Vision.dbo.ListeRighe.id                                 as listarigaid
-		,Vision.dbo.Liste.id                                      as listaid
-		,Vision.dbo.ListeRighe.DATAinserimento                  
-		,Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquistoQuantita                   as QTA
-		,Vision.dbo.ListeRighe.PREZZO                    
-		,Vision.dbo.ListeRighe.Listinocosto                
-		,Vision.dbo.Liste.DataRiferimento         as DataD       
-		,Vision.dbo.ListeRighe.Dataconsegna              
-		,Vision.dbo.ListeRighe.Articoloid    
-		,opper.dbo.IDIR_FORNITORI.ID 
-		,Vision.dbo.Liste.MagazziniID  
-		,Vision.dbo.CausaliMagazzino.Descrizione
-		,Vision.dbo.ListeDocumenti.DataDocumento 
-		,Vision.dbo.ListeRighe.Importo * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquisto as IMPORTO
-		,Vision.dbo.ListeRighe.ParentListeRigheID
-		, 'Resi' AS TipoOperazione
-		,'Difettosa' AS TipoMerce
-FROM            Vision.dbo.CausaliMagazzino INNER JOIN
-                         Vision.dbo.Liste ON Vision.dbo.CausaliMagazzino.ID = Vision.dbo.Liste.CausaliMagazzinoID INNER JOIN
-                         Vision.dbo.ListeRighe ON Vision.dbo.Liste.ID = Vision.dbo.ListeRighe.ListeID LEFT JOIN
-						opper.dbo.IDIR_FORNITORI ON Vision.dbo.Liste.ClientiFornitoriID     = opper.dbo.IDIR_FORNITORI.ID_CLIENTEFORNITORE INNER JOIN
-                         Vision.dbo.ListeDocumenti ON Vision.dbo.Liste.ID = Vision.dbo.ListeDocumenti.ListeID INNER JOIN
-                         Vision.dbo.CausaliMagazzinoListeRigheTipo ON Vision.dbo.ListeRighe.CausaliMagazzinoListeRigheTipoID = Vision.dbo.CausaliMagazzinoListeRigheTipo.ID INNER JOIN
-                         Vision.dbo.ClientiFornitori ON Vision.dbo.Liste.ClientiFornitoriID = Vision.dbo.ClientiFornitori.ID INNER JOIN
-                         Vision.dbo.Articoli ON Vision.dbo.ListeRighe.ArticoloID = Vision.dbo.Articoli.ID INNER JOIN
-                             (SELECT        MagazziniID
-                               FROM            Vision.dbo.MagazziniClassiRaggruppamenti
-                               WHERE        (MagazziniClassiID = 409)) AS MagazziniDifettosi ON Vision.dbo.Liste.MagazziniID = MagazziniDifettosi.MagazziniID
-WHERE        (Vision.dbo.CausaliMagazzino.ID = 15) AND (Vision.dbo.ListeRighe.ArticoloID > 0) AND (NOT (Vision.dbo.ListeRighe.Precodice IN ('SOVRAP', 'SOVRAB'))) AND 
-                         (Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquistoQuantita < 0);
+from     Vision.dbo.Liste,     
+		opper.dbo.IDIR_FORNITORI,    
+		Vision.dbo.ListeRighe,      
+		Vision.dbo.CausaliMagazzino,
+		Vision.dbo.ListeDocumenti		
+where  	Vision.dbo.Liste.ID      				= Vision.dbo.ListeRighe.ListeID
+AND    	Vision.dbo.Liste.CausaliMagazzinoID     = 10
+AND 	Vision.dbo.Liste.CausaliMagazzinoID   	= Vision.dbo.CausaliMagazzino.ID
+AND     Vision.dbo.Liste.ClientiFornitoriID     = opper.dbo.IDIR_FORNITORI.ID_CLIENTEFORNITORE
+AND		Vision.dbo.Liste.ID 					= Vision.dbo.ListeDocumenti.ListeID;
 
 TRUNCATE TABLE opper.dbo.IDIR_VETTORI;
 
@@ -966,18 +836,18 @@ insert into opper.dbo.IDIR_INTERCOMPANY
 	,QTA_FORZATA 
 	,CAUSALE_MAGAZZINO 
 )
-SELECT	Vision.dbo.ListeRighe.ID,
-		Vision.dbo.Liste.ID,
+SELECT	Vision.dbo.ListeRighe.ID AS ListeRigheID,
+		Vision.dbo.Liste.ID AS ListaID,
 		Vision.dbo.ListeRighe.ArticoloID, 
-		Vision.dbo.Contatti.Cognome,
-		Vision.dbo.ContattiContabili.Codice,
-		Vision.dbo.Liste.Data, 
-		Vision.dbo.Liste.Numero, 
-		Vision.dbo.Magazzini.ID,Vision.dbo.ListeRighe.Quantita,
-		Vision.dbo.ListeRighe.Quantita - (Vision.dbo.ListeRighe.Quantita - ISNULL((SELECT   SUM(Quantita) AS QuantitaEvasa          FROM        Vision.dbo.ListeRighe AS ListeRighe_1     WHERE        (ParentListeRigheID = Vision.dbo.ListeRighe.ID)), 0)),
-		Vision.dbo.ListeRighe.Quantita - ISNULL((SELECT        SUM(Quantita) AS QuantitaEvasa         FROM            Vision.dbo.ListeRighe AS ListeRighe_1      WHERE        (ParentListeRigheID = Vision.dbo.ListeRighe.ID)), 0),
+		Vision.dbo.Contatti.Cognome As Intercompany,
+		Vision.dbo.ContattiContabili.Codice AS IntercompanyCodice,
+		Vision.dbo.Liste.Data AS ListaData, 
+		Vision.dbo.Liste.Numero AS ListaNumero, 
+		Vision.dbo.Magazzini.ID,Vision.dbo.ListeRighe.Quantita AS Quantità,
+		Vision.dbo.ListeRighe.Quantita - (Vision.dbo.ListeRighe.Quantita - ISNULL((SELECT   SUM(Quantita) AS QuantitaEvasa          FROM        Vision.dbo.ListeRighe AS ListeRighe_1     WHERE        (ParentListeRigheID = Vision.dbo.ListeRighe.ID)), 0)) AS QuantitàEvasa,
+		Vision.dbo.ListeRighe.Quantita - ISNULL((SELECT        SUM(Quantita) AS QuantitaEvasa         FROM            Vision.dbo.ListeRighe AS ListeRighe_1      WHERE        (ParentListeRigheID = Vision.dbo.ListeRighe.ID)), 0) AS QuantitàInevasa,
 		Vision.dbo.ListeRighe.QuantitaForzata,
-		Vision.dbo.CausaliMagazzino.Descrizione
+		Vision.dbo.CausaliMagazzino.Descrizione AS CausaleMagazzino
 FROM 	Vision.dbo.Liste INNER JOIN
 		Vision.dbo.ListeRighe ON Vision.dbo.Liste.ID = Vision.dbo.ListeRighe.ListeID INNER JOIN
 		Vision.dbo.ListeDocumenti ON Vision.dbo.Liste.ID = Vision.dbo.ListeDocumenti.ListeID INNER JOIN
@@ -988,5 +858,26 @@ FROM 	Vision.dbo.Liste INNER JOIN
 		Vision.dbo.ClientiFornitori ON Vision.dbo.Liste.ClientiFornitoriID = Vision.dbo.ClientiFornitori.ID INNER JOIN
 		Vision.dbo.ContattiContabili ON Vision.dbo.ClientiFornitori.ContattiContabiliID = Vision.dbo.ContattiContabili.ID INNER JOIN
 		Vision.dbo.Contatti ON Vision.dbo.ContattiContabili.ContattoID = Vision.dbo.Contatti.ID
-WHERE 	Vision.dbo.CausaliMagazzino.Impegni = 1
+WHERE 	Vision.dbo.CausaliMagazzino.Impegni = 1 
 AND 	Vision.dbo.ContattiContabili.ContattiTipoID = 7;
+
+
+TRUNCATE TABLE opper.dbo.IDIR_GIACENZA;
+
+insert into opper.dbo.IDIR_GIACENZA
+(  
+	DATA_LISTA 
+	,MAGAZZINI_ID 
+	,PRECODICE_ID 
+	,ARTICOLO_ID 
+	,MAGAZZINO_CODICE
+	,ESISTENZA 
+)
+SELECT [DataLista]
+      ,[MagazziniID]
+      ,[PrecodiceID]
+      ,[ArticoloID]
+      ,[MagazzinoCodice]
+      ,[Esistenza]
+FROM  Vision.[dbo].[_Maurizio_Giacenza_Alla_Data_Per_Magazzino]
+WHERE ESISTENZA > 0;
