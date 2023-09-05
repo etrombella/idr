@@ -344,7 +344,6 @@ AND Vision.dbo.Liste.ID = Vision.dbo.ListeDocumenti.ListeID;
 
 TRUNCATE TABLE opper.dbo.IDIR_FATTO_CARICHI;
 
-
 insert into opper.dbo.IDIR_FATTO_CARICHI 
 (  
 	LISTA_RIGA_ID 
@@ -365,19 +364,20 @@ insert into opper.dbo.IDIR_FATTO_CARICHI
 	,TIPO_OPERAZIONE
 	,TIPO_MERCE
 ) 
+
 SELECT  Vision.dbo.ListeRighe.id                                 as listarigaid
 		,Vision.dbo.Liste.id                                      as listaid
 		,Vision.dbo.ListeRighe.DATAinserimento                  
 		,Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquistoQuantita                   as QTA
 		,Vision.dbo.ListeRighe.PREZZO                    
 		,Vision.dbo.ListeRighe.Listinocosto                
-		,Vision.dbo.Liste.DataRiferimento      as DataD          
+		,Vision.dbo.Liste.DataRiferimento      as DataBolla          
 		,Vision.dbo.ListeRighe.Dataconsegna              
 		,Vision.dbo.ListeRighe.Articoloid         
 		,opper.dbo.IDIR_FORNITORI.ID 
 		,Vision.dbo.Liste.MagazziniID  
 		,Vision.dbo.CausaliMagazzino.Descrizione
-		,Vision.dbo.ListeDocumenti.DataDocumento 
+		,Vision.dbo.ListeDocumenti.DataDocumento as DataDocumento
 		,Vision.dbo.ListeRighe.Importo * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquisto as IMPORTO
 		,Vision.dbo.ListeRighe.ParentListeRigheID
 		, 'Acquisti' AS TipoOperazione
@@ -405,13 +405,13 @@ SELECT  Vision.dbo.ListeRighe.id                                 as listarigaid
 		,Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquistoQuantita                   as QTA
 		,Vision.dbo.ListeRighe.PREZZO                    
 		,Vision.dbo.ListeRighe.Listinocosto                
-		,Vision.dbo.Liste.DataRiferimento      as DataD          
+		,Vision.dbo.Liste.DataRiferimento      as DataBolla          
 		,Vision.dbo.ListeRighe.Dataconsegna              
 		,Vision.dbo.ListeRighe.Articoloid  
 		,opper.dbo.IDIR_FORNITORI.ID 
 		,Vision.dbo.Liste.MagazziniID  
 		,Vision.dbo.CausaliMagazzino.Descrizione
-		,Vision.dbo.ListeDocumenti.DataDocumento 
+		,Vision.dbo.ListeDocumenti.DataDocumento as DataDocumento
 		,Vision.dbo.ListeRighe.Importo * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquisto as IMPORTO
 		,Vision.dbo.ListeRighe.ParentListeRigheID
 		, 'Acquisti' AS TipoOperazione
@@ -439,13 +439,13 @@ SELECT  Vision.dbo.ListeRighe.id                                 as listarigaid
 		,Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquistoQuantita                   as QTA
 		,Vision.dbo.ListeRighe.PREZZO                    
 		,Vision.dbo.ListeRighe.Listinocosto                
-		,Vision.dbo.Liste.DataRiferimento      as DataD          
+		,Vision.dbo.ListeDocumenti.DataDocumento         as DataDocumento    
 		,Vision.dbo.ListeRighe.Dataconsegna              
 		,Vision.dbo.ListeRighe.Articoloid       
 		,opper.dbo.IDIR_FORNITORI.ID 
 		,Vision.dbo.Liste.MagazziniID  
 		,Vision.dbo.CausaliMagazzino.Descrizione
-		,Vision.dbo.ListeDocumenti.DataDocumento 
+		,Vision.dbo.ListeDocumenti.DataDocumento  as DataBolla
 		,Vision.dbo.ListeRighe.Importo * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquisto as IMPORTO
 		,Vision.dbo.ListeRighe.ParentListeRigheID
 		, 'Resi' AS TipoOperazione
@@ -474,13 +474,13 @@ SELECT  Vision.dbo.ListeRighe.id                                 as listarigaid
 		,Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquistoQuantita                   as QTA
 		,Vision.dbo.ListeRighe.PREZZO                    
 		,Vision.dbo.ListeRighe.Listinocosto                
-		,Vision.dbo.Liste.DataRiferimento         as DataD       
+		,Vision.dbo.ListeDocumenti.DataDocumento         as DataDocumento          
 		,Vision.dbo.ListeRighe.Dataconsegna              
 		,Vision.dbo.ListeRighe.Articoloid    
 		,opper.dbo.IDIR_FORNITORI.ID 
 		,Vision.dbo.Liste.MagazziniID  
 		,Vision.dbo.CausaliMagazzino.Descrizione
-		,Vision.dbo.ListeDocumenti.DataDocumento 
+		,Vision.dbo.ListeDocumenti.DataDocumento as DataBolla
 		,Vision.dbo.ListeRighe.Importo * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquisto as IMPORTO
 		,Vision.dbo.ListeRighe.ParentListeRigheID
 		, 'Resi' AS TipoOperazione
@@ -497,7 +497,9 @@ FROM            Vision.dbo.CausaliMagazzino INNER JOIN
                                FROM            Vision.dbo.MagazziniClassiRaggruppamenti
                                WHERE        (MagazziniClassiID = 409)) AS MagazziniDifettosi ON Vision.dbo.Liste.MagazziniID = MagazziniDifettosi.MagazziniID
 WHERE        (Vision.dbo.CausaliMagazzino.ID = 15) AND (Vision.dbo.ListeRighe.ArticoloID > 0) AND (NOT (Vision.dbo.ListeRighe.Precodice IN ('SOVRAP', 'SOVRAB'))) AND 
-                         (Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquistoQuantita < 0);
+                        (Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquistoQuantita < 0);
+
+
 TRUNCATE TABLE opper.dbo.IDIR_VETTORI;
 
 insert into opper.dbo.IDIR_VETTORI 
