@@ -31,10 +31,10 @@ public class PopulateTable {
 		readPropertiesFile();
 	}
 
-	public void executeSqlScript() throws Exception {
+	public void executeSqlScript(String fileName) throws Exception {
 
 		try(Connection conn = getConnection();){
-			File file = getScriptSqlFile();
+			File file = getScriptSqlFile(fileName);
 			try (Reader reader = new BufferedReader(new FileReader(file))) {
 				logger.info("Running script from file: " + file.getCanonicalPath());
 				ScriptRunner sr = new ScriptRunner(conn);
@@ -70,8 +70,8 @@ public class PopulateTable {
 		}
 	}
 	
-	private File getScriptSqlFile() {
+	private File getScriptSqlFile(String fileName) {
 
-		return new File(pathFile.concat("populate.sql"));
+		return new File(pathFile.concat(fileName));
 	}	
 }

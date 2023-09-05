@@ -16,7 +16,12 @@ public class EntryPoint {
 			logger.info("PATH: " + ar[0]);
 			logger.info("START BATCH");
 			PopulateTable populateTable = new PopulateTable(ar[0]);
-			populateTable.executeSqlScript();
+			logger.info("START RUN POPULATE");
+			populateTable.executeSqlScript("populate.sql");
+			logger.info("END RUN POPULATE");
+			logger.info("START RUN POPULATE");
+			populateTable.executeSqlScript("populate_logistica.sql");
+			logger.info("END RUN POPULATE");
 			logger.info("END BATCH");
 		}catch(Exception e) {
 			logger.error("ERRORE BATCH: " + e.getMessage() + " ////////// " + e.getLocalizedMessage());
