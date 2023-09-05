@@ -135,51 +135,61 @@ insert into opper.dbo.IDIR_IMPEGNI_CLIENTI
 	,PREZZO_BASE
 	,DATA_CONSEGNA
 	,ARTICOLO_ID
-	,PRECODICE
-	,CODICE
 	,ID_CLIENTE
 	,ID_MAGAZZINO
 	,TIPO_RIGA
 	,QTA_INEVASA 
+	,INEV_QTA
+	,IMP_VAL
+	,INEV_VAL
 	,QTA_FORZATA 
 	,BACK_ORDER 
 	,PROVENIENZA 
 ) 
-SELECT   Vision.dbo.ListeRighe.id                    
-        ,Vision.dbo.Liste.id                     
+SELECT  Vision.dbo.ListeRighe.id as ListeRigheID               
+        ,Vision.dbo.Liste.id as ListeID                     
         ,Vision.dbo.Liste.Data AS [Data_Impegno]
 		,Vision.dbo.Liste.Numero AS [Numero_Impegno]
-        ,Vision.dbo.ListeRighe.Quantita 
+        ,Vision.dbo.ListeRighe.Quantita as QTA_IMP
 		,Vision.dbo.ListeRighe.ListinoCosto
         ,Vision.dbo.ListeRighe.PREZZO                     
         ,Vision.dbo.ListeRighe.Dataconsegna             
-        ,Vision.dbo.ListeRighe.Articoloid                 
-        ,Vision.dbo.ListeRighe.Precodice                 
-        ,Vision.dbo.ListeRighe.Codice                     
-        ,opper.dbo.IDIR_CLIENTE.CLIENTIFORNITORIID   
+        ,Vision.dbo.ListeRighe.Articoloid       
+        ,opper.dbo.IDIR_CLIENTE.ID as ID_CLIENTE   
 		,Vision.dbo.Liste.MagazziniID
 		,Vision.dbo.CausaliMagazzino.Descrizione,
 		Vision.dbo.ListeRighe.Quantita - ISNULL(
 													(SELECT SUM(Quantita) AS QuantitaEvasa 
-													 FROM   Vision.dbo.ListeRighe AS ListeRighe_1
-													 WHERE  (ParentListeRigheID = Vision.dbo.ListeRighe.ID)
+													FROM   Vision.dbo.ListeRighe AS ListeRighe_1
+													WHERE  (ParentListeRigheID = Vision.dbo.ListeRighe.ID)
 												), 0) AS [Quantita_Inevasa],
+		Vision.dbo.ListeRighe.Quantita - ISNULL
+                          ((SELECT     SUM(Quantita) AS QuantitaEvasa
+                              FROM         Vision.dbo.ListeRighe AS ListeRighe_1
+                              WHERE     (ParentListeRigheID = Vision.dbo.ListeRighe.ID)), 0) AS [Inev.Qta],
+							  Vision.dbo.ListeRighe.Importo AS [Imp.Val],
+		(Vision.dbo.ListeRighe.Importo / Vision.dbo.ListeRighe.Quantita) 
+                      * (Vision.dbo.ListeRighe.Quantita - ISNULL
+                          ((SELECT     SUM(Quantita) AS QuantitaEvasa
+
+                              FROM         Vision.dbo.ListeRighe AS ListeRighe_1
+                              WHERE     (ParentListeRigheID = Vision.dbo.ListeRighe.ID)), 0)) AS [Inev.Val.],
 		Vision.dbo.ListeRighe.QuantitaForzata,
 		Vision.dbo.ListeEvasioneTipo.Descrizione AS BackOrder, 
 		Vision.dbo.ListeProvenienzaTipo.Descrizione AS Provenienza
-from     Vision.dbo.Liste
-        ,Vision.dbo.ListeRighe
-        ,opper.dbo.IDIR_CLIENTE
-		,Vision.dbo.CausaliMagazzino
-		,Vision.dbo.ListeEvasioneTipo
-		,Vision.dbo.ListeProvenienzaTipo
-where   Vision.dbo.Liste.ID                   	=   Vision.dbo.ListeRighe.ListeID
-AND     Vision.dbo.Liste.ClientiFornitoriID  	=   opper.dbo.IDIR_CLIENTE.CLIENTIFORNITORIID 
-AND     Vision.dbo.Liste.CausaliMagazzinoID    	in  (35,36,38)
-AND 	Vision.dbo.Liste.CausaliMagazzinoID   	= 	Vision.dbo.CausaliMagazzino.ID
-AND 	Vision.dbo.Liste.ListeEvasioneTipoID 	= 	Vision.dbo.ListeEvasioneTipo.ID
-AND 	Vision.dbo.ListeProvenienzaTipo.ID 		= 	Vision.dbo.Liste.ListeProvenienzaTipoID;
-
+from    Vision.dbo.Magazzini INNER JOIN
+                      Vision.dbo.ListeProvenienzaTipo INNER JOIN
+                      Vision.dbo.Liste ON Vision.dbo.ListeProvenienzaTipo.ID = Vision.dbo.Liste.ListeProvenienzaTipoID ON Vision.dbo.Magazzini.ID = Vision.dbo.Liste.MagazziniID INNER JOIN
+                      Vision.dbo.ListeEvasioneTipo ON Vision.dbo.Liste.ListeEvasioneTipoID = Vision.dbo.ListeEvasioneTipo.ID INNER JOIN
+                      Vision.dbo.CausaliMagazzino ON Vision.dbo.Liste.CausaliMagazzinoID = Vision.dbo.CausaliMagazzino.ID INNER JOIN
+                      Vision.dbo.ListeRighe ON Vision.dbo.Liste.ID = Vision.dbo.ListeRighe.ListeID INNER JOIN
+                      Vision.dbo.ListeDocumenti ON Vision.dbo.Liste.ID = Vision.dbo.ListeDocumenti.ListeID LEFT JOIN 
+					  opper.dbo.IDIR_CLIENTE ON Vision.dbo.Liste.ClientiFornitoriID								=	opper.dbo.IDIR_CLIENTE.CLIENTIFORNITORIID 
+where    (Vision.dbo.CausaliMagazzino.Impegni = 1) AND (Vision.dbo.ListeRighe.QuantitaForzata = 0) AND (Vision.dbo.ListeRighe.Quantita > 0) AND (NOT (Vision.dbo.ListeRighe.Precodice IN ('SOVRAB', 'SOVRAP'))) AND 
+                      (Vision.dbo.Liste.DataConsegna <= GETDATE() - 1) AND (Vision.dbo.ListeRighe.ArticoloID > 0) AND (Vision.dbo.ListeRighe.Quantita - ISNULL
+                          ((SELECT     SUM(Quantita) AS QuantitaEvasa
+                              FROM         Vision.dbo.ListeRighe AS ListeRighe_1
+                              WHERE     (ParentListeRigheID = Vision.dbo.ListeRighe.ID)), 0) > 0);
 
 TRUNCATE TABLE opper.dbo.IDIR_VENDITE;
 
@@ -238,8 +248,8 @@ CASE WHEN DocumentiTipo.RettificheVendite = 0 THEN 'Fattura' ELSE 'Nota Credito'
 CASE WHEN MagazziniDifettosi.MagazziniID > 0 THEN 'Difettosa' ELSE 'Nuova' END AS TipoMerce,
 Vision.dbo.ListeRigheTipo.Descrizione + ' - ' + CAST(Vision.dbo.ListeRigheTipo.Codice AS varchar) AS TipoRiga			  
                          
-FROM            
-                 
+FROM            Vision.dbo.TrasportoACura INNER JOIN
+                         Vision.dbo.Porti INNER JOIN
                          Vision.dbo.ClientiFornitori INNER JOIN
                          Vision.dbo.ListeDocumenti AS ListeDocumenti INNER JOIN
                          Vision.dbo.Liste ON ListeDocumenti.ListeID = Vision.dbo.Liste.ID INNER JOIN
@@ -251,8 +261,9 @@ FROM
                          Vision.dbo.ListeRigheTipo ON Vision.dbo.CausaliMagazzinoListeRigheTipo.ListeRigheTipoID = Vision.dbo.ListeRigheTipo.ID INNER JOIN
                          Vision.dbo.Magazzini ON Vision.dbo.Liste.MagazziniID = Vision.dbo.Magazzini.ID INNER JOIN
                          Vision.dbo.CausaliMagazzino ON Vision.dbo.Liste.CausaliMagazzinoID = Vision.dbo.CausaliMagazzino.ID ON Vision.dbo.ClientiFornitori.ID = Vision.dbo.Liste.ClientiFornitoriID INNER JOIN
+                         Vision.dbo.ContattiContabili ON Vision.dbo.ClientiFornitori.ContattiContabiliID = Vision.dbo.ContattiContabili.ID ON Vision.dbo.Porti.ID = ListeDocumenti.PortiID ON Vision.dbo.TrasportoACura.ID = ListeDocumenti.TrasportoACuraID LEFT OUTER JOIN
                          Vision.dbo.ListiniCondizioni ON Vision.dbo.ListeRighe.ListiniCondizioniID = Vision.dbo.ListiniCondizioni.ID LEFT OUTER JOIN
-                             (SELECT        Vision.dbo.ListeDocumentiVettori.ListeDocumentiID, ContattiVettori.Cognome + ' - ' + Vision.dbo.Vettori.Codice AS Vettore, Vision.dbo.Contatti.Cognome + ' - ' + CAST(ContattiContabili_1.Codice AS varchar) AS VettoreFornitore, Vision.dbo.Vettori.ID
+                             (SELECT        Vision.dbo.ListeDocumentiVettori.ListeDocumentiID, ContattiVettori.Cognome + ' - ' + Vision.dbo.Vettori.Codice AS Vettore, Vision.dbo.Contatti.Cognome + ' - ' + CAST(ContattiContabili_1.Codice AS varchar) AS VettoreFornitore,Vision.dbo.Vettori.ID
                                FROM            Vision.dbo.ContattiContabili AS ContattiContabili_1 LEFT OUTER JOIN
                                                          Vision.dbo.Contatti ON ContattiContabili_1.ContattoID = Vision.dbo.Contatti.ID RIGHT OUTER JOIN
                                                          Vision.dbo.ClientiFornitori AS ClientiFornitori_1 ON ContattiContabili_1.ID = ClientiFornitori_1.ContattiContabiliID RIGHT OUTER JOIN
@@ -270,7 +281,7 @@ FROM
                              (SELECT        MagazziniID
                                FROM            Vision.dbo.MagazziniClassiRaggruppamenti
                                WHERE        (MagazziniClassiID = 409)) AS MagazziniDifettosi ON Vision.dbo.Liste.MagazziniID = MagazziniDifettosi.MagazziniID
-						LEFT JOIN opper.dbo.IDIR_AGENTE ON Vision.dbo.ListeRighe.AgentiID								=	opper.dbo.IDIR_AGENTE.AGENTE_ID
+							   LEFT JOIN opper.dbo.IDIR_AGENTE ON Vision.dbo.ListeRighe.AgentiID								=	opper.dbo.IDIR_AGENTE.AGENTE_ID
 						LEFT JOIN opper.dbo.IDIR_CLIENTE ON Vision.dbo.Liste.ClientiFornitoriID								=	opper.dbo.IDIR_CLIENTE.CLIENTIFORNITORIID
 						LEFT JOIN Vision.dbo._Maurizio_AgentiID_Gruppi2ID ON opper.dbo.IDIR_AGENTE.AGENTE_ID = Vision.dbo._Maurizio_AgentiID_Gruppi2ID.AgenteID   
 						LEFT JOIN Vision.dbo._Maurizio_Agenti_Gruppo_2 ON Vision.dbo._Maurizio_AgentiID_Gruppi2ID.AgenteGruppo2ID    = Vision.dbo._Maurizio_Agenti_Gruppo_2.ID   
@@ -285,6 +296,7 @@ WHERE        (NOT (Vision.dbo.ListeRighe.Precodice IN ('SOVRAP', 'SOVRAB'))) AND
                          (NOT (Vision.dbo.ListeRighe.Precodice IN ('SOVRAP', 'SOVRAB'))) AND (Vision.dbo.DocumentiClassiRaggruppamenti.DocumentiClassiID = 10) AND (YEAR(ListeDocumenti.DataDocumento) BETWEEN YEAR(GETDATE()) - 3 AND 
                          YEAR(GETDATE())) AND (Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliProgressivi.MoltiplicatoreConsumi <> 0);
 
+                         
 TRUNCATE TABLE opper.dbo.IDIR_FATTO_ORDINE_ACQUISTO;
 
 
@@ -956,7 +968,7 @@ SELECT	Vision.dbo.ListeRighe.ID,
 		Vision.dbo.ContattiContabili.Codice,
 		Vision.dbo.Liste.Data, 
 		Vision.dbo.Liste.Numero, 
-		Vision.dbo.Magazzini.ID,Vision.dbo.ListeRighe.Quantita AS Quantità,
+		Vision.dbo.Magazzini.ID,Vision.dbo.ListeRighe.Quantita AS Quantita,
 		Vision.dbo.ListeRighe.Quantita - (Vision.dbo.ListeRighe.Quantita - ISNULL((SELECT   SUM(Quantita) AS QuantitaEvasa          FROM        Vision.dbo.ListeRighe AS ListeRighe_1     WHERE        (ParentListeRigheID = Vision.dbo.ListeRighe.ID)), 0)),
 		Vision.dbo.ListeRighe.Quantita - ISNULL((SELECT        SUM(Quantita) AS QuantitaEvasa         FROM            Vision.dbo.ListeRighe AS ListeRighe_1      WHERE        (ParentListeRigheID = Vision.dbo.ListeRighe.ID)), 0),
 		Vision.dbo.ListeRighe.QuantitaForzata,
