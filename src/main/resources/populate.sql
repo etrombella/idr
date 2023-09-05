@@ -341,7 +341,9 @@ AND        Vision.dbo.ListeRighe.Precodice                                    = 
 AND Vision.dbo.Liste.ID = Vision.dbo.ListeDocumenti.ListeID;
 
 
+
 TRUNCATE TABLE opper.dbo.IDIR_FATTO_CARICHI;
+
 
 insert into opper.dbo.IDIR_FATTO_CARICHI 
 (  
@@ -496,7 +498,6 @@ FROM            Vision.dbo.CausaliMagazzino INNER JOIN
                                WHERE        (MagazziniClassiID = 409)) AS MagazziniDifettosi ON Vision.dbo.Liste.MagazziniID = MagazziniDifettosi.MagazziniID
 WHERE        (Vision.dbo.CausaliMagazzino.ID = 15) AND (Vision.dbo.ListeRighe.ArticoloID > 0) AND (NOT (Vision.dbo.ListeRighe.Precodice IN ('SOVRAP', 'SOVRAB'))) AND 
                          (Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheAcquistoQuantita < 0);
-
 TRUNCATE TABLE opper.dbo.IDIR_VETTORI;
 
 insert into opper.dbo.IDIR_VETTORI 
