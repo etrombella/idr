@@ -915,7 +915,7 @@ where A.LISTA_RIGA_ID = B.LISTA_RIGA_ID
 and 
 (
 A.DOCUMENTO 	!= B.DOCUMENTO
-)
+);
 
 
 
