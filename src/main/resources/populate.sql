@@ -609,41 +609,58 @@ insert into opper.dbo.IDIR_ARTICOLI
 	,FAMIGLIA 
 	,FAMIGLIA_DESCRIZIONE 
 	,GIORNI_CONSEGNA
+	,PREZZO_LISTINO_92
 ) 
-SELECT  Vision.dbo.ArticoliCodifiche.ArticoloID,
-		Vision.dbo.Categorie.PrecodiciStatisticheID,
-		Vision.dbo.Precodici.Codice AS Precodice, 
-		Vision.dbo.Precodici.Descrizione AS DescrizionePrecodice,
-		Vision.dbo.ArticoliCodifiche.Articolo AS Codice,
-		Vision.dbo.Fornitori.ID AS FornitoreID, /*SOSTITUIRE CON IL NOSTRO ID FORNITORE. COLLEGAMENTO: dbo.ClientiFornitori.ID = IDIR_FORNITORI.ID_CLIENTEFORNITORE*/
+SELECT Vision.dbo.ArticoliCodifiche.ArticoloID,
+       Vision.dbo.Categorie.PrecodiciStatisticheID,
+       Vision.dbo.Precodici.Codice AS Precodice, 
+       Vision.dbo.Precodici.Descrizione AS DescrizionePrecodice,
+       Vision.dbo.ArticoliCodifiche.Articolo AS Codice,
+       Vision.dbo.Fornitori.ID AS FornitoreID,
+       Vision.dbo.ContattiContabili.Codice AS FornitoreCodice,
+       Vision.dbo.Contatti.Cognome AS Fornitore,
+       Vision.dbo.ClientiFornitori.ID AS ClienteFornitoreID, 
+       Vision.dbo.Categorie.Codice AS Categoria,
+       Vision.dbo.Categorie.Descrizione AS CategoriaDescrizione,
+       Vision.dbo.Classi.Codice AS ClasseCodice, 
+       Vision.dbo.Classi.Descrizione AS ClasseDescrizione, 
+       Vision.dbo.SottoClassi.Codice AS SottoClasseCodice,
+       Vision.dbo.SottoClassi.Descrizione AS SottoClasseDescrizione,
+       Vision.dbo.Famiglie.Codice AS Famiglia, 
+       Vision.dbo.Famiglie.Descrizione AS FamigliaDescrizione,
+       Vision.dbo.Precodici.GiorniConsegna,
+       tabListino92.Prezzo AS PrezzoListino92
 
+FROM Vision.dbo.ArticoliCodifiche 
+INNER JOIN Vision.dbo.Precodici 
+       ON Vision.dbo.ArticoliCodifiche.PrecodiceID = Vision.dbo.Precodici.ID 
+INNER JOIN Vision.dbo.Articoli 
+       ON Vision.dbo.ArticoliCodifiche.ArticoloID = Vision.dbo.Articoli.ID 
+INNER JOIN Vision.dbo.Categorie 
+       ON Vision.dbo.Articoli.CategoriaID = Vision.dbo.Categorie.ID 
+INNER JOIN Vision.dbo.Famiglie 
+       ON Vision.dbo.Articoli.FamigliaID = Vision.dbo.Famiglie.ID 
+INNER JOIN Vision.dbo.Fornitori 
+       ON Vision.dbo.Precodici.FornitoriID = Vision.dbo.Fornitori.ID 
+INNER JOIN Vision.dbo.ClientiFornitori 
+       ON Vision.dbo.Fornitori.ClientiFornitoriID = Vision.dbo.ClientiFornitori.ID 
+INNER JOIN Vision.dbo.ContattiContabili 
+       ON Vision.dbo.ClientiFornitori.ContattiContabiliID = Vision.dbo.ContattiContabili.ID 
+INNER JOIN Vision.dbo.Contatti 
+       ON Vision.dbo.ContattiContabili.ContattoID = Vision.dbo.Contatti.ID 
+INNER JOIN Vision.dbo.SottoClassi 
+       ON Vision.dbo.Articoli.SottoClasseID = Vision.dbo.SottoClassi.ID 
+INNER JOIN Vision.dbo.Classi 
+       ON Vision.dbo.SottoClassi.ClasseID = Vision.dbo.Classi.ID 
+LEFT JOIN (
+    SELECT al.Prezzo, al.ArticoloID,
+           ROW_NUMBER() OVER (PARTITION BY al.ArticoloID ORDER BY al.DataVigore DESC) AS rn
+    FROM Vision.dbo.ArticoliListini al
+    WHERE al.ListinoID = 92 AND al.DataVigore <= GETDATE() AND al.DataFineVigore >= GETDATE() AND al.Quantita = 1
+) AS tabListino92 ON Vision.dbo.ArticoliCodifiche.ArticoloID = tabListino92.ArticoloID AND tabListino92.rn = 1
 
-		Vision.dbo.ContattiContabili.Codice AS FornitoreCodice,
-		Vision.dbo.Contatti.Cognome AS Fornitore,
-		Vision.dbo.ClientiFornitori.ID AS ClienteFornitoreID, 
-		Vision.dbo.Categorie.Codice AS Categoria,
-		Vision.dbo.Categorie.Descrizione AS CategoriaDescrizione,
-		Vision.dbo.Classi.Codice AS ClasseCodice, 
-		Vision.dbo.Classi.Descrizione AS ClasseDescrizione, 
-		Vision.dbo.SottoClassi.Codice AS SottoClasseCodice,
-		Vision.dbo.SottoClassi.Descrizione AS SottoClasseDescrizione,
-		Vision.dbo.Famiglie.Codice AS Famiglia, 
-		Vision.dbo.Famiglie.Descrizione AS FamigliaDescrizione,
-		Vision.dbo.Precodici.GiorniConsegna
-
-FROM   Vision.dbo.ArticoliCodifiche INNER JOIN
-       Vision.dbo.Precodici ON Vision.dbo.ArticoliCodifiche.PrecodiceID = Vision.dbo.Precodici.ID INNER JOIN
-       Vision.dbo.Articoli ON Vision.dbo.ArticoliCodifiche.ArticoloID = Vision.dbo.Articoli.ID INNER JOIN
-       Vision.dbo.Categorie ON Vision.dbo.Articoli.CategoriaID = Vision.dbo.Categorie.ID INNER JOIN
-       Vision.dbo.Famiglie ON Vision.dbo.Articoli.FamigliaID = Vision.dbo.Famiglie.ID INNER JOIN
-       Vision.dbo.Fornitori ON Vision.dbo.Precodici.FornitoriID = Vision.dbo.Fornitori.ID INNER JOIN
-       Vision.dbo.ClientiFornitori ON Vision.dbo.Fornitori.ClientiFornitoriID = Vision.dbo.ClientiFornitori.ID INNER JOIN
-       Vision.dbo.ContattiContabili ON Vision.dbo.ClientiFornitori.ContattiContabiliID = Vision.dbo.ContattiContabili.ID INNER JOIN
-       Vision.dbo.Contatti ON Vision.dbo.ContattiContabili.ContattoID = Vision.dbo.Contatti.ID INNER JOIN
-       Vision.dbo.SottoClassi ON Vision.dbo.Articoli.SottoClasseID = Vision.dbo.SottoClassi.ID INNER JOIN
-       Vision.dbo.Classi ON Vision.dbo.SottoClassi.ClasseID = Vision.dbo.Classi.ID
-WHERE 	(Vision.dbo.ArticoliCodifiche.ArticoliCodificheTipoID = 1) AND (Vision.dbo.Precodici.AziendaID = 1);
-
+WHERE (Vision.dbo.ArticoliCodifiche.ArticoliCodificheTipoID = 1) 
+AND (Vision.dbo.Precodici.AziendaID = 1);
 
 TRUNCATE TABLE opper.dbo.IDIR_PRECODICI;
 
