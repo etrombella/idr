@@ -610,6 +610,8 @@ insert into opper.dbo.IDIR_ARTICOLI
 	,FAMIGLIA_DESCRIZIONE 
 	,GIORNI_CONSEGNA
 	,PREZZO_LISTINO_92
+	,PREZZO_LISTINO_800
+	,PREZZO_LISTINO_PLATINUM_2073
 ) 
 SELECT Vision.dbo.ArticoliCodifiche.ArticoloID,
        Vision.dbo.Categorie.PrecodiciStatisticheID,
@@ -629,7 +631,9 @@ SELECT Vision.dbo.ArticoliCodifiche.ArticoloID,
        Vision.dbo.Famiglie.Codice AS Famiglia, 
        Vision.dbo.Famiglie.Descrizione AS FamigliaDescrizione,
        Vision.dbo.Precodici.GiorniConsegna,
-       tabListino92.Prezzo AS PrezzoListino92
+       tabListino92.Prezzo AS PrezzoListino92,
+	   tabListino800.Prezzo AS PrezzoListino800,
+	   tabListinoPlatinum2073.Prezzo as PrezzoListinoPlatinum2073
 
 FROM Vision.dbo.ArticoliCodifiche 
 INNER JOIN Vision.dbo.Precodici 
@@ -658,9 +662,22 @@ LEFT JOIN (
     FROM Vision.dbo.ArticoliListini al
     WHERE al.ListinoID = 92 AND al.DataVigore <= GETDATE() AND al.DataFineVigore >= GETDATE() AND al.Quantita = 1
 ) AS tabListino92 ON Vision.dbo.ArticoliCodifiche.ArticoloID = tabListino92.ArticoloID AND tabListino92.rn = 1
+LEFT JOIN (
+    SELECT al.Prezzo, al.ArticoloID,
+           ROW_NUMBER() OVER (PARTITION BY al.ArticoloID ORDER BY al.DataVigore DESC) AS rn
+    FROM Vision.dbo.ArticoliListini al
+    WHERE al.ListinoID = 800 AND al.DataVigore <= GETDATE() AND al.DataFineVigore >= GETDATE() AND al.Quantita = 1
+) AS tabListino800 ON Vision.dbo.ArticoliCodifiche.ArticoloID = tabListino800.ArticoloID AND tabListino800.rn = 1
+LEFT JOIN (
+    SELECT al.Prezzo, al.ArticoloID,
+           ROW_NUMBER() OVER (PARTITION BY al.ArticoloID ORDER BY al.DataVigore DESC) AS rn
+    FROM Vision.dbo.ArticoliListini al
+    WHERE al.ListinoID = 2217 AND al.DataVigore <= GETDATE() AND al.DataFineVigore >= GETDATE() AND al.Quantita = 1
+) AS tabListinoPlatinum2073 ON Vision.dbo.ArticoliCodifiche.ArticoloID = tabListinoPlatinum2073.ArticoloID AND tabListinoPlatinum2073.rn = 1
 
 WHERE (Vision.dbo.ArticoliCodifiche.ArticoliCodificheTipoID = 1) 
 AND (Vision.dbo.Precodici.AziendaID = 1);
+
 
 TRUNCATE TABLE opper.dbo.IDIR_PRECODICI;
 
