@@ -611,7 +611,10 @@ insert into opper.dbo.IDIR_ARTICOLI
 	,GIORNI_CONSEGNA
 	,PREZZO_LISTINO_92
 	,PREZZO_LISTINO_800
+	,PREZZO_LISTINO_90
 	,PREZZO_LISTINO_PLATINUM_2073
+	,BLOCCATO
+	,SOSTITUITO
 ) 
 SELECT Vision.dbo.ArticoliCodifiche.ArticoloID,
        Vision.dbo.Categorie.PrecodiciStatisticheID,
@@ -633,8 +636,10 @@ SELECT Vision.dbo.ArticoliCodifiche.ArticoloID,
        Vision.dbo.Precodici.GiorniConsegna,
        tabListino92.Prezzo AS PrezzoListino92,
 	   tabListino800.Prezzo AS PrezzoListino800,
-	   tabListinoPlatinum2073.Prezzo as PrezzoListinoPlatinum2073
-
+	   tabListino90.Prezzo AS PrezzoListino90,
+	   tabListinoPlatinum2073.Prezzo as PrezzoListinoPlatinum2073,
+	   articoli_bloccati.Bloccato as BLOCCATO,
+	   articoli_sostituiti.Sostituito as SOSTITUITO
 FROM Vision.dbo.ArticoliCodifiche 
 INNER JOIN Vision.dbo.Precodici 
        ON Vision.dbo.ArticoliCodifiche.PrecodiceID = Vision.dbo.Precodici.ID 
@@ -674,10 +679,26 @@ LEFT JOIN (
     FROM Vision.dbo.ArticoliListini al
     WHERE al.ListinoID = 2217 AND al.DataVigore <= GETDATE() AND al.DataFineVigore >= GETDATE() AND al.Quantita = 1
 ) AS tabListinoPlatinum2073 ON Vision.dbo.ArticoliCodifiche.ArticoloID = tabListinoPlatinum2073.ArticoloID AND tabListinoPlatinum2073.rn = 1
-
+LEFT JOIN (
+    SELECT al.Prezzo, al.ArticoloID,
+           ROW_NUMBER() OVER (PARTITION BY al.ArticoloID ORDER BY al.DataVigore DESC) AS rn
+    FROM Vision.dbo.ArticoliListini al
+    WHERE al.ListinoID = 90 AND al.DataVigore <= GETDATE() AND al.DataFineVigore >= GETDATE() AND al.Quantita = 1
+) AS tabListino90 ON Vision.dbo.ArticoliCodifiche.ArticoloID = tabListino90.ArticoloID AND tabListino90.rn = 1
+LEFT JOIN
+ (SELECT Vision.dbo.ArticoliBlocchi.ArticoliID, 'Si' AS Bloccato
+FROM   Vision.dbo.ArticoliBlocchi
+WHERE (BlocchiMotivazioniID IN (8, 20, 21))
+GROUP BY Vision.dbo.ArticoliBlocchi.ArticoliID) as articoli_bloccati ON Vision.dbo.ArticoliCodifiche.ArticoloID = articoli_bloccati.ArticoliID
+LEFT JOIN
+(SELECT Vision.dbo.ArticoliEquivalenzeRighe.ArticoliID, 'Si' AS Sostituito
+FROM   Vision.dbo.ArticoliEquivalenze INNER JOIN
+             Vision.dbo.ArticoliEquivalenzeRighe ON Vision.dbo.ArticoliEquivalenze.ID = Vision.dbo.ArticoliEquivalenzeRighe.ArticoliEquivalenzeID INNER JOIN
+             Vision.dbo.ArticoliEquivalenzeTipo ON Vision.dbo.ArticoliEquivalenze.ArticoliEquivalenzeTipoID = Vision.dbo.ArticoliEquivalenzeTipo.ID
+WHERE (Vision.dbo.ArticoliEquivalenzeTipo.ID = 2) AND (Vision.dbo.ArticoliEquivalenzeRighe.Sostituito = 1)
+GROUP BY Vision.dbo.ArticoliEquivalenzeRighe.ArticoliID) as articoli_sostituiti ON Vision.dbo.ArticoliCodifiche.ArticoloID = articoli_sostituiti.ArticoliID
 WHERE (Vision.dbo.ArticoliCodifiche.ArticoliCodificheTipoID = 1) 
 AND (Vision.dbo.Precodici.AziendaID = 1);
-
 
 TRUNCATE TABLE opper.dbo.IDIR_PRECODICI;
 
