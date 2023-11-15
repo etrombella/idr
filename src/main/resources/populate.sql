@@ -1235,36 +1235,135 @@ TRUNCATE TABLE opper.dbo.IDIR_ABC_ARTICOLI;
 INSERT INTO opper.dbo.IDIR_ABC_ARTICOLI
 (  
 	ARTICOLO_ID 
-	,VALORE_TOT
+	,PRECODICE
+    ,CODICE
+    ,VALORE_TOT
 	,RANK
 	,VENDUTO_TOTALE
 	,TOTALE
 	,VENDUTO_CUMULATO
 	,CUMULATA
 	,ABC
+	,ABC_PRECODICE
 )
 SELECT
-    [ARTICOLO_ID],
-    SUM(CAST([VALORE] AS DECIMAL(18, 2))) AS ValoreTot,
-    ROW_NUMBER() OVER (ORDER BY SUM(CAST([VALORE] AS DECIMAL(18, 2))) DESC) AS [Rank],
-    SUM(SUM(CAST([VALORE] AS DECIMAL(18, 2)))) OVER () AS VendutoTot,
-    CAST(
-        CAST(SUM(CAST([VALORE] AS DECIMAL(18, 8))) AS NUMERIC(18, 8)) /
-        CAST(SUM(SUM(CAST([VALORE] AS DECIMAL(18, 8)))) OVER () AS NUMERIC(18, 8)) 
-        AS NUMERIC(18, 8)
-    ) AS [% su Tot],
-    Sum(SUM(CAST([VALORE] AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST([VALORE] AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) [VendutoCumulato],
-    CAST(Sum(SUM(CAST([VALORE] AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST([VALORE] AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(SUM(SUM(CAST([VALORE] AS DECIMAL(18, 8)))) OVER () AS numeric(18,8)) [% Cumulata],
-    CASE
-        WHEN  CAST(Sum(SUM(CAST([VALORE] AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST([VALORE] AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(SUM(SUM(CAST([VALORE] AS DECIMAL(18, 8)))) OVER () AS numeric(18,8))<= 0.60 THEN 'A'
-        WHEN  CAST(Sum(SUM(CAST([VALORE] AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST([VALORE] AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(SUM(SUM(CAST([VALORE] AS DECIMAL(18, 8)))) OVER () AS numeric(18,8))<= 0.85 THEN 'B'
-        WHEN  CAST(Sum(SUM(CAST([VALORE] AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST([VALORE] AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(SUM(SUM(CAST([VALORE] AS DECIMAL(18, 8)))) OVER () AS numeric(18,8))<= 0.95 THEN 'C'
-        ELSE 'D'
-    END AS ABC
+    tabella_ABC_tot.ARTICOLO_ID,
+    tabella_ABC_tot.PRECODICE,
+    tabella_ABC_tot.CODICE,
+    tabella_ABC_tot.ValoreTot,
+    tabella_ABC_tot.Rank,
+    tabella_ABC_tot.VendutoTot,
+    tabella_ABC_tot.[% su Tot],
+    tabella_ABC_tot.VendutoCumulato,
+    tabella_ABC_tot.[% Cumulata],
+    tabella_ABC_tot.ABC,
+    tabella_ABC_Precodice.ABC as "ABC_PRECODICE"
 FROM
-    [Opper].[dbo].[IDIR_VENDITE]
-WHERE 
-    [Opper].[dbo].[IDIR_VENDITE].[DATA] >= DATEADD(YEAR, -2, GETDATE())
-    AND CAST([VALORE] AS DECIMAL(18, 8)) > 0
-GROUP BY
-    [ARTICOLO_ID];
+(
+    SELECT
+        opper.dbo.[IDIR_VENDITE].ARTICOLO_ID,
+        opper.dbo.IDIR_ARTICOLI.PRECODICE,
+        opper.dbo.IDIR_ARTICOLI.CODICE,
+        SUM(CAST([VALORE] AS DECIMAL(18, 2))) AS ValoreTot,
+        ROW_NUMBER() OVER (ORDER BY SUM(CAST([VALORE] AS DECIMAL(18, 2))) DESC) AS [Rank],
+        SUM(SUM(CAST([VALORE] AS DECIMAL(18, 2)))) OVER () AS VendutoTot,
+        CAST(
+            CAST(SUM(CAST([VALORE] AS DECIMAL(18, 8))) AS NUMERIC(18, 8)) /
+            CAST(SUM(SUM(CAST([VALORE] AS DECIMAL(18, 8)))) OVER () AS NUMERIC(18, 8)) 
+            AS NUMERIC(18, 8)
+        ) AS [% su Tot],
+        Sum(SUM(CAST([VALORE] AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST([VALORE] AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) [VendutoCumulato],
+        CAST(Sum(SUM(CAST([VALORE] AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST([VALORE] AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(SUM(SUM(CAST([VALORE] AS DECIMAL(18, 8)))) OVER () AS numeric(18,8)) [% Cumulata],
+        CASE
+            WHEN  CAST(Sum(SUM(CAST([VALORE] AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST([VALORE] AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(SUM(SUM(CAST([VALORE] AS DECIMAL(18, 8)))) OVER () AS numeric(18,8))<= 0.60 THEN 'A'
+            WHEN  CAST(Sum(SUM(CAST([VALORE] AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST([VALORE] AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(SUM(SUM(CAST([VALORE] AS DECIMAL(18, 8)))) OVER () AS numeric(18,8))<= 0.85 THEN 'B'
+            WHEN  CAST(Sum(SUM(CAST([VALORE] AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST([VALORE] AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(SUM(SUM(CAST([VALORE] AS DECIMAL(18, 8)))) OVER () AS numeric(18,8))<= 0.95 THEN 'C'
+            ELSE 'D'
+        END AS ABC
+    FROM
+        [Opper].[dbo].[IDIR_VENDITE],
+        Opper.dbo.IDIR_ARTICOLI
+    WHERE 
+        [Opper].[dbo].[IDIR_VENDITE].[DATA] >= DATEADD(YEAR, -2, GETDATE())
+        AND CAST([VALORE] AS DECIMAL(18, 8)) > 0
+        AND opper.dbo.IDIR_VENDITE.ARTICOLO_ID = opper.dbo.IDIR_ARTICOLI.ARTICOLO_ID
+    GROUP BY
+        opper.dbo.idir_vendite.[ARTICOLO_ID],
+        opper.dbo.IDIR_ARTICOLI.[PRECODICE],
+        opper.dbo.IDIR_ARTICOLI.[CODICE]
+) AS tabella_ABC_tot
+LEFT JOIN
+(
+    SELECT
+        r.ARTICOLO_ID,
+        r.PRECODICE,
+        r.CODICE,
+        r.ValoreTot,
+        r.[Rank],
+        r.VendutoTot,
+        CAST(
+            CAST(r.ValoreTot AS NUMERIC(18, 8)) /
+            CAST(r.VendutoTot AS NUMERIC(18, 8)) 
+            AS NUMERIC(18, 8)
+        ) AS [% su Tot],
+        Sum(r.ValoreTot) OVER (PARTITION BY r.PRECODICE ORDER BY r.[Rank] ASC Rows BETWEEN unbounded preceding AND CURRENT row) [VendutoCumulato],
+        CAST(Sum(r.ValoreTot) OVER (PARTITION BY r.PRECODICE ORDER BY r.[Rank] ASC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(r.VendutoTot AS numeric(18,8)) [% Cumulata],
+        CASE
+            WHEN f.FirstCodeClassA = 'A' OR f.FirstCodeClassA IS NULL THEN 'A'
+            WHEN CAST(Sum(r.ValoreTot) OVER (PARTITION BY r.PRECODICE ORDER BY r.[Rank] ASC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(r.VendutoTot AS numeric(18,8)) <= 0.60 THEN 'A'
+            WHEN CAST(Sum(r.ValoreTot) OVER (PARTITION BY r.PRECODICE ORDER BY r.[Rank] ASC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(r.VendutoTot AS numeric(18,8)) <= 0.85 THEN 'B'
+            WHEN CAST(Sum(r.ValoreTot) OVER (PARTITION BY r.PRECODICE ORDER BY r.[Rank] ASC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(r.VendutoTot AS numeric(18,8)) <= 0.95 THEN 'C'
+            ELSE 'D'
+        END AS ABC
+    FROM
+        (
+            SELECT
+                opper.dbo.IDIR_VENDITE.ARTICOLO_ID,
+                opper.dbo.IDIR_ARTICOLI.PRECODICE,
+                opper.dbo.IDIR_ARTICOLI.CODICE,
+                SUM(CAST([VALORE] AS DECIMAL(18, 2))) AS ValoreTot,
+                ROW_NUMBER() OVER (PARTITION BY opper.dbo.IDIR_ARTICOLI.PRECODICE ORDER BY SUM(CAST([VALORE] AS DECIMAL(18, 2))) DESC) AS [Rank],
+                SUM(SUM(CAST([VALORE] AS DECIMAL(18, 2)))) OVER (PARTITION BY opper.dbo.IDIR_ARTICOLI.PRECODICE) AS VendutoTot
+            FROM
+                [Opper].[dbo].[IDIR_VENDITE]
+            JOIN
+                Opper.dbo.IDIR_ARTICOLI ON opper.dbo.IDIR_VENDITE.ARTICOLO_ID = opper.dbo.IDIR_ARTICOLI.ARTICOLO_ID
+            WHERE 
+                [Opper].[dbo].[IDIR_VENDITE].[DATA] >= DATEADD(YEAR, -2, GETDATE())
+                AND CAST([VALORE] AS DECIMAL(18, 8)) > 0
+            GROUP BY
+                opper.dbo.IDIR_VENDITE.ARTICOLO_ID,
+                opper.dbo.IDIR_ARTICOLI.PRECODICE,
+                opper.dbo.IDIR_ARTICOLI.CODICE
+        ) AS r
+    LEFT JOIN
+        (
+            SELECT
+                ARTICOLO_ID,
+                PRECODICE,
+                CODICE,
+                [Rank],
+                CASE WHEN [Rank] = 1 THEN 'A' ELSE '' END AS FirstCodeClassA
+            FROM
+                (
+                    SELECT
+                        opper.dbo.IDIR_VENDITE.ARTICOLO_ID,
+                        opper.dbo.IDIR_ARTICOLI.PRECODICE,
+                        opper.dbo.IDIR_ARTICOLI.CODICE,
+                        SUM(CAST([VALORE] AS DECIMAL(18, 2))) AS ValoreTot,
+                        ROW_NUMBER() OVER (PARTITION BY opper.dbo.IDIR_ARTICOLI.PRECODICE ORDER BY SUM(CAST([VALORE] AS DECIMAL(18, 2))) DESC) AS [Rank],
+                        SUM(SUM(CAST([VALORE] AS DECIMAL(18, 2)))) OVER (PARTITION BY opper.dbo.IDIR_ARTICOLI.PRECODICE) AS VendutoTot
+                    FROM
+                        [Opper].[dbo].[IDIR_VENDITE]
+                    JOIN
+                        Opper.dbo.IDIR_ARTICOLI ON opper.dbo.IDIR_VENDITE.ARTICOLO_ID = opper.dbo.IDIR_ARTICOLI.ARTICOLO_ID
+                    WHERE 
+                        [Opper].[dbo].[IDIR_VENDITE].[DATA] >= DATEADD(YEAR, -2, GETDATE())
+                        AND CAST([VALORE] AS DECIMAL(18, 8)) > 0
+                    GROUP BY
+                        opper.dbo.IDIR_VENDITE.ARTICOLO_ID,
+                        opper.dbo.IDIR_ARTICOLI.PRECODICE,
+                        opper.dbo.IDIR_ARTICOLI.CODICE
+                ) AS RankedData
+        ) AS f ON r.ARTICOLO_ID = f.ARTICOLO_ID AND r.PRECODICE = f.PRECODICE AND r.CODICE = f.CODICE
+) AS tabella_ABC_Precodice ON tabella_ABC_tot.ARTICOLO_ID = tabella_ABC_Precodice.ARTICOLO_ID;
