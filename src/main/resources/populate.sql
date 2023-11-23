@@ -1367,3 +1367,71 @@ LEFT JOIN
                 ) AS RankedData
         ) AS f ON r.ARTICOLO_ID = f.ARTICOLO_ID AND r.PRECODICE = f.PRECODICE AND r.CODICE = f.CODICE
 ) AS tabella_ABC_Precodice ON tabella_ABC_tot.ARTICOLO_ID = tabella_ABC_Precodice.ARTICOLO_ID;
+
+TRUNCATE TABLE opper.dbo.IDIR_VENDITE_TIME;
+
+INSERT INTO opper.dbo.IDIR_VENDITE_TIME 
+(  
+	LISTA_RIGA_ID 
+	,LISTA_ID 
+	,PARENTLISTARIGHEID 
+	,QTA 
+	,PREZZO 
+	,COSTO_UNITARIO 
+	,DATA 
+	,DATA_RIFERIMENTO 
+	,ARTICOLO_ID 
+	,ID_CLIENTE 
+	,ID_AGENTE 
+	,ID_MAGAZZINO 
+	,ID_AREA 
+	,CAUSALE_MAGAZZINO 
+	,ID_VETTORE 
+	,VETTORE  
+	,VETTORE_FORNITORE 
+	,VALORE  
+	,MARGINE  
+	,LISTINO  
+	,LISTINOCODICE  
+	,TIPOOPERAZIONE 
+	,TIPOMERCE 
+	,TIPORIGA
+	,ORDINEDATAKEY
+	,ORDINETIMEATLKEY
+	,RIGAORDINETIMEATLKEY
+	,RIGAORDINEWMSDATAKEY
+	,RIGAORDINEWMSTIMEATLKEY
+	,TIMEALTKEYCUTOFF
+) 
+SELECT [LISTA_RIGA_ID]
+      ,[LISTA_ID]
+      ,[PARENTLISTARIGHEID]
+      ,[QTA]
+      ,[PREZZO]
+      ,[COSTO_UNITARIO]
+      ,[DATA]
+      ,[DATA_RIFERIMENTO]
+      ,[ARTICOLO_ID]
+      ,[ID_CLIENTE]
+      ,[ID_AGENTE]
+      ,[ID_MAGAZZINO]
+      ,[ID_AREA]
+      ,[CAUSALE_MAGAZZINO]
+      ,[ID_VETTORE]
+      ,[VETTORE]
+      ,[VETTORE_FORNITORE]
+      ,[VALORE]
+      ,[MARGINE]
+      ,[LISTINO]
+      ,[LISTINOCODICE]
+      ,[TIPOOPERAZIONE]
+      ,[TIPOMERCE]
+      ,[TIPORIGA]
+	  ,LogisticaDWH.dbo._FactSales.OrdineDataKey
+	  ,LogisticaDWH.dbo._FactSales.OrdineTimeAtlkey
+	  ,LogisticaDWH.dbo._FactSales.RigaOrdineTimeAtlkey
+	  ,LogisticaDWH.dbo._FactSales.RigaOrdineWmsDataKey
+	  ,LogisticaDWH.dbo._FactSales.RigaOrdineWmsTimeAtlkey
+	  ,LogisticaDWH.dbo._FactSales.TimeAltKeyCutOff
+FROM [Opper].[dbo].[IDIR_VENDITE] LEFT JOIN 
+LogisticaDWH.dbo._FactSales ON [Opper].[dbo].[IDIR_VENDITE].LISTA_ID = LogisticaDWH.dbo._FactSales.ListeRigaId;
