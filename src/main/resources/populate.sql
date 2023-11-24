@@ -1370,7 +1370,7 @@ LEFT JOIN
 
 TRUNCATE TABLE opper.dbo.IDIR_VENDITE_TIME;
 
-INSERT INTO opper.dbo.IDIR_VENDITE_TIME 
+insert into opper.dbo.IDIR_VENDITE_TIME 
 (  
 	LISTA_RIGA_ID 
 	,LISTA_ID 
@@ -1433,5 +1433,6 @@ SELECT [LISTA_RIGA_ID]
 	  ,LogisticaDWH.dbo._FactSales.RigaOrdineWmsDataKey
 	  ,LogisticaDWH.dbo._FactSales.RigaOrdineWmsTimeAtlkey
 	  ,LogisticaDWH.dbo._FactSales.TimeAltKeyCutOff
-FROM [Opper].[dbo].[IDIR_VENDITE] LEFT JOIN 
-LogisticaDWH.dbo._FactSales ON [Opper].[dbo].[IDIR_VENDITE].LISTA_ID = LogisticaDWH.dbo._FactSales.ListeRigaId;
+  FROM [Opper].[dbo].[IDIR_VENDITE] LEFT JOIN 
+  LogisticaDWH.dbo._FactSales ON [Opper].[dbo].[IDIR_VENDITE].[LISTA_RIGA_ID] = LogisticaDWH.dbo._FactSales.ListeRigaId;
+  
