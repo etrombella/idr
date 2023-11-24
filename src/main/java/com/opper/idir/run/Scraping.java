@@ -16,7 +16,7 @@ public class Scraping {
 	        .method(Connection.Method.GET).ignoreHttpErrors(true)
 	        .execute();
 
-	    String jsonBody = "{\"username\":\"a.monzeglio@idir.it\",\"password\":\"idirspa\",\"rememberMe\":\"true\"}";
+	    String jsonBodyAuthentication = "{\"username\":\"a.monzeglio@idir.it\",\"password\":\"idirspa\",\"rememberMe\":\"true\"}";
 	    // POST login data
 //	    Document loginResponse = Jsoup.connect("https://app.qricambi.com/api/User/RequestToken")
 //	    		
@@ -29,7 +29,7 @@ public class Scraping {
 //	        .post();
 	    
 	    //Connection.Response execute = Jsoup.connect("https://app.qricambi.com/api/User/RequestToken")
-	    String body = Jsoup.connect("https://app.qricambi.com/api/User/RequestToken")
+	    String bodyToken = Jsoup.connect("https://app.qricambi.com/api/User/RequestToken")
 	            .header("Content-Type", "application/json")
 	            .header("Accept", "application/json")
 	            .followRedirects(true)
@@ -38,34 +38,18 @@ public class Scraping {
 	            .userAgent("Mozilla/5.0 AppleWebKit/537.36 (KHTML," +
 	                    " like Gecko) Chrome/45.0.2454.4 Safari/537.36")
 	            .method(Connection.Method.POST)
-	            .requestBody(jsonBody)
+	            .requestBody(jsonBodyAuthentication)
 	            .maxBodySize(1_000_000 * 30) // 30 mb ~
 	            .timeout(0) // infinite timeout
 	            .execute().body();	    
 	    //Document doc = execute.parse();
 
-	    JSONObject jsonBodyOne = new JSONObject(body);
-	    String token = jsonBodyOne.getString("token");
-	    
-	    String xmlBody = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3OkKtalHx7JvNS8QRxFTejToPnVRDDtisea93FIiWJIA0l3uTUOD0swFCdHhTWCqaorhchB34HZ2nHnuWrYKI19KqStesHNPf/hUIR+H4uYRa9wU00wWP9ycOzkeHvnL3iYXhSRD4BlSU1WjEtSLuxn4KfMXn0UaUvo+1jb/19GgTGGy+8YCom4M7uUspToDLogyOmzJj6drMCdafqWCZAvLIjjBCuzYcetJx0xIVTXHWmmEdGOfkuw4T97dyjeqUsUS21Aex50KZJXAjxUQQbz2bJi0i9X4DZ02VrznoHpXFPhNXLF8neiBZf4PqhrKEyyMIbU0P2vZPRSv4uSxbwIDAQAB";
-		
+	    JSONObject jsonBodyOneToken = new JSONObject(bodyToken);
+	    String token = jsonBodyOneToken.getString("token");
 	    String authorization = "Bearer " + token;
-	    Connection.Response execute1 = Jsoup.connect("https://app.qricambi.com/api/User/CheckIfOtherUserAlreadyLogged")
-	            .header("Content-Type", "application/json")
-	            .header("Accept", "application/json, text/plain, */*")
-	            .header("Authorization", authorization)
-	            .followRedirects(true)
-	            .ignoreHttpErrors(true)
-	            .ignoreContentType(true)
-	            .userAgent("Mozilla/5.0 AppleWebKit/537.36 (KHTML," +
-	                    " like Gecko) Chrome/45.0.2454.4 Safari/537.36")
-	            .method(Connection.Method.POST)
-	            .requestBody(xmlBody)
-	            .maxBodySize(1_000_000 * 30) // 30 mb ~
-	            .timeout(0) // infinite timeout
-	            .execute();	    
 	    
-	    Connection.Response execute2 = Jsoup.connect("https://app.qricambi.com/api/User/GetPubKey")
+	    //Connection.Response execute2 = Jsoup.connect("https://app.qricambi.com/api/User/GetPubKey")
+	    String publicKey = Jsoup.connect("https://app.qricambi.com/api/User/GetPubKey")
 	            .header("Content-Type", "application/text")
 	            .header("Accept", "application/text")
 	            .header("Authorization", authorization)
@@ -77,6 +61,23 @@ public class Scraping {
 	            .method(Connection.Method.GET)
 	            //.requestBody(jsonBody)
 	            .cookies(loginForm.cookies())
+	            .maxBodySize(1_000_000 * 30) // 30 mb ~
+	            .timeout(0) // infinite timeout
+	            .execute().body();	    
+	    
+	    //String xmlBodyPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3OkKtalHx7JvNS8QRxFTejToPnVRDDtisea93FIiWJIA0l3uTUOD0swFCdHhTWCqaorhchB34HZ2nHnuWrYKI19KqStesHNPf/hUIR+H4uYRa9wU00wWP9ycOzkeHvnL3iYXhSRD4BlSU1WjEtSLuxn4KfMXn0UaUvo+1jb/19GgTGGy+8YCom4M7uUspToDLogyOmzJj6drMCdafqWCZAvLIjjBCuzYcetJx0xIVTXHWmmEdGOfkuw4T97dyjeqUsUS21Aex50KZJXAjxUQQbz2bJi0i9X4DZ02VrznoHpXFPhNXLF8neiBZf4PqhrKEyyMIbU0P2vZPRSv4uSxbwIDAQAB";
+		
+	    Connection.Response execute1 = Jsoup.connect("https://app.qricambi.com/api/User/CheckIfOtherUserAlreadyLogged")
+	            .header("Content-Type", "application/json")
+	            .header("Accept", "application/json, text/plain, */*")
+	            .header("Authorization", authorization)
+	            .followRedirects(true)
+	            .ignoreHttpErrors(true)
+	            .ignoreContentType(true)
+	            .userAgent("Mozilla/5.0 AppleWebKit/537.36 (KHTML," +
+	                    " like Gecko) Chrome/45.0.2454.4 Safari/537.36")
+	            .method(Connection.Method.POST)
+	            .requestBody(publicKey)
 	            .maxBodySize(1_000_000 * 30) // 30 mb ~
 	            .timeout(0) // infinite timeout
 	            .execute();	    
@@ -101,11 +102,11 @@ public class Scraping {
 		            .timeout(0) // infinite timeout
 		            .execute().body();	       
 		    
-		    JSONObject jsonBodyTwo = new JSONObject(bodyList);
-		    if(jsonBodyTwo.getJSONArray("Data").isEmpty())
+		    JSONObject jsonBodyList = new JSONObject(bodyList);
+		    if(jsonBodyList.getJSONArray("Data").isEmpty())
 		    	next = false;
 		    else
-		    	System.out.println(jsonBodyTwo.toString(4));
+		    	System.out.println(jsonBodyList.toString(4));
 		    page++;
 	    }
 	    
