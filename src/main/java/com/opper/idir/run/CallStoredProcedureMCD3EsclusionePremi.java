@@ -34,6 +34,9 @@ public class CallStoredProcedureMCD3EsclusionePremi {
 	private static void call() throws SQLException {
 
 		try (Connection conn = getConnection();) {
+			try (PreparedStatement statement = conn.prepareCall("TRUNCATE TABLE opper.dbo.IDIR_MDC3_ESCLUSIONE_PREMI");) {
+				statement.execute();
+			}
 			try (CallableStatement statement = conn.prepareCall("{call PowerBI.dbo._PowerBI_MDC3_V_9_Esclusione_Premi(?,?)}");) {
 				statement.setInt(1, 2023);
 				statement.setInt(2, 11);

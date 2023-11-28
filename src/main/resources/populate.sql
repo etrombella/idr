@@ -1436,5 +1436,3 @@ SELECT [LISTA_RIGA_ID]
   FROM [Opper].[dbo].[IDIR_VENDITE] LEFT JOIN 
   LogisticaDWH.dbo._FactSales ON [Opper].[dbo].[IDIR_VENDITE].[LISTA_RIGA_ID] = LogisticaDWH.dbo._FactSales.ListeRigaId;
   
-TRUNCATE TABLE opper.dbo.IDIR_MDC3;
-TRUNCATE TABLE opper.dbo.IDIR_MDC3_ESCLUSIONE_PREMI;

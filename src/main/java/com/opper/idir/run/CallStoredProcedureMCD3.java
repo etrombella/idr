@@ -33,6 +33,9 @@ public class CallStoredProcedureMCD3 {
 	private static void call() throws SQLException {
 
 		try (Connection conn = getConnection();) {
+			try (PreparedStatement statement = conn.prepareCall("TRUNCATE TABLE opper.dbo.IDIR_MDC3");) {
+				statement.execute();
+			}
 			try (CallableStatement statement = conn.prepareCall("{call PowerBI.dbo._PowerBI_MDC3_V_9(?,?)}");) {
 				statement.setInt(1, 2023);
 				statement.setInt(2, 11);
