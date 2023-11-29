@@ -1372,7 +1372,8 @@ TRUNCATE TABLE opper.dbo.IDIR_VENDITE_TIME;
 
 insert into opper.dbo.IDIR_VENDITE_TIME 
 (  
-	LISTA_RIGA_ID 
+	ID_VENDITA
+	,LISTA_RIGA_ID 
 	,LISTA_ID 
 	,PARENTLISTARIGHEID 
 	,QTA 
@@ -1402,8 +1403,10 @@ insert into opper.dbo.IDIR_VENDITE_TIME
 	,RIGAORDINEWMSDATAKEY
 	,RIGAORDINEWMSTIMEATLKEY
 	,TIMEALTKEYCUTOFF
+	,DETTAGLIOKEY
 ) 
-SELECT [LISTA_RIGA_ID]
+SELECT [ID]
+	  ,[LISTA_RIGA_ID]
       ,[LISTA_ID]
       ,[PARENTLISTARIGHEID]
       ,[QTA]
@@ -1427,12 +1430,21 @@ SELECT [LISTA_RIGA_ID]
       ,[TIPOOPERAZIONE]
       ,[TIPOMERCE]
       ,[TIPORIGA]
-	  ,LogisticaDWH.dbo._FactSales.OrdineDataKey
-	  ,LogisticaDWH.dbo._FactSales.OrdineTimeAtlkey
-	  ,LogisticaDWH.dbo._FactSales.RigaOrdineTimeAtlkey
-	  ,LogisticaDWH.dbo._FactSales.RigaOrdineWmsDataKey
-	  ,LogisticaDWH.dbo._FactSales.RigaOrdineWmsTimeAtlkey
-	  ,LogisticaDWH.dbo._FactSales.TimeAltKeyCutOff
+	  ,STUFF(STUFF( LogisticaDWH.dbo._FactSales.OrdineDataKey,5, 0, '-'), 8, 0, '-') as OrdineDataKey
+	  ,case WHEN LEN(LogisticaDWH.dbo._FactSales.OrdineTimeAtlkey) < 6 THEN 
+	   	   STUFF(STUFF(CONCAT('0', LogisticaDWH.dbo._FactSales.OrdineTimeAtlkey) , 3, 0, ':'), 6, 0, ':')
+	   ELSE	   STUFF(STUFF( LogisticaDWH.dbo._FactSales.OrdineTimeAtlkey , 3, 0, ':'), 6, 0, ':') END as OrdineTimeAtlkey
+	   ,case WHEN LEN(LogisticaDWH.dbo._FactSales.RigaOrdineTimeAtlkey) < 6 THEN 
+	   	   STUFF(STUFF(CONCAT('0', LogisticaDWH.dbo._FactSales.RigaOrdineTimeAtlkey) , 3, 0, ':'), 6, 0, ':')
+	   ELSE	   STUFF(STUFF( LogisticaDWH.dbo._FactSales.RigaOrdineTimeAtlkey , 3, 0, ':'), 6, 0, ':') END as RigaOrdineTimeAtlkey
+	  ,STUFF(STUFF( LogisticaDWH.dbo._FactSales.RigaOrdineWmsDataKey,5, 0, '-'), 8, 0, '-') as RigaOrdineWmsDataKey
+	  ,case WHEN LEN(LogisticaDWH.dbo._FactSales.RigaOrdineWmsTimeAtlkey) < 6 THEN 
+	   	   STUFF(STUFF(CONCAT('0', LogisticaDWH.dbo._FactSales.RigaOrdineWmsTimeAtlkey) , 3, 0, ':'), 6, 0, ':')
+	   ELSE	   STUFF(STUFF( LogisticaDWH.dbo._FactSales.RigaOrdineWmsTimeAtlkey , 3, 0, ':'), 6, 0, ':') END as RigaOrdineWmsTimeAtlkey
+	   ,case WHEN LEN(LogisticaDWH.dbo._FactSales.TimeAltKeyCutOff) < 6 THEN 
+	   	   STUFF(STUFF(CONCAT('0', LogisticaDWH.dbo._FactSales.TimeAltKeyCutOff) , 3, 0, ':'), 6, 0, ':')
+	   ELSE	   STUFF(STUFF( LogisticaDWH.dbo._FactSales.TimeAltKeyCutOff , 3, 0, ':'), 6, 0, ':') END as TimeAltKeyCutOff
+	  ,LogisticaDWH.dbo._FactSales.DettaglioKey
   FROM [Opper].[dbo].[IDIR_VENDITE] LEFT JOIN 
   LogisticaDWH.dbo._FactSales ON [Opper].[dbo].[IDIR_VENDITE].[LISTA_RIGA_ID] = LogisticaDWH.dbo._FactSales.ListeRigaId;
   
