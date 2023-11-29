@@ -9,9 +9,12 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,11 +41,11 @@ public class ScrapingFinal {
 	
 	
 	private final static String PATH_DOWNLOAD = "T:\\OPPER\\jar\\download";
-	// private final static String PATH_DOWNLOAD = "C:\\temp\\filecsv\\";
+	 //private final static String PATH_DOWNLOAD = "C:\\temp\\filecsv";
 
 	public static void main(String[] args) throws IOException, SQLException {
 
-		// downloadFiles();
+		downloadFiles();
 		populateTable();
 	}
 
@@ -72,7 +75,7 @@ public class ScrapingFinal {
 							if (first) {
 								first = false;
 							} else {
-								String[] values = line.split(PUNTO_VIRGOLA);
+								String[] values = line.split(PUNTO_VIRGOLA, -1);
 								
 								if (values.length != 20 || Arrays.asList(values).contains("Errore durante la ricerca")) {
 									logger.info("FILE: " + fileName + " ### INDEX: " + index + " ### VALUES: "
@@ -171,6 +174,8 @@ public class ScrapingFinal {
 		boolean next = true;
 		int page = 1;
 		int index = 0;
+		int indexOk = 0;
+		int indexKo = 0;
 		while (next) {
 			String bodyList = Jsoup
 					.connect("https://app.qricambi.com/api/SearchScheduler/List?page=" + page + "&filter=")
@@ -209,11 +214,215 @@ public class ScrapingFinal {
 					TextNode node = (TextNode) document.childNodes().get(0).childNodes().get(1).childNode(0);
 					try (PrintWriter out = new PrintWriter(
 							PATH_DOWNLOAD.concat("\\file_").concat("" + index).concat(".csv"))) {
-						String[] array = node.getWholeText().replace("\"", "").split("\n");
+						String[] array = node.getWholeText().replace("\"", "").replace(";;",";X;").split("\n", -1);
 						for (int ind = 0; ind < array.length; ind++) {
-							if (array[ind].indexOf("risultato non trovato") != -1)
+							if (array[ind].indexOf("risultato non trovato") != -1 && array[ind].indexOf("Errore durante la ricerca") != -1)
 								continue;
-							out.println(array[ind].replace("\t", PUNTO_VIRGOLA));
+							String line = array[ind].replace("\t", PUNTO_VIRGOLA);
+							
+							//System.out.println(line.split(PUNTO_VIRGOLA).length);
+							String[] arrayStr = line.split(PUNTO_VIRGOLA, -1);
+							int length = arrayStr.length;
+							if(length == 20) {
+								out.println(line);
+								indexOk++;
+							}else if(length == 19) {
+								line = line + ";[]";
+								//System.out.println("-->"+line.split(PUNTO_VIRGOLA, -1).length);
+								//out.println(line);
+								//logger.info("LINE " + line);
+								indexOk++;
+							}else if(length == 21) {
+								line = line.substring(0,line.lastIndexOf(";")) ; 
+								//System.out.println("-->"+line.split(PUNTO_VIRGOLA, -1).length);
+								//out.println(line);
+								//logger.info("LINE " + line);
+								indexOk++;
+							}else if(length == 22) {
+								List<String> listTemp22 = new ArrayList<>();
+								listTemp22.add(arrayStr[0]);
+								listTemp22.add(arrayStr[1]);
+								listTemp22.add(arrayStr[2]);
+								listTemp22.add(arrayStr[3]);
+								listTemp22.add(arrayStr[4]);
+								listTemp22.add(arrayStr[5]);
+								listTemp22.add(arrayStr[6]);
+								listTemp22.add(arrayStr[7]);
+								listTemp22.add(arrayStr[8]);
+								listTemp22.add(arrayStr[9]);
+								listTemp22.add(arrayStr[10]);
+								listTemp22.add(arrayStr[11]);
+								listTemp22.add(arrayStr[14]);
+								listTemp22.add(arrayStr[15]);
+								listTemp22.add(arrayStr[16]);
+								listTemp22.add(arrayStr[17]);
+								listTemp22.add(arrayStr[18]);
+								listTemp22.add(arrayStr[19]);
+								listTemp22.add(arrayStr[20]);
+								listTemp22.add(arrayStr[21]);
+								line = String.join(PUNTO_VIRGOLA, listTemp22);
+								//System.out.println("-->"+line.split(PUNTO_VIRGOLA, -1).length);
+								//out.println(line);
+								//logger.info("LINE " + line);
+								indexOk++;
+							}else if(length == 23) {
+								List<String> listTemp23 = new ArrayList<>();
+								listTemp23.add(arrayStr[0]);
+								listTemp23.add(arrayStr[1]);
+								listTemp23.add(arrayStr[2]);
+								listTemp23.add(arrayStr[3]);
+								listTemp23.add(arrayStr[4]);
+								listTemp23.add(arrayStr[5]);
+								listTemp23.add(arrayStr[6]);
+								listTemp23.add(arrayStr[7]);
+								listTemp23.add(arrayStr[8]);
+								listTemp23.add(arrayStr[9]);
+								listTemp23.add(arrayStr[10]);
+								listTemp23.add(arrayStr[11]);
+								listTemp23.add(arrayStr[15]);
+								listTemp23.add(arrayStr[16]);
+								listTemp23.add(arrayStr[17]);
+								listTemp23.add(arrayStr[18]);
+								listTemp23.add(arrayStr[19]);
+								listTemp23.add(arrayStr[20]);
+								listTemp23.add(arrayStr[21]);
+								listTemp23.add(arrayStr[22]);
+								line = String.join(PUNTO_VIRGOLA, listTemp23);
+								//System.out.println("-->"+line.split(PUNTO_VIRGOLA, -1).length);
+								//out.println(line);
+								//logger.info("LINE " + line);
+								indexOk++;
+							}else if(length == 16) {
+								List<String> listTemp16 = new ArrayList<>();
+								listTemp16.add(arrayStr[0]);
+								listTemp16.add(arrayStr[1]);
+								listTemp16.add(arrayStr[2]);
+								listTemp16.add(arrayStr[3]);
+								listTemp16.add(arrayStr[4]);
+								listTemp16.add(arrayStr[5]);
+								listTemp16.add(arrayStr[6]);
+								listTemp16.add(arrayStr[7]);
+								listTemp16.add(arrayStr[8]);
+								listTemp16.add(arrayStr[9]);
+								listTemp16.add(arrayStr[10]);
+								listTemp16.add(arrayStr[11]);
+								listTemp16.add(arrayStr[13]);
+								listTemp16.add(arrayStr[14]);
+								listTemp16.add(arrayStr[15]);
+								listTemp16.add("");
+								listTemp16.add("");
+								listTemp16.add("");
+								listTemp16.add("");
+								listTemp16.add("");
+								line = String.join(PUNTO_VIRGOLA, listTemp16);
+								//System.out.println("-->"+line.split(PUNTO_VIRGOLA, -1).length);
+								//out.println(line);
+								//logger.info("LINE " + line);
+								indexOk++;
+							}else if(length == 24) {
+								List<String> listTemp24 = new ArrayList<>();
+								listTemp24.add(arrayStr[0]);
+								listTemp24.add(arrayStr[1]);
+								listTemp24.add(arrayStr[2]);
+								listTemp24.add(arrayStr[3]);
+								listTemp24.add(arrayStr[4]);
+								listTemp24.add(arrayStr[5]);
+								listTemp24.add(arrayStr[6]);
+								listTemp24.add(arrayStr[7]);
+								listTemp24.add(arrayStr[8]);
+								listTemp24.add(arrayStr[9]);
+								listTemp24.add(arrayStr[10]);
+								listTemp24.add(arrayStr[11]);
+								listTemp24.add(arrayStr[16]);
+								listTemp24.add(arrayStr[17]);
+								listTemp24.add(arrayStr[18]);
+								listTemp24.add(arrayStr[19]);
+								listTemp24.add(arrayStr[20]);
+								listTemp24.add(arrayStr[21]);
+								listTemp24.add(arrayStr[22]);
+								listTemp24.add(arrayStr[23]);
+								line = String.join(PUNTO_VIRGOLA, listTemp24);
+								//System.out.println("-->"+line.split(PUNTO_VIRGOLA, -1).length);
+								//out.println(line);
+								//logger.info("LINE " + line);
+								indexOk++;
+							}else if(length == 25) {
+								List<String> listTemp25 = new ArrayList<>();
+								listTemp25.add(arrayStr[0]);
+								listTemp25.add(arrayStr[1]);
+								listTemp25.add(arrayStr[2]);
+								listTemp25.add(arrayStr[3]);
+								listTemp25.add(arrayStr[4]);
+								listTemp25.add(arrayStr[5]);
+								listTemp25.add(arrayStr[6]);
+								listTemp25.add(arrayStr[7]);
+								listTemp25.add(arrayStr[8]);
+								listTemp25.add(arrayStr[9]);
+								listTemp25.add(arrayStr[10]);
+								listTemp25.add(arrayStr[11]);
+								listTemp25.add(arrayStr[17]);
+								listTemp25.add(arrayStr[18]);
+								listTemp25.add(arrayStr[19]);
+								listTemp25.add(arrayStr[20]);
+								listTemp25.add(arrayStr[21]);
+								listTemp25.add(arrayStr[22]);
+								listTemp25.add(arrayStr[23]);
+								listTemp25.add(arrayStr[24]);
+								line = String.join(PUNTO_VIRGOLA, listTemp25);
+								//System.out.println("-->"+line.split(PUNTO_VIRGOLA, -1).length);
+								//out.println(line);
+								//logger.info("LINE " + line);
+								indexOk++;
+							}else if(length == 1) {								
+							}
+							else {
+								logger.info("LINE " + line);
+								indexKo++;
+							}
+//							else if(length == 19) {
+//								StringTokenizer st = new StringTokenizer(line,PUNTO_VIRGOLA);
+//								System.out.println("COUNT TOKEN: -->"+st.countTokens());
+//								line = line.substring(0,line.lastIndexOf(";")) + "[]"; 
+//								System.out.println("-->"+line.split(PUNTO_VIRGOLA).length);
+//								out.println(line);
+//							}else if(length == 18) {
+//									line += "[]"; 
+//									System.out.println("-->"+line.split(PUNTO_VIRGOLA).length);
+//									out.println(line);
+//									logger.info("LINE " + line);
+//							}else if(length == 17) {
+//								line = line.substring(0,line.lastIndexOf(";")) + "[]"; 
+//								System.out.println("-->"+line.split(PUNTO_VIRGOLA).length);
+//								out.println(line);
+//								logger.info("LINE " + line);
+//							}else if(length == 21) {
+//								line = line.substring(0,line.lastIndexOf(";")) ; 
+//								System.out.println("-->"+line.split(PUNTO_VIRGOLA).length);
+//								//out.println(line);
+//								logger.info("LINE " + line);
+//							}else if(length == 22) {
+//								arrayStr = line.split(PUNTO_VIRGOLA);
+//								List<String> listApp = new ArrayList<>();
+//								List<String> list = Arrays.asList(arrayStr);
+//								for(int i2=0;i2<list.size();i2++) {
+//									if(i2 != 12 && i2 != 13 && i2 != 14)
+//										listApp.add(list.get(i2));
+//								}
+//								line = "";
+//								for(int i1=0;i1<listApp.size();i1++) {
+//									line = line + listApp.get(i1) + PUNTO_VIRGOLA; 
+//								}
+//								//line = line +  PUNTO_VIRGOLA + "[]"; 
+//								//line = line.substring(0,line.lastIndexOf(";")); 
+//								System.out.println("-->"+line.split(PUNTO_VIRGOLA).length);
+//								out.println(line);
+//								logger.info("LINE " + line);
+//							}else {
+//								line = line.substring(0,line.lastIndexOf(";")); 
+//								System.out.println("-->"+line.split(PUNTO_VIRGOLA).length);
+//								out.println(line);
+//								logger.info("LINE " + line);
+//							}
 						}
 					}
 					index++;
@@ -221,6 +430,9 @@ public class ScrapingFinal {
 			}
 			page++;
 		}
+		logger.info("KO "+ indexKo);
+		logger.info("OK "+ indexOk);
+		logger.info("END DOWNLOAD " + sdf.format(new Date()));
 		logger.info("END DOWNLOAD " + sdf.format(new Date()));
 	}
 }
