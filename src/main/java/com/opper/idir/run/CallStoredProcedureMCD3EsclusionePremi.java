@@ -7,7 +7,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,12 +36,13 @@ public class CallStoredProcedureMCD3EsclusionePremi {
 	private static void call() throws SQLException {
 
 		try (Connection conn = getConnection();) {
-			try (PreparedStatement statement = conn.prepareCall("TRUNCATE TABLE opper.dbo.IDIR_MDC3_ESCLUSIONE_PREMI");) {
-				statement.execute();
-			}
+//			try (PreparedStatement statement = conn.prepareCall("TRUNCATE TABLE opper.dbo.IDIR_MDC3_ESCLUSIONE_PREMI");) {
+//				statement.execute();
+//			}
 			try (CallableStatement statement = conn.prepareCall("{call PowerBI.dbo._PowerBI_MDC3_V_9_Esclusione_Premi(?,?)}");) {
-				statement.setInt(1, 2023);
-				statement.setInt(2, 11);
+				Calendar calendar = new GregorianCalendar();
+				statement.setInt(1, calendar.get(Calendar.YEAR));
+				statement.setInt(2, calendar.get(Calendar.MONTH +1));
 				try (ResultSet rs = statement.executeQuery();) {
 					populateTable(conn, rs);
 				}

@@ -36,12 +36,12 @@ public class ScrapingFinal {
 	private static final String DOT = ".";
 	private static final String SEPARATOR = "\\";
 	private static final String DEFAULT_DOUBLE = "0.0";
+	private static final char COMMA_CHAR = ',';
 
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS");
-	
-	
+
 	private final static String PATH_DOWNLOAD = "T:\\OPPER\\jar\\download";
-	 //private final static String PATH_DOWNLOAD = "C:\\temp\\filecsv";
+	// private final static String PATH_DOWNLOAD = "C:\\temp\\filecsv";
 
 	public static void main(String[] args) throws IOException, SQLException {
 
@@ -54,6 +54,24 @@ public class ScrapingFinal {
 		return DriverManager.getConnection(
 				"jdbc:sqlserver://svrsqldwh.idirspa.local:1433;instanceName=MSSQLSERVER;databaseName=opper;encrypt=true;trustServerCertificate=true",
 				"opper", "opper2023");
+	}
+
+	private static String deleteCommna(String value) {
+
+		long occurence = value.chars().filter(ch -> ch == COMMA_CHAR).count();
+		if (occurence > 1) {
+			StringBuilder strBuilder = new StringBuilder(value);
+			int indexOccurence = 1;
+			for (int index = 0; index < value.length(); index++) {
+				if (value.charAt(index) == COMMA_CHAR) {
+					if (indexOccurence < occurence)
+						strBuilder = strBuilder.deleteCharAt(index);
+					indexOccurence++;
+				}
+			}
+			return strBuilder.toString();
+		}
+		return value;
 	}
 
 	private static void populateTable() throws IOException, SQLException {
@@ -76,8 +94,9 @@ public class ScrapingFinal {
 								first = false;
 							} else {
 								String[] values = line.split(PUNTO_VIRGOLA, -1);
-								
-								if (values.length != 20 || Arrays.asList(values).contains("Errore durante la ricerca")) {
+
+								if (values.length != 20
+										|| Arrays.asList(values).contains("Errore durante la ricerca")) {
 									logger.info("FILE: " + fileName + " ### INDEX: " + index + " ### VALUES: "
 											+ Arrays.toString(values));
 								} else {
@@ -94,29 +113,26 @@ public class ScrapingFinal {
 										preparedStatement.setString(10, values[9]);
 										preparedStatement.setString(11, values[10]);
 										preparedStatement.setString(12, values[11]);
-										preparedStatement.setDouble(13,
-												Double.parseDouble(
-														(values[12] != null && values[12].trim().length() != 0)
-																? values[12].replace(COMMA, DOT)
-																: DEFAULT_DOUBLE));
-										preparedStatement.setDouble(14,
-												Double.parseDouble(
-														(values[13] != null && values[13].trim().length() != 0)
-																? values[13].replace(COMMA, DOT)
-																: DEFAULT_DOUBLE));
-										preparedStatement.setDouble(15,
-												Double.parseDouble(
-														(values[14] != null && values[14].trim().length() != 0)
-																? values[14].replace(COMMA, DOT)
-																: DEFAULT_DOUBLE));
+										String number13 = DEFAULT_DOUBLE;
+										if (values[12] != null && values[12].trim().length() != 0)
+											number13 = deleteCommna(values[12]).replace(COMMA, DOT);
+										preparedStatement.setDouble(13, Double.parseDouble(number13));
+										String number14 = DEFAULT_DOUBLE;
+										if (values[13] != null && values[13].trim().length() != 0)
+											number14 = deleteCommna(values[13]).replace(COMMA, DOT);
+										preparedStatement.setDouble(14, Double.parseDouble(number14));
+										String number15 = DEFAULT_DOUBLE;
+										if (values[14] != null && values[14].trim().length() != 0)
+											number15 = deleteCommna(values[14]).replace(COMMA, DOT);
+										preparedStatement.setDouble(15, Double.parseDouble(number15));
 										preparedStatement.setString(16, values[15]);
 										preparedStatement.setString(17, values[16]);
 										preparedStatement.setString(18, values[17]);
 										preparedStatement.setString(19, values[18]);
 										preparedStatement.setString(20, values[19]);
-										//preparedStatement.executeUpdate();
+										// preparedStatement.executeUpdate();
 										preparedStatement.addBatch();
-										if(index % 10000 == 0) {
+										if (index % 10000 == 0) {
 											preparedStatement.executeBatch();
 											preparedStatement.clearBatch();
 										}
@@ -214,31 +230,32 @@ public class ScrapingFinal {
 					TextNode node = (TextNode) document.childNodes().get(0).childNodes().get(1).childNode(0);
 					try (PrintWriter out = new PrintWriter(
 							PATH_DOWNLOAD.concat("\\file_").concat("" + index).concat(".csv"))) {
-						String[] array = node.getWholeText().replace("\"", "").replace(";;",";X;").split("\n", -1);
+						String[] array = node.getWholeText().replace("\"", "").replace(";;", ";X;").split("\n", -1);
 						for (int ind = 0; ind < array.length; ind++) {
-							if (array[ind].indexOf("risultato non trovato") != -1 && array[ind].indexOf("Errore durante la ricerca") != -1)
+							if (array[ind].indexOf("risultato non trovato") != -1
+									&& array[ind].indexOf("Errore durante la ricerca") != -1)
 								continue;
 							String line = array[ind].replace("\t", PUNTO_VIRGOLA);
-							
-							//System.out.println(line.split(PUNTO_VIRGOLA).length);
+
+							// System.out.println(line.split(PUNTO_VIRGOLA).length);
 							String[] arrayStr = line.split(PUNTO_VIRGOLA, -1);
 							int length = arrayStr.length;
-							if(length == 20) {
+							if (length == 20) {
 								out.println(line);
 								indexOk++;
-							}else if(length == 19) {
+							} else if (length == 19) {
 								line = line + ";[]";
-								//System.out.println("-->"+line.split(PUNTO_VIRGOLA, -1).length);
-								//out.println(line);
-								//logger.info("LINE " + line);
+								// System.out.println("-->"+line.split(PUNTO_VIRGOLA, -1).length);
+								// out.println(line);
+								// logger.info("LINE " + line);
 								indexOk++;
-							}else if(length == 21) {
-								line = line.substring(0,line.lastIndexOf(";")) ; 
-								//System.out.println("-->"+line.split(PUNTO_VIRGOLA, -1).length);
-								//out.println(line);
-								//logger.info("LINE " + line);
+							} else if (length == 21) {
+								line = line.substring(0, line.lastIndexOf(";"));
+								// System.out.println("-->"+line.split(PUNTO_VIRGOLA, -1).length);
+								// out.println(line);
+								// logger.info("LINE " + line);
 								indexOk++;
-							}else if(length == 22) {
+							} else if (length == 22) {
 								List<String> listTemp22 = new ArrayList<>();
 								listTemp22.add(arrayStr[0]);
 								listTemp22.add(arrayStr[1]);
@@ -261,11 +278,11 @@ public class ScrapingFinal {
 								listTemp22.add(arrayStr[20]);
 								listTemp22.add(arrayStr[21]);
 								line = String.join(PUNTO_VIRGOLA, listTemp22);
-								//System.out.println("-->"+line.split(PUNTO_VIRGOLA, -1).length);
-								//out.println(line);
-								//logger.info("LINE " + line);
+								// System.out.println("-->"+line.split(PUNTO_VIRGOLA, -1).length);
+								// out.println(line);
+								// logger.info("LINE " + line);
 								indexOk++;
-							}else if(length == 23) {
+							} else if (length == 23) {
 								List<String> listTemp23 = new ArrayList<>();
 								listTemp23.add(arrayStr[0]);
 								listTemp23.add(arrayStr[1]);
@@ -288,11 +305,11 @@ public class ScrapingFinal {
 								listTemp23.add(arrayStr[21]);
 								listTemp23.add(arrayStr[22]);
 								line = String.join(PUNTO_VIRGOLA, listTemp23);
-								//System.out.println("-->"+line.split(PUNTO_VIRGOLA, -1).length);
-								//out.println(line);
-								//logger.info("LINE " + line);
+								// System.out.println("-->"+line.split(PUNTO_VIRGOLA, -1).length);
+								// out.println(line);
+								// logger.info("LINE " + line);
 								indexOk++;
-							}else if(length == 16) {
+							} else if (length == 16) {
 								List<String> listTemp16 = new ArrayList<>();
 								listTemp16.add(arrayStr[0]);
 								listTemp16.add(arrayStr[1]);
@@ -315,11 +332,11 @@ public class ScrapingFinal {
 								listTemp16.add("");
 								listTemp16.add("");
 								line = String.join(PUNTO_VIRGOLA, listTemp16);
-								//System.out.println("-->"+line.split(PUNTO_VIRGOLA, -1).length);
-								//out.println(line);
-								//logger.info("LINE " + line);
+								// System.out.println("-->"+line.split(PUNTO_VIRGOLA, -1).length);
+								// out.println(line);
+								// logger.info("LINE " + line);
 								indexOk++;
-							}else if(length == 24) {
+							} else if (length == 24) {
 								List<String> listTemp24 = new ArrayList<>();
 								listTemp24.add(arrayStr[0]);
 								listTemp24.add(arrayStr[1]);
@@ -342,11 +359,11 @@ public class ScrapingFinal {
 								listTemp24.add(arrayStr[22]);
 								listTemp24.add(arrayStr[23]);
 								line = String.join(PUNTO_VIRGOLA, listTemp24);
-								//System.out.println("-->"+line.split(PUNTO_VIRGOLA, -1).length);
-								//out.println(line);
-								//logger.info("LINE " + line);
+								// System.out.println("-->"+line.split(PUNTO_VIRGOLA, -1).length);
+								// out.println(line);
+								// logger.info("LINE " + line);
 								indexOk++;
-							}else if(length == 25) {
+							} else if (length == 25) {
 								List<String> listTemp25 = new ArrayList<>();
 								listTemp25.add(arrayStr[0]);
 								listTemp25.add(arrayStr[1]);
@@ -369,13 +386,12 @@ public class ScrapingFinal {
 								listTemp25.add(arrayStr[23]);
 								listTemp25.add(arrayStr[24]);
 								line = String.join(PUNTO_VIRGOLA, listTemp25);
-								//System.out.println("-->"+line.split(PUNTO_VIRGOLA, -1).length);
-								//out.println(line);
-								//logger.info("LINE " + line);
+								// System.out.println("-->"+line.split(PUNTO_VIRGOLA, -1).length);
+								// out.println(line);
+								// logger.info("LINE " + line);
 								indexOk++;
-							}else if(length == 1) {								
-							}
-							else {
+							} else if (length == 1) {
+							} else {
 								logger.info("LINE " + line);
 								indexKo++;
 							}
@@ -430,8 +446,8 @@ public class ScrapingFinal {
 			}
 			page++;
 		}
-		logger.info("KO "+ indexKo);
-		logger.info("OK "+ indexOk);
+		logger.info("KO " + indexKo);
+		logger.info("OK " + indexOk);
 		logger.info("END DOWNLOAD " + sdf.format(new Date()));
 		logger.info("END DOWNLOAD " + sdf.format(new Date()));
 	}
