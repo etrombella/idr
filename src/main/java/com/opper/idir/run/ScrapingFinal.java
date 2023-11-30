@@ -392,7 +392,7 @@ public class ScrapingFinal {
 								indexOk++;
 							} else if (length == 1) {
 							} else {
-								logger.info("LINE " + line);
+								logger.info("LINE " + line + " LENGTH " + length);
 								indexKo++;
 							}
 //							else if(length == 19) {
