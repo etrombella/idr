@@ -1448,3 +1448,140 @@ SELECT [ID]
   FROM [Opper].[dbo].[IDIR_VENDITE] LEFT JOIN 
   LogisticaDWH.dbo._FactSales ON [Opper].[dbo].[IDIR_VENDITE].[LISTA_RIGA_ID] = LogisticaDWH.dbo._FactSales.ListeRigaId;
   
+TRUNCATE TABLE opper.dbo.IDIR_COMPORTAMENTO_CLIENTE;
+
+INSERT INTO opper.dbo.IDIR_COMPORTAMENTO_CLIENTE
+(
+	ID_CLIENTE 
+	,LISTA_ID 
+	,DATA_CONSEGNA 
+	,DATA_WMS_MIN 
+	,DATA_WMS_MAX 
+)
+SELECT
+        ID_CLIENTE,
+        LISTA_ID,
+        MAX(TRY_CONVERT(DATETIME, CONVERT(VARCHAR, DATA, 23) + ' ' + TIMEALTKEYCUTOFF, 121)) AS DataConsegna,
+        MIN(TRY_CONVERT(DATETIME, RIGAORDINEWMSDATAKEY + ' ' + RIGAORDINEWMSTIMEATLKEY, 121)) AS DataWMSMin,
+        MAX(TRY_CONVERT(DATETIME, RIGAORDINEWMSDATAKEY + ' ' + RIGAORDINEWMSTIMEATLKEY, 121)) AS DataWMSMax
+    FROM
+        Opper.dbo.IDIR_VENDITE_TIME
+    WHERE
+        ORDINEDATAKEY IS NOT NULL
+        AND TIMEALTKEYCUTOFF IS NOT NULL
+        AND TIMEALTKEYCUTOFF <> ''
+    GROUP BY
+        ID_CLIENTE, LISTA_ID;
+		
+		
+TRUNCATE TABLE opper.dbo.IDIR_COMPORTAMENTO_CLIENTE_BIS;
+
+INSERT INTO opper.dbo.IDIR_COMPORTAMENTO_CLIENTE_BIS
+(
+	ID_CLIENTE 
+	,AVG_SCORE_CUT_OFF
+	,AVG_SCORE_GRUPPO
+)
+SELECT
+    ID_CLIENTE,
+    AVG(CAST(AvgScoreCutoff AS DECIMAL(10, 2))) AS AvgScoreCutoff,
+    AVG(CAST(AvgScoreGruppo AS DECIMAL(10, 2))) AS AvgScoreGruppo
+FROM
+    (
+        SELECT
+            ID_CLIENTE,
+            LISTA_ID,
+            AVG(CAST(DATEDIFF(MINUTE, DATA_WMS_MAX, DATA_CONSEGNA) / 60.0 AS DECIMAL(10, 2))) AS AvgDeltaDataConsegnaDataWMS,
+            AVG(CAST(DATEDIFF(MINUTE, DATA_WMS_MIN, DATA_WMS_MAX) / 60.0 AS DECIMAL(10, 2))) AS AvgDeltaDataMaxDataMin,
+            AVG(
+                CASE
+                    WHEN DATEDIFF(MINUTE, DATA_WMS_MAX, DATA_CONSEGNA) / 60.0 < 1 THEN 0
+                    WHEN DATEDIFF(MINUTE, DATA_WMS_MAX, DATA_CONSEGNA) / 60.0 >= 1 AND DATEDIFF(MINUTE, DATA_WMS_MAX, DATA_CONSEGNA) / 60.0 < 2 THEN 1
+                    WHEN DATEDIFF(MINUTE, DATA_WMS_MAX, DATA_CONSEGNA) / 60.0 >= 2 AND DATEDIFF(MINUTE, DATA_WMS_MAX, DATA_CONSEGNA) / 60.0 < 3 THEN 2
+                    WHEN DATEDIFF(MINUTE, DATA_WMS_MAX, DATA_CONSEGNA) / 60.0 >= 3 AND DATEDIFF(MINUTE, DATA_WMS_MAX, DATA_CONSEGNA) / 60.0 < 4 THEN 3
+                    ELSE 4
+                END
+            ) AS AvgScoreCutoff,
+            AVG(
+                CASE
+                    WHEN DATEDIFF(MINUTE, DATA_WMS_MIN, DATA_WMS_MAX) / 60.0 < 1 THEN 4
+                    WHEN DATEDIFF(MINUTE, DATA_WMS_MIN, DATA_WMS_MAX) / 60.0 >= 1 AND DATEDIFF(MINUTE, DATA_WMS_MIN, DATA_WMS_MAX) / 60.0 < 2 THEN 3
+                    WHEN DATEDIFF(MINUTE, DATA_WMS_MIN, DATA_WMS_MAX) / 60.0 >= 2 AND DATEDIFF(MINUTE, DATA_WMS_MIN, DATA_WMS_MAX) / 60.0 < 3 THEN 2
+                    WHEN DATEDIFF(MINUTE, DATA_WMS_MIN, DATA_WMS_MAX) / 60.0 >= 3 AND DATEDIFF(MINUTE, DATA_WMS_MIN, DATA_WMS_MAX) / 60.0 < 4 THEN 1
+                    ELSE 0
+                END
+            ) AS AvgScoreGruppo
+        FROM
+            opper.dbo.IDIR_COMPORTAMENTO_CLIENTE
+        GROUP BY
+            ID_CLIENTE, LISTA_ID
+    ) AS SubQuery
+GROUP BY
+    ID_CLIENTE;		
+
+TRUNCATE TABLE opper.dbo.IDIR_KPI_FORNITORI;
+
+INSERT INTO opper.dbo.IDIR_KPI_FORNITORI
+(
+	ANNO 
+	,CLIENTEFORNITOREID 
+	,FORNITORE 
+	,OBIETTIVO 
+	,PREMIO_PREVISTO 
+	,ACQUISTATO 
+)
+SELECT  
+Vision.dbo._PowerBI_PF_Sintesi.Anno,
+Vision.dbo._PowerBI_PF_Sintesi.ClienteFornitoreID,
+Vision.dbo._PowerBI_PF_Sintesi.Fornitore,
+Vision.dbo._PowerBI_PF_Sintesi.Obiettivo,
+Vision.dbo._PowerBI_PF_Sintesi.[Premio Previsto],
+Vision.dbo._PowerBI_PF_Sintesi.Acquistato
+FROM 
+Vision.dbo._PowerBI_PF_Sintesi;
+
+TRUNCATE TABLE opper.dbo.IDIR_KPI_GIACENZA;
+
+INSERT INTO opper.dbo.IDIR_KPI_GIACENZA
+(
+	ANNO
+	,PRECODICISTATISTICHEID
+	,OBIETTIVOMAGAZZINO
+)
+SELECT 
+Vision.dbo.IDIR_Timone_PrecodiciStatistiche.Anno,
+Vision.dbo.IDIR_Timone_PrecodiciStatistiche.PrecodiciStatisticheID,
+Vision.dbo.IDIR_Timone_PrecodiciStatistiche.ObiettivoMagazzino
+FROM
+Vision.dbo.IDIR_Timone_PrecodiciStatistiche;
+
+TRUNCATE TABLE opper.dbo.IDIR_KPI_BUDGET;
+
+INSERT INTO opper.dbo.IDIR_KPI_BUDGET
+(
+	BUDGETRIGHE_ID
+	,DESCRIZIONE
+	,BUDGETID
+    ,MESIID
+    ,AGENTIID
+	,PRECODICISTATISTICHEID
+	,PRECODICESTATISTICHE
+    ,QUANTITA
+    ,VALORE
+    ,APPROVATO
+)
+SELECT  [Vision].[dbo].[BudgetRighe].[ID]
+		,[Vision].dbo.Budget.Descrizione
+      ,[BudgetID]
+      ,[MesiID]
+      ,[AgentiID]
+	  ,[PrecodiciID] as PrecodiciStatisticheID
+	  ,[Vision].dbo.PrecodiciStatistiche.Descrizione as PrecodiceStatistiche
+      ,[Quantita]
+      ,[Valore]	
+      ,[Approvato]
+  FROM [Vision].[dbo].[BudgetRighe] LEFT JOIN
+		[Vision].dbo.PrecodiciStatistiche ON [Vision].[dbo].[BudgetRighe].PrecodiciID = vision.dbo.PrecodiciStatistiche.ID LEFT JOIN
+		[Vision].dbo.Budget ON [Vision].[dbo].[BudgetRighe].BudgetID = [Vision].dbo.Budget.ID;
+		
+  
