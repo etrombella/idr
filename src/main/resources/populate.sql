@@ -322,27 +322,27 @@ insert into opper.dbo.IDIR_FATTO_ORDINE_ACQUISTO
 	,PARENT_LISTE_RIGHE_ID
 ) 
 SELECT	Vision.dbo.ListeRighe.ID
-		,Vision.dbo.Liste.id
-		,Vision.dbo.ListeDocumenti.DataDocumento
+		,Vision.dbo.Liste.id                             
+		,Vision.dbo.ListeDocumenti.DataDocumento    
 		,Vision.dbo.ListeRighe.Quantita
-		,Vision.dbo.Liste.Numero
-		,Vision.dbo.ListeRighe.Quantita - ISNULL   ((SELECT     SUM(Quantita) AS QuantitaEvasa           FROM         Vision.dbo.ListeRighe AS ListeRighe_1        WHERE     (ParentListeRigheID = Vision.dbo.ListeRighe.ID)), 0)
-		,ISNULL((SELECT     SUM(Quantita) AS QuantitaEvasa       FROM         Vision.dbo.ListeRighe AS ListeRighe_1 WHERE     (ParentListeRigheID = Vision.dbo.ListeRighe.ID)), 0)
+		,Vision.dbo.ListeDocumenti.NumeroDocumento
+		,Vision.dbo.ListeRighe.Quantita - ISNULL   ((SELECT     SUM(Quantita) AS QuantitaEvasa           FROM         Vision.dbo.ListeRighe AS ListeRighe_1        WHERE     (ParentListeRigheID = Vision.dbo.ListeRighe.ID)), 0) AS [Quantità Inevasa]
+		,ISNULL((SELECT     SUM(Quantita) AS QuantitaEvasa       FROM         Vision.dbo.ListeRighe AS ListeRighe_1 WHERE     (ParentListeRigheID = Vision.dbo.ListeRighe.ID)), 0) AS [Quantità Evasa]
 		,Vision.dbo.ListeRighe.QuantitaForzata
 		,Vision.dbo.ListeRighe.PREZZO      
-		,Vision.dbo.ListeRighe.Importo
-		,Vision.dbo.ListeRighe.Listinocosto
-		,Vision.dbo.ListeRighe.Dataconsegna
-		,Vision.dbo.ListeRighe.Articoloid
-		,opper.dbo.IDIR_FORNITORI.ID
-		,Vision.dbo.Liste.MagazziniID
-		,Vision.dbo.Precodici.GiorniConsegna
-		,Vision.dbo.CausaliMagazzino.Descrizione
+		,Vision.dbo.ListeRighe.Importo AS [Valore Ordine]
+		,Vision.dbo.ListeRighe.Listinocosto        
+		,Vision.dbo.ListeRighe.Dataconsegna         
+		,Vision.dbo.ListeRighe.Articoloid          
+		,opper.dbo.IDIR_FORNITORI.ID                
+		,Vision.dbo.Liste.MagazziniID       
+		,Vision.dbo.Precodici.GiorniConsegna      
+		,Vision.dbo.CausaliMagazzino.Descrizione   
 		,Vision.dbo.ListeRighe.ParentListeRigheID
-from     Vision.dbo.Liste,
-Vision.dbo.ListeRighe,
-Vision.dbo.CausaliMagazzino,
-opper.dbo.IDIR_FORNITORI,
+from     Vision.dbo.Liste,    
+Vision.dbo.ListeRighe,       
+Vision.dbo.CausaliMagazzino,     
+opper.dbo.IDIR_FORNITORI,  
 Vision.dbo.Precodici,
 Vision.dbo.ListeDocumenti
 where     Vision.dbo.Liste.ID = Vision.dbo.ListeRighe.ListeID
