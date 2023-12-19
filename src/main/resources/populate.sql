@@ -297,8 +297,7 @@ WHERE        (NOT (Vision.dbo.ListeRighe.Precodice IN ('SOVRAP', 'SOVRAB'))) AND
                          YEAR(GETDATE())) AND (Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliProgressivi.MoltiplicatoreConsumi <> 0);
 
                          
-TRUNCATE TABLE opper.dbo.IDIR_FATTO_ORDINE_ACQUISTO;
-
+truncate table opper.dbo.IDIR_FATTO_ORDINE_ACQUISTO;
 
 insert into opper.dbo.IDIR_FATTO_ORDINE_ACQUISTO
 (  
@@ -326,8 +325,8 @@ SELECT	Vision.dbo.ListeRighe.ID
 		,Vision.dbo.ListeDocumenti.DataDocumento    
 		,Vision.dbo.ListeRighe.Quantita
 		,Vision.dbo.ListeDocumenti.NumeroDocumento
-		,Vision.dbo.ListeRighe.Quantita - ISNULL   ((SELECT     SUM(Quantita) AS QuantitaEvasa           FROM         Vision.dbo.ListeRighe AS ListeRighe_1        WHERE     (ParentListeRigheID = Vision.dbo.ListeRighe.ID)), 0) AS [Quantità Inevasa]
-		,ISNULL((SELECT     SUM(Quantita) AS QuantitaEvasa       FROM         Vision.dbo.ListeRighe AS ListeRighe_1 WHERE     (ParentListeRigheID = Vision.dbo.ListeRighe.ID)), 0) AS [Quantità Evasa]
+		,Vision.dbo.ListeRighe.Quantita
+		,0
 		,Vision.dbo.ListeRighe.QuantitaForzata
 		,Vision.dbo.ListeRighe.PREZZO      
 		,Vision.dbo.ListeRighe.Importo AS [Valore Ordine]
@@ -351,6 +350,22 @@ AND Vision.dbo.Liste.CausaliMagazzinoID   = Vision.dbo.CausaliMagazzino.ID
 AND        Vision.dbo.Liste.ClientiFornitoriID                        = opper.dbo.IDIR_FORNITORI.ID_CLIENTEFORNITORE
 AND        Vision.dbo.ListeRighe.Precodice                                    = Vision.dbo.Precodici.Codice
 AND Vision.dbo.Liste.ID = Vision.dbo.ListeDocumenti.ListeID;
+
+update opper.dbo.IDIR_FATTO_ORDINE_ACQUISTO
+set QTA_INEVASA = QTA_INEVASA - ISNULL   (
+(SELECT     SUM(ListeRighe_1.Quantita) AS QuantitaEvasa           
+FROM         Vision.dbo.ListeRighe AS ListeRighe_1        
+WHERE     (ListeRighe_1.ParentListeRigheID = LISTA_RIGA_ID))
+, 0);
+
+
+update opper.dbo.IDIR_FATTO_ORDINE_ACQUISTO
+set QTA_EVASA = 
+ISNULL(
+(SELECT     SUM(ListeRighe_1.Quantita) AS QuantitaEvasa       
+FROM         Vision.dbo.ListeRighe AS ListeRighe_1 
+WHERE     (ListeRighe_1.ParentListeRigheID = LISTA_RIGA_ID))
+, 0); 
 
 
 
