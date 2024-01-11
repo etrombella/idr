@@ -198,6 +198,7 @@ insert into opper.dbo.IDIR_VENDITE
 	LISTA_RIGA_ID 
 	,LISTA_ID 
 	,PARENTLISTARIGHEID 
+	,DETTAGLIOKEY
 	,QTA 
 	,PREZZO 
 	,COSTO_UNITARIO 
@@ -220,10 +221,12 @@ insert into opper.dbo.IDIR_VENDITE
 	,TIPOMERCE 
 	,TIPORIGA
 ) 
+
 SELECT                  
 Vision.dbo.ListeRighe.ID AS ListeRigheID, 
 Vision.dbo.Liste.ID AS ListeID, 
 Vision.dbo.ListeRighe.ParentListeRigheID AS ParentListeRigheID, 
+LogisticaDWH.dbo._FactSales.DettaglioKey		as DettaglioKey,
 Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVenditaQuantita AS Quantita,
 CASE WHEN Vision.dbo.ListeRighe.Importo <> 0 THEN (Vision.dbo.ListeRighe.Importo * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVendita) 
                          / Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVenditaQuantita ELSE 0 END AS Prezzo,
@@ -253,7 +256,8 @@ FROM            Vision.dbo.TrasportoACura INNER JOIN
                          Vision.dbo.ClientiFornitori INNER JOIN
                          Vision.dbo.ListeDocumenti AS ListeDocumenti INNER JOIN
                          Vision.dbo.Liste ON ListeDocumenti.ListeID = Vision.dbo.Liste.ID INNER JOIN
-                         Vision.dbo.ListeRighe ON Vision.dbo.Liste.ID = Vision.dbo.ListeRighe.ListeID INNER JOIN
+                         Vision.dbo.ListeRighe ON Vision.dbo.Liste.ID = Vision.dbo.ListeRighe.ListeID LEFT JOIN
+						LogisticaDWH.dbo._FactSales ON Vision.dbo.ListeRighe.ID = LogisticaDWH.dbo._FactSales.ListeRigaId INNER JOIN
                          Vision.dbo.CausaliMagazzinoListeRigheTipo ON Vision.dbo.ListeRighe.CausaliMagazzinoListeRigheTipoID = Vision.dbo.CausaliMagazzinoListeRigheTipo.ID INNER JOIN
                          Vision.dbo.Documenti ON ListeDocumenti.DocumentiID = Vision.dbo.Documenti.ID INNER JOIN
                          Vision.dbo.DocumentiClassiRaggruppamenti ON Vision.dbo.Documenti.ID = Vision.dbo.DocumentiClassiRaggruppamenti.DocumentiID INNER JOIN
@@ -295,7 +299,6 @@ WHERE        (NOT (Vision.dbo.ListeRighe.Precodice IN ('SOVRAP', 'SOVRAB'))) AND
                          YEAR(GETDATE())) AND (Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVenditaQuantita <> 0) OR
                          (NOT (Vision.dbo.ListeRighe.Precodice IN ('SOVRAP', 'SOVRAB'))) AND (Vision.dbo.DocumentiClassiRaggruppamenti.DocumentiClassiID = 10) AND (YEAR(ListeDocumenti.DataDocumento) BETWEEN YEAR(GETDATE()) - 3 AND 
                          YEAR(GETDATE())) AND (Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliProgressivi.MoltiplicatoreConsumi <> 0);
-
                          
 truncate table opper.dbo.IDIR_FATTO_ORDINE_ACQUISTO;
 
