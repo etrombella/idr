@@ -346,17 +346,16 @@ INSERT INTO opper.dbo.LOGISTICA_IDIR_OPERATORI
 	,OPERATORECODICE
 	,COGNOME
 	,NOME
-	,ATTIVO
 	,AZIENDAID
 )
-select	[PowerBI].[dbo].[_PowerBI_OL_Aziende_Operatori] .ID
-		,[PowerBI].[dbo].[_PowerBI_OL_Aziende_Operatori].WMS_OperatoreID
-		,[PowerBI].[dbo].[_PowerBI_OL_Aziende_Operatori].WMS_OperatoreCodice
-		,[PowerBI].[dbo].[_PowerBI_OL_Aziende_Operatori].Cognome
-		,[PowerBI].[dbo].[_PowerBI_OL_Aziende_Operatori].Nome
-		,[PowerBI].[dbo].[_PowerBI_OL_Aziende_Operatori].Attivo
-		,[PowerBI].[dbo].[_PowerBI_OL_Aziende_Operatori].AziendaID
-FROM [PowerBI].dbo._PowerBI_OL_Aziende_Operatori;
+SELECT [Vision].[dbo].[_PowerBI_OL_Aziende_Operatori].[ID] as 'ID_ACCESS'
+      ,[WMS_OperatoreID] as 'WMS_ID'
+      ,[CodiceOperatore]
+      ,[Logistica].[dbo].[Operatori].[Cognome]
+	  ,[Logistica].[dbo].[Operatori].[Nome]
+	  ,[Azienda]
+FROM [Vision].[dbo].[_PowerBI_OL_Aziende_Operatori],[Vision].[dbo].[_PowerBI_OL_Aziende], [Logistica].[dbo].[Operatori]
+WHERE [AziendaID]=[Vision].[dbo].[_PowerBI_OL_Aziende].[ID] AND [Logistica].[dbo].[Operatori].[Id]=[Vision].[dbo].[_PowerBI_OL_Aziende_Operatori].[WMS_OperatoreID];
 
 TRUNCATE TABLE opper.dbo.LOGISTICA_IDIR_LIMBO;
 
