@@ -1468,61 +1468,82 @@ SELECT [ID]
   
 TRUNCATE TABLE opper.dbo.IDIR_COMPORTAMENTO_CLIENTE;
 
-INSERT INTO opper.dbo.IDIR_COMPORTAMENTO_CLIENTE
+insert into opper.dbo.IDIR_COMPORTAMENTO_CLIENTE
 (
 	ID_CLIENTE 
-	,AVG_SCORE_CUT_OFF
-	,AVG_SCORE_GRUPPO
+	,LISTA_ID 
+	,DATA 
+	,VETTORE 
+	,NumRighe 
+	,DeltaDataConsegnaDataMax 
+	,DeltaDataConsegnaDataMin 
+	,DeltaDataDataMinDataMax 
+	,ScoreCutoff 
+	,ScoreGruppo 
 )
 SELECT
-    ID_CLIENTE,
-    AVG(CAST(AvgScoreCutoff AS DECIMAL(10, 2))) AS AvgScoreCutoff,
-    AVG(CAST(AvgScoreGruppo AS DECIMAL(10, 2))) AS AvgScoreGruppo
-FROM (
-    SELECT
-        ID_CLIENTE,
-        LISTA_ID,
-        AVG(CAST(DATEDIFF(MINUTE, DataWMSMax, DataConsegna) / 60.0 AS DECIMAL(10, 2))) AS AvgDeltaDataConsegnaDataWMS,
-        AVG(CAST(DATEDIFF(MINUTE, DataWMSMin, DataWMSMax) / 60.0 AS DECIMAL(10, 2))) AS AvgDeltaDataMaxDataMin,
-        AVG(
-            CASE
-                WHEN DATEDIFF(MINUTE, DataWMSMax, DataConsegna) / 60.0 < 1 THEN 0
-                WHEN DATEDIFF(MINUTE, DataWMSMax, DataConsegna) / 60.0 >= 1 AND DATEDIFF(MINUTE, DataWMSMax, DataConsegna) / 60.0 < 2 THEN 1
-                WHEN DATEDIFF(MINUTE, DataWMSMax, DataConsegna) / 60.0 >= 2 AND DATEDIFF(MINUTE, DataWMSMax, DataConsegna) / 60.0 < 3 THEN 2
-                WHEN DATEDIFF(MINUTE, DataWMSMax, DataConsegna) / 60.0 >= 3 AND DATEDIFF(MINUTE, DataWMSMax, DataConsegna) / 60.0 < 4 THEN 3
-                ELSE 4
-            END
-        ) AS AvgScoreCutoff,
-        AVG(
-            CASE
-                WHEN DATEDIFF(MINUTE, DataWMSMin, DataWMSMax) / 60.0 < 1 THEN 4
-                WHEN DATEDIFF(MINUTE, DataWMSMin, DataWMSMax) / 60.0 >= 1 AND DATEDIFF(MINUTE, DataWMSMin, DataWMSMax) / 60.0 < 2 THEN 3
-                WHEN DATEDIFF(MINUTE, DataWMSMin, DataWMSMax) / 60.0 >= 2 AND DATEDIFF(MINUTE, DataWMSMin, DataWMSMax) / 60.0 < 3 THEN 2
-                WHEN DATEDIFF(MINUTE, DataWMSMin, DataWMSMax) / 60.0 >= 3 AND DATEDIFF(MINUTE, DataWMSMin, DataWMSMax) / 60.0 < 4 THEN 1
-                ELSE 0
-            END
-        ) AS AvgScoreGruppo
-    FROM (
-        SELECT
-            ID_CLIENTE,
-            LISTA_ID,
-            MAX(TRY_CONVERT(DATETIME, RIGAORDINEWMSDATAKEY + ' ' + RIGAORDINEWMSTIMEATLKEY, 121)) AS DataWMSMax,
-            MIN(TRY_CONVERT(DATETIME, RIGAORDINEWMSDATAKEY + ' ' + RIGAORDINEWMSTIMEATLKEY, 121)) AS DataWMSMin,
-            MAX(TRY_CONVERT(DATETIME, CONVERT(VARCHAR, DATA, 23) + ' ' + TIMEALTKEYCUTOFF, 121)) AS DataConsegna
-        FROM
-            Opper.dbo.IDIR_VENDITE_TIME
-        WHERE
-            ORDINEDATAKEY IS NOT NULL
-            AND TIMEALTKEYCUTOFF IS NOT NULL
-            AND TIMEALTKEYCUTOFF <> ''
-        GROUP BY
-            ID_CLIENTE, LISTA_ID
-    ) AS AggregatedData
-    GROUP BY
-        ID_CLIENTE, LISTA_ID
-) AS SubQuery
-GROUP BY
-    ID_CLIENTE;
+ID_CLIENTE,
+LISTA_ID,
+DATA,
+VETTORE,
+NumRighe,
+case when CAST(DATEDIFF(MINUTE,DataWMSMax,DataConsegna) / 60.0 AS DECIMAL(10,2))<0 then 0 else CAST(DATEDIFF(MINUTE,DataWMSMax,DataConsegna) / 60.0 AS DECIMAL(10,2)) end AS DeltaDataConsegnaDataMax,
+case when CAST(DATEDIFF(MINUTE,DataWMSMin,DataConsegna) / 60.0 AS DECIMAL(10,2))<0 then 0 else CAST(DATEDIFF(MINUTE,DataWMSMin,DataConsegna) / 60.0 AS DECIMAL(10,2)) end AS DeltaDataConsegnaDataMin,
+case when CAST(DATEDIFF(MINUTE,DataWMSMin,DataWMSMax) / 60.0 AS DECIMAL(10,2))<0 then 0 else CAST(DATEDIFF(MINUTE,DataWMSMin,DataWMSMax) / 60.0 AS DECIMAL(10,2)) end AS DeltaDataDataMinDataMax,
+CASE WHEN DATEDIFF
+(
+   MINUTE,DataWMSMax,DataConsegna
+)
+/ 60.0 < 1 THEN 0 WHEN DATEDIFF(MINUTE,DataWMSMax,DataConsegna) / 60.0 >= 2
+AND DATEDIFF
+(
+   MINUTE,DataWMSMax,DataConsegna
+)
+/ 60.0 < 2 THEN 0 WHEN DATEDIFF(MINUTE,DataWMSMax,DataConsegna) / 60.0 >= 3
+AND DATEDIFF
+(
+   MINUTE,DataWMSMax,DataConsegna
+)
+/ 60.0 < 3 THEN 0.25 WHEN DATEDIFF(MINUTE,DataWMSMax,DataConsegna) / 60.0 >= 4
+AND DATEDIFF(MINUTE,DataWMSMax,DataConsegna) / 60.0 < 4 THEN 0.75 ELSE 1 END AS ScoreCutoff,
+CASE WHEN DATEDIFF
+(
+   MINUTE,DataWMSMin,DataWMSMax
+)
+/ 60.0 < 1 THEN 1 WHEN DATEDIFF(MINUTE,DataWMSMin,DataWMSMax) / 60.0 >= 1
+AND DATEDIFF
+(
+   MINUTE,DataWMSMin,DataWMSMax
+)
+/ 60.0 < 2 THEN 0.75 WHEN DATEDIFF(MINUTE,DataWMSMin,DataWMSMax) / 60.0 >= 2
+AND DATEDIFF
+(
+   MINUTE,DataWMSMin,DataWMSMax
+)
+/ 60.0 < 3 THEN 0.25 WHEN DATEDIFF(MINUTE,DataWMSMin,DataWMSMax) / 60.0 >= 3
+AND DATEDIFF
+(
+   MINUTE,DataWMSMin,DataWMSMax
+)
+/ 60.0 < 4 THEN 1 ELSE 0 END AS ScoreGruppo
+FROM
+(
+   SELECT
+   ID_CLIENTE,
+   LISTA_ID,
+   VETTORE,
+   DATA,
+   MAX(TRY_CONVERT(DATETIME,RIGAORDINEWMSDATAKEY + ' ' + RIGAORDINEWMSTIMEATLKEY,121)) AS DataWMSMax,
+   MIN(TRY_CONVERT(DATETIME,RIGAORDINEWMSDATAKEY + ' ' + RIGAORDINEWMSTIMEATLKEY,121)) AS DataWMSMin,
+   MAX(TRY_CONVERT(DATETIME,CONVERT(VARCHAR,DATA,23) + ' ' + TIMEALTKEYCUTOFF,121)) AS DataConsegna,
+   sum(1) as NumRighe
+   FROM Opper.dbo.IDIR_VENDITE_TIME
+   WHERE ORDINEDATAKEY IS NOT NULL
+   AND TIMEALTKEYCUTOFF IS NOT NULL
+   AND TIMEALTKEYCUTOFF <> ''
+   GROUP BY ID_CLIENTE,LISTA_ID,DATA,VETTORE
+)
+AS AggregatedData;
 		
 TRUNCATE TABLE opper.dbo.IDIR_KPI_FORNITORI;
 
