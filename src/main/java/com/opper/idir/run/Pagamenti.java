@@ -53,6 +53,7 @@ public class Pagamenti {
 			if (file.isFile()) {
 				logger.info("FILE INPUT: ".concat(file.getName()));
 				readExcel(file);
+				file.renameTo(new File(outputDirectory.concat("\\").concat(file.getName())));
 			}
 		}
 	}
@@ -68,6 +69,11 @@ public class Pagamenti {
 			logger.info(properties.getProperty("datasource.password"));
 			logger.info(properties.getProperty("datasource.jdbc-url"));
 		} catch (IOException ex) {
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			ex.printStackTrace(pw);
+			String sStackTrace = sw.toString(); // stack trace as a string
+			logger.error(sStackTrace);
 			throw ex;
 		}
 	}
@@ -86,16 +92,20 @@ public class Pagamenti {
 		try {
 			connectionDb = getConnection();
 			file = new FileInputStream(fileInput);
+			logger.info("PRIMA LEGGERE EXCEL");
 			workbook = new XSSFWorkbook(file);
+			logger.info("LETTO FILE EXCEL");
 			for (int index = 0; index < workbook.getNumberOfSheets(); index++) {
+				logger.info("DENTRO SHEET");
 				Sheet sheet = workbook.getSheetAt(index);
 				String sheetName = sheet.getSheetName();
 				SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy");
 				Calendar calendar = Calendar.getInstance();
 				calendar.setTime(simpleDateFormat.parse(sheetName));
 				boolean first = true;
-				for (Row row : sheet) {
+				for (Row row : sheet) {					
 					String descrizione = row.getCell(0).getStringCellValue();
+					logger.info("DESCRIZIONE: " + descrizione);
 					if (!first && descrizione != null && descrizione.trim().length() > 0
 							&& descrizione.indexOf("TOTALE") == -1) {
 						try {
@@ -174,11 +184,10 @@ public class Pagamenti {
 	private void insertPagamentiTable(String descrizione, Double riportoScadutiMesiPrecedenti, Double scadereDicembre,
 			Double totaleDaPagare, Double spostareAGennaio, Double pagareDicembre, Double pagato,
 			Double residuoDaPagareAutorizzatoDicembre, int anno, int mese, Connection conn) {
-		String script = "INSERT INTO opper.dbo.IDIR_PAGAMENTI(MESE,ANNO,DESCRIZIONE,RIPORTO_SCADUTI_MESI_PRECEDENTI,SCADERE_DICEMBRE,TOTALE_DA_PAGARE,SPOSTARE_A_GENNAIO,PAGARE_DICEMBRE,PAGATO,RESIDUO_DA_PAGARE_MESE_RIFERIMENTO)"
+		String script = "INSERT INTO opper.dbo.IDIR_PAGAMENTI(MESE,ANNO,DESCRIZIONE,RIPORTO_SCADUTI_MESI_PRECEDENTI,SCADERE_MESE_RIFERIMENTO,TOTALE_DA_PAGARE,SPOSTARE_MESE_SUCCESSIVO,PAGARE_MESE_RIFERIMENTO,PAGATO,RESIDUO_DA_PAGARE_MESE_RIFERIMENTO)"
 				+ " VALUES(?,?,?,?,?,?,?,?,?,?)";
 
 		try (PreparedStatement preparedStatement = conn.prepareStatement(script);) {
-			Calendar calendar = new GregorianCalendar();
 			preparedStatement.setInt(1, mese);
 			preparedStatement.setInt(2, anno);
 			preparedStatement.setString(3, descrizione);
@@ -191,7 +200,11 @@ public class Pagamenti {
 			preparedStatement.setDouble(10, residuoDaPagareAutorizzatoDicembre);
 			preparedStatement.execute();
 		} catch (Exception e) {
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);
+			String sStackTrace = sw.toString(); // stack trace as a string
+			logger.error(sStackTrace);
 		}
 	}
 
