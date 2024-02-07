@@ -569,3 +569,115 @@ FROM
 				(SELECT        Id, Descrizione
 				 FROM            logistica.dbo.attivitaoperatorI attivitaoperatore_1) RealTime_Attivita ON RealTime_Attivita_Operatori.AttivitaOperatoreId = RealTime_Attivita.Id
 where DataInserimento > =getdate()-2;
+
+TRUNCATE TABLE opper.dbo.LOGISTICA_IDIR_RIGHE_OPERATORI;
+
+INSERT INTO opper.dbo.LOGISTICA_IDIR_RIGHE_OPERATORI
+(
+	OPERATOREKEY	
+	,DATA_OPERATORE 
+	,RIGHE			
+	,QTA			
+	,ATTIVITA		
+	,ID_1			
+	,WMS_OPERATOREID
+	,AZIENDA		
+	,ID_2			
+	,COGNOME		
+	,NOME			
+	,OPERATORE		
+	,CODICE_OPERATORE
+)
+Select * From(
+select * 
+
+from(
+  Select 
+	OPERATORE_KEY as 'OPERATOREKEY'
+	,STUFF(STUFF( PRELIEVO_DATA_KEY,5, 0, '-'), 8, 0, '-')  as 'DATA'
+	,sum(1) as 'RIGHE'
+	,sum(QTA) as 'QTA'
+	, 'PRELIEVO' as 'ATTIVITA'
+	FROM (
+  SELECT  
+  OPERATORE_KEY,
+  PRELIEVO_DATA_KEY,
+   [DETTAGLIO_KEY],
+	0 as 'QTA'
+  FROM [Opper].[dbo].[LOGISTICA_IDIR_PRELIEVI]
+  GROUP BY PRELIEVO_DATA_KEY,OPERATORE_KEY,[DETTAGLIO_KEY]
+  ) as tab
+  GROUP BY PRELIEVO_DATA_KEY,OPERATORE_KEY
+ union
+
+  
+SELECT tab1.[OperatoreKey] as 'OPERATOREKEY',
+STUFF(STUFF( tab1.[ImballoDataKey] ,5, 0, '-'), 8, 0, '-') as 'DATA',
+sum(tab1.CONTA) as 'RIGHE',
+sum(Quantita) as 'QTA' ,
+'IMBALLO' as 'ATTIVITA'
+FROM
+
+(SELECT Distinct 
+      [DettaglioKey]
+      ,[ImballoDataKey]
+	  ,[OperatoreKey]
+      ,[ArticoloKey]
+	  ,1 as 'CONTA'
+	  ,sum(Quantita) as 'Quantita'
+  FROM [LogisticaDWH].[dbo].[_FactOperatoriImballi]
+  group by [DettaglioKey],[ImballoDataKey],[OperatoreKey],[ArticoloKey]
+  ) as tab1
+  group by tab1.[OperatoreKey],tab1.[ImballoDataKey]
+
+  union
+  
+  SELECT
+      [OperatoreKey] as 'OPERATOREKEY'
+      ,STUFF(STUFF( [DisimballoDataKey] ,5, 0, '-'), 8, 0, '-')  as 'DATA'
+	  ,sum(1) as 'RIGHE'
+, sum(Quantita) as 'QTA'
+,'DISIMBALLO' as 'ATTIVITA'
+  FROM [LogisticaDWH].[dbo].[_FactOperatoriDisimballo],[LogisticaDWH].[dbo].[_DimTime]
+  WHERE [DisimballoTimeKey]=[TimeAltKey]
+    group by [DisimballoDataKey],[ArticoloKey],[OperatoreKey],[ORA]
+
+
+	union
+SELECT tab1.[OPERATORE_KEY] as 'OPERATOREKEY',
+STUFF(STUFF( tab1.[POSIZIONATURA_DATA_KEY] ,5, 0, '-'), 8, 0, '-') as 'DATA',
+sum(tab1.CONTA) as 'RIGHE',
+sum(QTA) as 'QTA' 
+,'POSIZIONATURA' as 'ATTIVITA'
+FROM
+(SELECT Distinct 
+       [OPERATORE_KEY]
+      ,[POSIZIONATURA_DATA_KEY]
+      ,[CESTA_KEY]
+      ,[ARTICOLO_KEY]
+	  ,1 as 'CONTA'
+	  ,sum([QUANTITA]) as 'QTA'
+  FROM [OPPER].[dbo].[LOGISTICA_IDIR_POSIZIONATURA]
+  WHERE [QUANTITA]>0
+  group by [OPERATORE_KEY],[POSIZIONATURA_DATA_KEY],[CESTA_KEY],[ARTICOLO_KEY]
+  ) as tab1
+  group by tab1.[OPERATORE_KEY],tab1.[POSIZIONATURA_DATA_KEY]
+  ) as TabRighe, 
+  (
+  SELECT [Vision].[dbo].[_PowerBI_OL_Aziende_Operatori].[ID]
+      ,[WMS_OperatoreID]
+	  ,[Azienda]
+  FROM [Vision].[dbo].[_PowerBI_OL_Aziende_Operatori],[Vision].[dbo].[_PowerBI_OL_Aziende]
+  WHERE 
+  [Vision].[dbo].[_PowerBI_OL_Aziende].[ID] =[AziendaID]) as TabAna
+
+  WHERE TabRighe.[OPERATOREKEY]=TabAna.[WMS_OperatoreID]) as TabFin,
+
+ ( SELECT DISTINCT
+		[Id]
+      ,[Cognome]
+      ,[Nome]
+	  ,CONCAT([Cognome],' ',[Nome]) as 'OPERATORE'
+      ,[CodiceOperatore]
+  FROM [Logistica].[dbo].[Operatori]) as TabAna2
+  WHERE TabAna2.[Id]=TabFin.[OPERATOREKEY];
