@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 public class ScrapingFinal {
 
-	private static Logger logger = LoggerFactory.getLogger(EntryPoint.class);
+	private static Logger logger = LoggerFactory.getLogger(ScrapingFinal.class);
 
 	private static final String PUNTO_VIRGOLA = ";";
 	private static final String COMMA = ",";
@@ -76,7 +76,7 @@ public class ScrapingFinal {
 
 	private static void populateTable() throws IOException, SQLException {
 
-		logger.info("START POPULATE " + sdf.format(new Date()));
+		logger.info("START SCARPING " + sdf.format(new Date()));
 		Set<String> listFiles = Stream.of(new File(PATH_DOWNLOAD).listFiles()).filter(file -> !file.isDirectory())
 				.map(File::getName).collect(Collectors.toSet());
 		try (java.sql.Connection conn = getConnection();) {
@@ -151,7 +151,7 @@ public class ScrapingFinal {
 				}
 			}
 		}
-		logger.info("END POPULATE " + sdf.format(new Date()));
+		logger.info("END SCARPING " + sdf.format(new Date()));
 	}
 
 	private static void downloadFiles() throws IOException {
@@ -448,7 +448,6 @@ public class ScrapingFinal {
 		}
 		logger.info("KO " + indexKo);
 		logger.info("OK " + indexOk);
-		logger.info("END DOWNLOAD " + sdf.format(new Date()));
 		logger.info("END DOWNLOAD " + sdf.format(new Date()));
 	}
 }
