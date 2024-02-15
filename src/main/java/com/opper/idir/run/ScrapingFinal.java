@@ -39,6 +39,7 @@ public class ScrapingFinal {
 	private static final char COMMA_CHAR = ',';
 
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS");
+	private static final SimpleDateFormat sdfOutput = new SimpleDateFormat("ddMMyyyy");
 
 	private final static String PATH_DOWNLOAD = "T:\\OPPER\\jar\\download";
 	// private final static String PATH_DOWNLOAD = "C:\\temp\\filecsv";
@@ -47,6 +48,24 @@ public class ScrapingFinal {
 
 		downloadFiles();
 		populateTable();
+		moveFileToEndDirectory();
+	}
+
+	private static void moveFileToEndDirectory() {
+
+		String outputPath = PATH_DOWNLOAD.concat("\\").concat(sdfOutput.format(new Date()));
+		
+		File directoryOutput = new File(outputPath);
+		directoryOutput.mkdirs();
+		
+		File[] files = new File(PATH_DOWNLOAD).listFiles();
+		//If this pathname does not denote a directory, then listFiles() returns null. 
+
+		for (File file : files) {
+		    if (file.isFile()) 
+		        file.renameTo(new File(outputPath.concat("\\").concat(file.getName())));
+		}
+		
 	}
 
 	private static java.sql.Connection getConnection() throws SQLException {
