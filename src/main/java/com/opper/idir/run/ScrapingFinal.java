@@ -47,6 +47,7 @@ public class ScrapingFinal {
 	public static void main(String[] args) throws IOException, SQLException {
 
 		downloadFiles();
+		truncateTable();
 		populateTable();
 		moveFileToEndDirectory();
 	}
@@ -92,10 +93,22 @@ public class ScrapingFinal {
 		}
 		return value;
 	}
+	
+	private static void truncateTable() throws IOException, SQLException {
 
+		logger.info("START TRUNCATE " + sdf.format(new Date()));
+		try (java.sql.Connection conn = getConnection();) {
+			String scriptSql = "TRUNCATE TABLE opper.dbo.IDIR_RICERCHE_SCHEDULATE;";
+				try (PreparedStatement preparedStatement = conn.prepareStatement(scriptSql);) {
+					preparedStatement.execute();
+				}
+		}		
+		logger.info("END TRUNCATE " + sdf.format(new Date()));
+	}
+	
 	private static void populateTable() throws IOException, SQLException {
 
-		logger.info("START SCARPING " + sdf.format(new Date()));
+		logger.info("START POPULATE " + sdf.format(new Date()));
 		Set<String> listFiles = Stream.of(new File(PATH_DOWNLOAD).listFiles()).filter(file -> !file.isDirectory())
 				.map(File::getName).collect(Collectors.toSet());
 		try (java.sql.Connection conn = getConnection();) {
@@ -170,7 +183,7 @@ public class ScrapingFinal {
 				}
 			}
 		}
-		logger.info("END SCARPING " + sdf.format(new Date()));
+		logger.info("END POPULATE " + sdf.format(new Date()));
 	}
 
 	private static void downloadFiles() throws IOException {
