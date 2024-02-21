@@ -936,7 +936,7 @@ FROM   Vision.dbo.ClientiFornitori INNER JOIN
         [PrecodiceID],
         AVG([% Riconosciuta]) AS p_Riconosciuta
     FROM
-        PowerBI.[dbo].[_PowerBI_RF_Fornitori_Anni_Precodici]
+        Vision.[dbo].[_PowerBI_RF_Fornitori_Anni_Precodici]
     GROUP BY
         [PrecodiceID]
 ) AS PrecodiciPercentuali ON PrecodiciPercentuali.[PrecodiceID] = Vision.dbo.Precodici.ID INNER JOIN
@@ -1001,7 +1001,7 @@ FROM   Vision.dbo.ClientiFornitori INNER JOIN
         [PrecodiceID],
         AVG([% Riconosciuta]) AS p_Riconosciuta
     FROM
-        PowerBI.[dbo].[_PowerBI_RF_Fornitori_Anni_Precodici]
+        Vision.[dbo].[_PowerBI_RF_Fornitori_Anni_Precodici]
     GROUP BY
         [PrecodiceID]
 ) AS PrecodiciPercentuali ON PrecodiciPercentuali.[PrecodiceID] = Vision.dbo.Precodici.ID  INNER JOIN
@@ -1103,7 +1103,7 @@ FROM   Vision.dbo.ClientiFornitori INNER JOIN
         [PrecodiceID],
         AVG([% Riconosciuta]) AS p_Riconosciuta
     FROM
-        PowerBI.[dbo].[_PowerBI_RF_Fornitori_Anni_Precodici]
+        Vision.[dbo].[_PowerBI_RF_Fornitori_Anni_Precodici]
     GROUP BY
         [PrecodiceID]
 ) AS PrecodiciPercentuali ON PrecodiciPercentuali.[PrecodiceID] = Vision.dbo.Precodici.ID INNER JOIN
@@ -1168,7 +1168,7 @@ FROM   Vision.dbo.ClientiFornitori INNER JOIN
         [PrecodiceID],
         AVG([% Riconosciuta]) AS p_Riconosciuta
     FROM
-        PowerBI.[dbo].[_PowerBI_RF_Fornitori_Anni_Precodici]
+        Vision.[dbo].[_PowerBI_RF_Fornitori_Anni_Precodici]
     GROUP BY
         [PrecodiceID]
 ) AS PrecodiciPercentuali ON PrecodiciPercentuali.[PrecodiceID] = Vision.dbo.Precodici.ID  INNER JOIN
@@ -1544,6 +1544,7 @@ FROM
    GROUP BY ID_CLIENTE,LISTA_ID,DATA,VETTORE
 )
 AS AggregatedData;
+
 		
 TRUNCATE TABLE opper.dbo.IDIR_KPI_FORNITORI;
 

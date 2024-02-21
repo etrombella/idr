@@ -321,20 +321,20 @@ INSERT INTO opper.dbo.LOGISTICA_IDIR_PRESENZE_OPERATORI
 	,ORENONLAVORATE 			
 	,ORERETRIBUITE 			
 )
-select	[PowerBI].[dbo].[_PowerBI_OL_Aziende_Presenze].ID
-		,[PowerBI].[dbo].[_PowerBI_OL_Aziende_Presenze].Data
-		,[PowerBI].[dbo].[_PowerBI_OL_Aziende_Presenze].AziendaID
-		,[PowerBI].[dbo].[_PowerBI_OL_Aziende_Presenze].OperatoreID
-		,[PowerBI].[dbo].[_PowerBI_OL_Aziende_Presenze].Codice
-		,[PowerBI].[dbo].[_PowerBI_OL_Aziende_Presenze].Descrizione
-		,[PowerBI].[dbo].[_PowerBI_OL_Aziende_Presenze].OreLavoroPreviste
-		,[PowerBI].[dbo].[_PowerBI_OL_Aziende_Presenze].CostoOra
-		,[PowerBI].[dbo].[_PowerBI_OL_Aziende_Presenze].CostoGiorno
-		,[PowerBI].[dbo].[_PowerBI_OL_Aziende_Presenze].PercentualeRetribuzione
-		,[PowerBI].[dbo].[_PowerBI_OL_Aziende_Presenze].OreLavorate
-		,[PowerBI].[dbo].[_PowerBI_OL_Aziende_Presenze].OreNonLavorate
-		,[PowerBI].[dbo].[_PowerBI_OL_Aziende_Presenze].OreRetribuite
-FROM [PowerBI].dbo._PowerBI_OL_Aziende_Presenze;
+select	[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].ID
+		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].Data
+		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].AziendaID
+		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].OperatoreID
+		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].Codice
+		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].Descrizione
+		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].OreLavoroPreviste
+		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].CostoOra
+		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].CostoGiorno
+		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].PercentualeRetribuzione
+		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].OreLavorate
+		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].OreNonLavorate
+		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].OreRetribuite
+FROM [Vision].dbo._PowerBI_OL_Aziende_Presenze;
 
 
 TRUNCATE TABLE opper.dbo.LOGISTICA_IDIR_OPERATORI;
