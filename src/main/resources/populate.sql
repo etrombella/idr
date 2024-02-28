@@ -633,6 +633,7 @@ insert into opper.dbo.IDIR_ARTICOLI
 	,PREZZO_LISTINO_PLATINUM_2073
 	,BLOCCATO
 	,SOSTITUITO
+	,PRECODICISTATISTICHEDESCRIZIONE
 ) 
 SELECT Vision.dbo.ArticoliCodifiche.ArticoloID,
        Vision.dbo.Categorie.PrecodiciStatisticheID,
@@ -657,7 +658,8 @@ SELECT Vision.dbo.ArticoliCodifiche.ArticoloID,
 	   tabListino90.Prezzo AS PrezzoListino90,
 	   tabListinoPlatinum2073.Prezzo as PrezzoListinoPlatinum2073,
 	   articoli_bloccati.Bloccato as BLOCCATO,
-	   articoli_sostituiti.Sostituito as SOSTITUITO
+	   articoli_sostituiti.Sostituito as SOSTITUITO,
+	   Vision.dbo.PrecodiciStatistiche.Descrizione as PrecodiciStatisticheDescrizione
 FROM Vision.dbo.ArticoliCodifiche 
 INNER JOIN Vision.dbo.Precodici 
        ON Vision.dbo.ArticoliCodifiche.PrecodiceID = Vision.dbo.Precodici.ID 
@@ -679,6 +681,8 @@ INNER JOIN Vision.dbo.SottoClassi
        ON Vision.dbo.Articoli.SottoClasseID = Vision.dbo.SottoClassi.ID 
 INNER JOIN Vision.dbo.Classi 
        ON Vision.dbo.SottoClassi.ClasseID = Vision.dbo.Classi.ID 
+LEFT JOIN Vision.dbo.PrecodiciStatistiche
+		ON Vision.dbo.PrecodiciStatistiche.ID = Vision.dbo.Categorie.PrecodiciStatisticheID
 LEFT JOIN (
     SELECT al.Prezzo, al.ArticoloID,
            ROW_NUMBER() OVER (PARTITION BY al.ArticoloID ORDER BY al.DataVigore DESC) AS rn
