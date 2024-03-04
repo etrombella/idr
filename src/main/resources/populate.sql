@@ -91,6 +91,7 @@ insert into opper.dbo.IDIR_CLIENTE
 	,NAZIONE 
 	,PARTITAIVA 
 	,CODICE_FISCALE 
+	,BLOCCO_INSOLUTI
 ) 
 SELECT		Vision.dbo.ClientiFornitori.ID AS ClientiFornitoriID,
 			Vision.dbo.Agenti.ID AS ID_AGENTE, /*questa riga va cambiata per mettere l'ID AGENTE della nostra tabella AGENTI*/
@@ -105,8 +106,16 @@ SELECT		Vision.dbo.ClientiFornitori.ID AS ClientiFornitoriID,
 			Vision.dbo.PaesiCee.Sigla,
 			Vision.dbo.PaesiCee.Descrizione,
 			Vision.dbo.Contatti.PartitaIVA,
-			Vision.dbo.Contatti.CodiceFiscale			
-FROM   		Vision.dbo.ClientiFornitori,
+			Vision.dbo.Contatti.CodiceFiscale,
+			CASE BlocchiInsoluti.BloccoInsoluti WHEN 'S' THEN 'S' ELSE 'N' END as BloccoInsoluti
+FROM   		Vision.dbo.ClientiFornitori LEFT JOIN
+			(SELECT 
+			DISTINCT 
+				Vision.dbo.ClientiFornitoriBlocchi.ClientiFornitoriID, 
+				CASE Vision.dbo.ClientiFornitoriBlocchi.BlocchiMotivazioniID WHEN 1 THEN 'S' END AS BloccoInsoluti
+				FROM     Vision.dbo.ClientiFornitoriBlocchi INNER JOIN
+						Vision.dbo.BlocchiMotivazioni ON Vision.dbo.ClientiFornitoriBlocchi.BlocchiMotivazioniID = Vision.dbo.BlocchiMotivazioni.ID
+				WHERE  (Vision.dbo.ClientiFornitoriBlocchi.ClientiFornitoriID > 0) AND (Vision.dbo.ClientiFornitoriBlocchi.BlocchiMotivazioniID = 1)) as BlocchiInsoluti ON BlocchiInsoluti.ClientiFornitoriID = Vision.dbo.ClientiFornitori.ID,
             Vision.dbo.ContattiContabili ,
             Vision.dbo.Contatti ,
             Vision.dbo.Clienti ,
@@ -116,11 +125,10 @@ FROM   		Vision.dbo.ClientiFornitori,
 WHERE	Vision.dbo.ClientiFornitori.ContattiContabiliID 	= Vision.dbo.ContattiContabili.ID
 AND 	Vision.dbo.ContattiContabili.ContattoID 			= Vision.dbo.Contatti.ID
 AND 	Vision.dbo.ClientiFornitori.ID 						= Vision.dbo.Clienti.ClientiFornitoriID
-AND 	Vision.dbo.Clienti.AgenteID 						= Vision.dbo.Agenti.ID /*anche questa va cambiata in dbo.Clienti.AgenteID = AGENTE.AGENTE*/
+AND 	Vision.dbo.Clienti.AgenteID 						= Vision.dbo.Agenti.ID
 AND 	Vision.dbo.Contatti.RegioniID 						= Vision.dbo.Regioni.ID
 AND 	Vision.dbo.Contatti.PaesiCeeID 						= Vision.dbo.PaesiCee.ID
 AND 	Vision.dbo.ContattiContabili.ContattiTipoID 		IN(2,10);
-
 
 TRUNCATE TABLE opper.dbo.IDIR_IMPEGNI_CLIENTI ;
 
@@ -541,20 +549,29 @@ insert into opper.dbo.IDIR_VETTORI
 	,INDIRIZZO 
 	,TIME_ALT_KEY_PRE_CUT_OFF   
 	,TIME_ALT_KEY_CUT_OFF   
+	,VETTORE
+	,VETTORE_FORNITORE
 ) 
-SELECT 	Vision.dbo.Vettori.id 								as ID
+SELECT
+	Vision.dbo.Vettori.id 								as ID
 		,Vision.dbo.Vettori.Codice							as CODICE
 		,Vision.dbo.Contatti.Nome							AS NOME
 		,Vision.dbo.Contatti.Cognome 						AS COGNOME
 		,Vision.dbo.Contatti.Indirizzo 						AS INDIRIZZO
 		,LogisticaDWH.dbo._DimVettori.TimeAltKeyPreCutOff
 	    ,LogisticaDWH.dbo._DimVettori.TimeAltKeyCutOff
-from 	Vision.dbo.Vettori,
-		Vision.dbo.Contatti,
-		LogisticaDWH.dbo._DimVettori
-where 	Vision.dbo.Vettori.ContattiID = Vision.dbo.Contatti.ID
-AND		LogisticaDWH.dbo._DimVettori.VettoreKey COLLATE SQL_Latin1_General_CP1_CI_AS = Vision.dbo.Vettori.Codice COLLATE SQL_Latin1_General_CP1_CI_AS;
-
+		,ContattiVettori.Cognome + ' - ' + Vision.dbo.Vettori.Codice AS Vettore
+		,Vision.dbo.Contatti.Cognome + ' - ' + CAST(ContattiContabili_1.Codice AS varchar) AS VettoreFornitore
+FROM            Vision.dbo.ContattiContabili AS ContattiContabili_1 LEFT OUTER JOIN
+         Vision.dbo.Contatti ON ContattiContabili_1.ContattoID = Vision.dbo.Contatti.ID RIGHT OUTER JOIN
+         Vision.dbo.ClientiFornitori AS ClientiFornitori_1 ON ContattiContabili_1.ID = ClientiFornitori_1.ContattiContabiliID RIGHT OUTER JOIN
+         Vision.dbo._PowerBI_Nexus_Fornitori ON ClientiFornitori_1.ID = Vision.dbo._PowerBI_Nexus_Fornitori.ClienteFornitoreID RIGHT OUTER JOIN
+         Vision.dbo._PowerBI_Nexus_Fornitori_Vettori ON Vision.dbo._PowerBI_Nexus_Fornitori.ID = Vision.dbo._PowerBI_Nexus_Fornitori_Vettori.Fornitore_ID RIGHT OUTER JOIN
+         Vision.dbo.ListeDocumentiVettori INNER JOIN
+         Vision.dbo.Vettori ON Vision.dbo.ListeDocumentiVettori.VettoriID = Vision.dbo.Vettori.ID INNER JOIN
+         Vision.dbo.Contatti AS ContattiVettori ON Vision.dbo.Vettori.ContattiID = ContattiVettori.ID ON Vision.dbo._PowerBI_Nexus_Fornitori_Vettori.VettoreID = Vision.dbo.ListeDocumentiVettori.VettoriID LEFT JOIN
+		LogisticaDWH.dbo._DimVettori ON LogisticaDWH.dbo._DimVettori.VettoreKey = Vision.dbo.Vettori.Codice;
+		
 TRUNCATE TABLE opper.dbo.IDIR_LISTINO;
 
 insert into opper.dbo.IDIR_LISTINO 
