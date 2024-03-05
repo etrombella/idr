@@ -552,7 +552,7 @@ insert into opper.dbo.IDIR_VETTORI
 	,VETTORE
 	,VETTORE_FORNITORE
 ) 
-SELECT
+SELECT DISTINCT
 	Vision.dbo.Vettori.id 								as ID
 		,Vision.dbo.Vettori.Codice							as CODICE
 		,Vision.dbo.Contatti.Nome							AS NOME
