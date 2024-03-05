@@ -1632,4 +1632,22 @@ SELECT  [Vision].[dbo].[BudgetRighe].[ID]
 		[Vision].dbo.PrecodiciStatistiche ON [Vision].[dbo].[BudgetRighe].PrecodiciID = vision.dbo.PrecodiciStatistiche.ID LEFT JOIN
 		[Vision].dbo.Budget ON [Vision].[dbo].[BudgetRighe].BudgetID = [Vision].dbo.Budget.ID;
 		
+TRUNCATE TABLE opper.dbo.IDIR_CAPOAREA_AGENTI;
   
+INSERT INTO opper.dbo. IDIR_CAPOAREA_AGENTI
+(
+	CAPO_AREA
+	,CONTATTO_ID
+	,Agente
+	,AGENTE_ID
+)
+SELECT 
+Contatti_CapoArea.Cognome AS CapoArea,
+vision.dbo.ContattiAssociazioni.ContattiIDParent AS ContattoID, 
+vision.dbo.Contatti.Cognome AS Agente,
+vision.dbo.Agenti.ID as AgenteID
+FROM     vision.dbo.ContattiAssociazioni INNER JOIN
+                  vision.dbo.Contatti ON vision.dbo.ContattiAssociazioni.ContattiID = vision.dbo.Contatti.ID INNER JOIN
+                  vision.dbo.Contatti AS Contatti_CapoArea ON vision.dbo.ContattiAssociazioni.ContattiIDParent = Contatti_CapoArea.ID LEFT JOIN
+				  vision.dbo.Agenti ON vision.dbo.Agenti.ContattiID = vision.dbo.Contatti.ID
+WHERE  (vision.dbo.ContattiAssociazioni.ContattiAssociazioniTipoID = 2);
