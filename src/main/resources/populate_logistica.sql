@@ -681,3 +681,43 @@ FROM
       ,[CodiceOperatore]
   FROM [Logistica].[dbo].[Operatori]) as TabAna2
   WHERE TabAna2.[Id]=TabFin.[OPERATOREKEY];
+
+
+TRUNCATE TABLE opper.dbo.LOGISTICA_UBICAZIONI;
+
+INSERT INTO opper.dbo.LOGISTICA_UBICAZIONI
+(
+	ID_LOGISTICA_UBICAZIONI
+	,CODICE					
+	,MAGAZZINO				
+)
+SELECT
+Id,
+Codice,
+CASE
+	WHEN Codice LIKE 'A%' THEN 'A'
+	WHEN Codice LIKE 'PP%' THEN 'PP'
+	WHEN Codice LIKE 'PM%' THEN 'PM'
+	WHEN Codice LIKE 'C%' THEN 'C'
+	ELSE 'ALTRO'
+    END as Magazzino
+FROM Logistica.dbo.[Containers];
+
+TRUNCATE TABLE opper.dbo.LOGISTICA_UBICAZIONI_ARTICOLI;
+
+INSERT INTO opper.dbo.LOGISTICA_UBICAZIONI_ARTICOLI
+(
+	ARTICOLIKEY	
+	,UBICAZIONEID	
+	,QUANTITA		
+	,UBICAZIONE		
+)
+SELECT
+[PreCodice] + '|' + [Articoli].[Codice] as [ArticoloKey]
+,[UbicazioneId]
+,[Quantita]
+,[Containers].[Codice] as 'Ubicazione'
+FROM [Logistica].[dbo].[Articoli_Ubicazioni],[Logistica].[dbo].[Articoli],[Logistica].[dbo].[Containers]
+WHERE 
+Logistica.dbo.[Articoli_Ubicazioni].[ArticoloId]=Logistica.dbo.[Articoli].[Id] AND
+Logistica.dbo.[Articoli_Ubicazioni].[UbicazioneId]=Logistica.dbo.[Containers].[Id];
