@@ -173,11 +173,11 @@ INSERT INTO opper.dbo.LOGISTICA_IDIR_DIM_AZIENDE
 	AZIENDA,
 	TIPO
 )
-SELECT	AziendaKey as AziendaKey,
-		Azienda,
-		Tipo 	
-FROM  [LogisticaDWH].[dbo].[_DimAziende];
-
+SELECT  [Codice]
+       ,[Azienda]
+       ,[Tipo]
+FROM [Vision].[dbo].[_PowerBI_OL_Aziende];
+  
 TRUNCATE TABLE opper.dbo.LOGISTICA_IDIR_DIM_ATTIVITA_OPERATORI;
 
 INSERT INTO opper.dbo.LOGISTICA_IDIR_DIM_ATTIVITA_OPERATORI
