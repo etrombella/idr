@@ -54,6 +54,33 @@ SELECT [FactPosizionaturaID]
     ,[Ubicazione]
 FROM [LogisticaDWH].[dbo].[_FactOperatoriPosizionatura];
 
+TRUNCATE TABLE opper.dbo.LOGISTICA_IDIR_IMBALLO;
+
+INSERT INTO opper.dbo.LOGISTICA_IDIR_IMBALLO
+(  
+	FactImballiID 	
+	,DettaglioKey
+	,OperatoreKey  	
+	,ImballoDataKey	
+	,ImballoTimeAtlkey	
+	,AttivitaKey 		
+	,ArticoloKey 		
+	,ColloKey 	
+	,Quantita 	
+)
+SELECT  [FactImballiID]
+		,[DettaglioKey]
+		,[OperatoreKey] as OperatoreID
+		,[ImballoDataKey]
+		,[ImballoTimeAtlkey]
+		,[AttivitaKey] as AttivitaID
+		,[ArticoloKey] as ArticoloID
+		,[ColloKey] as ColloID
+		,[Quantita]
+FROM	[LogisticaDWH].[dbo].[_FactOperatoriImballi];
+
+
+
 TRUNCATE TABLE opper.dbo.LOGISTICA_IDIR_DISIMBALLO;
 
 INSERT INTO opper.dbo.LOGISTICA_IDIR_DISIMBALLO
