@@ -1323,7 +1323,7 @@ FROM
         [Opper].[dbo].[IDIR_VENDITE],
         Opper.dbo.IDIR_ARTICOLI
     WHERE 
-        [Opper].[dbo].[IDIR_VENDITE].[DATA] >= DATEADD(YEAR, -2, GETDATE())
+        [Opper].[dbo].[IDIR_VENDITE].[DATA] >= DATEADD(YEAR, -1, GETDATE())
         AND CAST([VALORE] AS DECIMAL(18, 8)) > 0
         AND opper.dbo.IDIR_VENDITE.ARTICOLO_ID = opper.dbo.IDIR_ARTICOLI.ARTICOLO_ID
     GROUP BY
@@ -1368,7 +1368,7 @@ LEFT JOIN
             JOIN
                 Opper.dbo.IDIR_ARTICOLI ON opper.dbo.IDIR_VENDITE.ARTICOLO_ID = opper.dbo.IDIR_ARTICOLI.ARTICOLO_ID
             WHERE 
-                [Opper].[dbo].[IDIR_VENDITE].[DATA] >= DATEADD(YEAR, -2, GETDATE())
+                [Opper].[dbo].[IDIR_VENDITE].[DATA] >= DATEADD(YEAR, -1, GETDATE())
                 AND CAST([VALORE] AS DECIMAL(18, 8)) > 0
             GROUP BY
                 opper.dbo.IDIR_VENDITE.ARTICOLO_ID,
@@ -1397,7 +1397,7 @@ LEFT JOIN
                     JOIN
                         Opper.dbo.IDIR_ARTICOLI ON opper.dbo.IDIR_VENDITE.ARTICOLO_ID = opper.dbo.IDIR_ARTICOLI.ARTICOLO_ID
                     WHERE 
-                        [Opper].[dbo].[IDIR_VENDITE].[DATA] >= DATEADD(YEAR, -2, GETDATE())
+                        [Opper].[dbo].[IDIR_VENDITE].[DATA] >= DATEADD(YEAR, -1, GETDATE())
                         AND CAST([VALORE] AS DECIMAL(18, 8)) > 0
                     GROUP BY
                         opper.dbo.IDIR_VENDITE.ARTICOLO_ID,
@@ -1406,6 +1406,7 @@ LEFT JOIN
                 ) AS RankedData
         ) AS f ON r.ARTICOLO_ID = f.ARTICOLO_ID AND r.PRECODICE = f.PRECODICE AND r.CODICE = f.CODICE
 ) AS tabella_ABC_Precodice ON tabella_ABC_tot.ARTICOLO_ID = tabella_ABC_Precodice.ARTICOLO_ID;
+
 
 TRUNCATE TABLE opper.dbo.IDIR_VENDITE_TIME;
 
@@ -1651,3 +1652,107 @@ FROM     vision.dbo.ContattiAssociazioni INNER JOIN
                   vision.dbo.Contatti AS Contatti_CapoArea ON vision.dbo.ContattiAssociazioni.ContattiIDParent = Contatti_CapoArea.ID LEFT JOIN
 				  vision.dbo.Agenti ON vision.dbo.Agenti.ContattiID = vision.dbo.Contatti.ID
 WHERE  (vision.dbo.ContattiAssociazioni.ContattiAssociazioniTipoID = 2);
+
+TRUNCATE TABLE opper.dbo.IDIR_GIACENZA_ALLA_DATA;
+
+INSERT INTO opper.dbo.IDIR_GIACENZA_ALLA_DATA
+(
+	ARTICOLO_ID
+	,DATA_LISTA
+	,ESISTENZA
+	,GIACENZAALLADATA
+)
+SELECT 
+    ARTICOLO_ID,
+    DATA_LISTA,
+    ESISTENZA,
+    SUM(ESISTENZA) OVER (PARTITION BY ARTICOLO_ID ORDER BY DATA_LISTA ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS GiacenzaAllaData
+FROM opper.dbo.IDIR_GIACENZA;
+
+TRUNCATE TABLE opper.dbo.IDIR_ABC_PRELIEVI;
+
+INSERT INTO opper.dbo.IDIR_ABC_PRELIEVI
+(
+	ARTICOLO_ID 
+	,SOTTOCLASSE_CODICE 
+	,CUMULATA 
+	,SU_TOT 
+	,ABC_CODICE 
+	,ABC_SOTTOCLASSE_CODICE 
+)
+SELECT
+ABC_codice.ARTICOLO_ID,
+ABC_codice.SOTTOCLASSE_CODICE,
+ABC_codice.[% Cumulata],
+ABC_codice.[% su Tot],
+ABC_codice.ABC,
+ABC_sottoclasse.ABC_sottoclasse
+FROM
+(
+    SELECT
+        opper.dbo.IDIR_ARTICOLI.ARTICOLO_ID,
+		opper.dbo.IDIR_ARTICOLI.SOTTOCLASSE_CODICE,
+        opper.dbo.IDIR_ARTICOLI.PRECODICE,
+        opper.dbo.IDIR_ARTICOLI.CODICE,
+        SUM(CAST([QUANTITA] AS DECIMAL(18, 2))) AS PrelevatoCodice,
+        ROW_NUMBER() OVER (ORDER BY SUM(CAST([QUANTITA] AS DECIMAL(18, 2))) DESC) AS [Rank],
+        SUM(SUM(CAST([QUANTITA] AS DECIMAL(18, 2)))) OVER () AS PrelevatoTot,
+        CAST(
+            CAST(SUM(CAST([QUANTITA] AS DECIMAL(18, 8))) AS NUMERIC(18, 8)) /
+            CAST(SUM(SUM(CAST([QUANTITA] AS DECIMAL(18, 8)))) OVER () AS NUMERIC(18, 8)) 
+            AS NUMERIC(18, 8)
+        ) AS [% su Tot],
+        Sum(SUM(CAST([QUANTITA] AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST([QUANTITA] AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) [PrelevatoCumulato],
+        CAST(Sum(SUM(CAST([QUANTITA] AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST([QUANTITA] AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(SUM(SUM(CAST([QUANTITA] AS DECIMAL(18, 8)))) OVER () AS numeric(18,8)) [% Cumulata],
+        CASE
+            WHEN  CAST(Sum(SUM(CAST([QUANTITA] AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST([QUANTITA] AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(SUM(SUM(CAST([QUANTITA] AS DECIMAL(18, 8)))) OVER () AS numeric(18,8))<= 0.60 THEN 'A'
+            WHEN  CAST(Sum(SUM(CAST([QUANTITA] AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST([QUANTITA] AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(SUM(SUM(CAST([QUANTITA] AS DECIMAL(18, 8)))) OVER () AS numeric(18,8))<= 0.85 THEN 'B'
+            WHEN  CAST(Sum(SUM(CAST([QUANTITA] AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST([QUANTITA] AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(SUM(SUM(CAST([QUANTITA] AS DECIMAL(18, 8)))) OVER () AS numeric(18,8))<= 0.95 THEN 'C'
+            ELSE 'D'
+        END AS ABC
+    FROM
+        [Opper].[dbo].[LOGISTICA_IDIR_PRELIEVI],
+        Opper.dbo.IDIR_ARTICOLI
+    WHERE 
+        CONVERT(DATE, CAST([Opper].[dbo].[LOGISTICA_IDIR_PRELIEVI].[PRELIEVO_DATA_KEY] as varchar), 112) >= DATEADD(YEAR, -1, GETDATE())
+        AND CAST([QUANTITA] AS DECIMAL(18, 8)) > 0
+        AND [Opper].[dbo].[LOGISTICA_IDIR_PRELIEVI].[ARTICOLO_KEY] = CONCAT(opper.dbo.IDIR_ARTICOLI.PRECODICE, '|', opper.dbo.IDIR_ARTICOLI.CODICE)
+    GROUP BY
+        opper.dbo.IDIR_ARTICOLI.[ARTICOLO_ID],
+		opper.dbo.IDIR_ARTICOLI.SOTTOCLASSE_CODICE,
+        opper.dbo.IDIR_ARTICOLI.[PRECODICE],
+        opper.dbo.IDIR_ARTICOLI.[CODICE]
+		) as ABC_codice
+LEFT JOIN
+(
+	    SELECT
+        opper.dbo.IDIR_ARTICOLI.SOTTOCLASSE_CODICE,
+		opper.dbo.IDIR_ARTICOLI.SOTTOCLASSE_DESCRIZIONE,
+        SUM(CAST([QUANTITA] AS DECIMAL(18, 2))) AS PrelevatoSottoClasse,
+        ROW_NUMBER() OVER (ORDER BY SUM(CAST([QUANTITA] AS DECIMAL(18, 2))) DESC) AS [Rank],
+        SUM(SUM(CAST([QUANTITA] AS DECIMAL(18, 2)))) OVER () AS PrelevatoTot,
+        CAST(
+            CAST(SUM(CAST([QUANTITA] AS DECIMAL(18, 8))) AS NUMERIC(18, 8)) /
+            CAST(SUM(SUM(CAST([QUANTITA] AS DECIMAL(18, 8)))) OVER () AS NUMERIC(18, 8)) 
+            AS NUMERIC(18, 8)
+        ) AS [% su Tot],
+        Sum(SUM(CAST([QUANTITA] AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST([QUANTITA] AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) [PrelevatoCumulato],
+        CAST(Sum(SUM(CAST([QUANTITA] AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST([QUANTITA] AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(SUM(SUM(CAST([QUANTITA] AS DECIMAL(18, 8)))) OVER () AS numeric(18,8)) [% Cumulata],
+        CASE
+            WHEN  CAST(Sum(SUM(CAST([QUANTITA] AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST([QUANTITA] AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(SUM(SUM(CAST([QUANTITA] AS DECIMAL(18, 8)))) OVER () AS numeric(18,8))<= 0.60 THEN 'A'
+            WHEN  CAST(Sum(SUM(CAST([QUANTITA] AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST([QUANTITA] AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(SUM(SUM(CAST([QUANTITA] AS DECIMAL(18, 8)))) OVER () AS numeric(18,8))<= 0.85 THEN 'B'
+            WHEN  CAST(Sum(SUM(CAST([QUANTITA] AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST([QUANTITA] AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(SUM(SUM(CAST([QUANTITA] AS DECIMAL(18, 8)))) OVER () AS numeric(18,8))<= 0.95 THEN 'C'
+            ELSE 'D'
+        END AS ABC_sottoclasse
+    FROM
+        [Opper].[dbo].[LOGISTICA_IDIR_PRELIEVI],
+        Opper.dbo.IDIR_ARTICOLI
+    WHERE 
+        CONVERT(DATE, CAST([Opper].[dbo].[LOGISTICA_IDIR_PRELIEVI].[PRELIEVO_DATA_KEY] as varchar), 112) >= DATEADD(YEAR, -1, GETDATE())
+        AND CAST([QUANTITA] AS DECIMAL(18, 8)) > 0
+        AND [Opper].[dbo].[LOGISTICA_IDIR_PRELIEVI].[ARTICOLO_KEY] = CONCAT(opper.dbo.IDIR_ARTICOLI.PRECODICE, '|', opper.dbo.IDIR_ARTICOLI.CODICE)
+    GROUP BY
+		opper.dbo.IDIR_ARTICOLI.SOTTOCLASSE_CODICE,
+		opper.dbo.IDIR_ARTICOLI.SOTTOCLASSE_DESCRIZIONE
+) as ABC_sottoclasse ON ABC_codice.SOTTOCLASSE_CODICE = ABC_sottoclasse.SOTTOCLASSE_CODICE;
+
