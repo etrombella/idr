@@ -651,6 +651,7 @@ insert into opper.dbo.IDIR_ARTICOLI
 	,BLOCCATO
 	,SOSTITUITO
 	,PRECODICISTATISTICHEDESCRIZIONE
+	,PREZZO_LISTINO_900
 ) 
 SELECT Vision.dbo.ArticoliCodifiche.ArticoloID,
        Vision.dbo.Categorie.PrecodiciStatisticheID,
@@ -676,7 +677,8 @@ SELECT Vision.dbo.ArticoliCodifiche.ArticoloID,
 	   tabListinoPlatinum2073.Prezzo as PrezzoListinoPlatinum2073,
 	   articoli_bloccati.Bloccato as BLOCCATO,
 	   articoli_sostituiti.Sostituito as SOSTITUITO,
-	   Vision.dbo.PrecodiciStatistiche.Descrizione as PrecodiciStatisticheDescrizione
+	   Vision.dbo.PrecodiciStatistiche.Descrizione as PrecodiciStatisticheDescrizione,
+	   tabListino900.Prezzo as PrezzoListino900
 FROM Vision.dbo.ArticoliCodifiche 
 INNER JOIN Vision.dbo.Precodici 
        ON Vision.dbo.ArticoliCodifiche.PrecodiceID = Vision.dbo.Precodici.ID 
@@ -724,6 +726,12 @@ LEFT JOIN (
     FROM Vision.dbo.ArticoliListini al
     WHERE al.ListinoID = 90 AND al.DataVigore <= GETDATE() AND al.DataFineVigore >= GETDATE() AND al.Quantita = 1
 ) AS tabListino90 ON Vision.dbo.ArticoliCodifiche.ArticoloID = tabListino90.ArticoloID AND tabListino90.rn = 1
+LEFT JOIN (
+    SELECT al.Prezzo, al.ArticoloID,
+           ROW_NUMBER() OVER (PARTITION BY al.ArticoloID ORDER BY al.DataVigore DESC) AS rn
+    FROM Vision.dbo.ArticoliListini al
+    WHERE al.ListinoID = 900 AND al.DataVigore <= GETDATE() AND al.DataFineVigore >= GETDATE() AND al.Quantita = 1
+) AS tabListino900 ON Vision.dbo.ArticoliCodifiche.ArticoloID = tabListino900.ArticoloID AND tabListino900.rn = 1
 LEFT JOIN
  (SELECT Vision.dbo.ArticoliBlocchi.ArticoliID, 'Si' AS Bloccato
 FROM   Vision.dbo.ArticoliBlocchi
