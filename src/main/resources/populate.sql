@@ -1252,6 +1252,7 @@ AND 	Vision.dbo.ContattiContabili.ContattiTipoID = 7;
 
 TRUNCATE TABLE opper.dbo.IDIR_GIACENZA;
 
+
 insert into opper.dbo.IDIR_GIACENZA
 (  
 	DATA_LISTA 
@@ -1261,13 +1262,22 @@ insert into opper.dbo.IDIR_GIACENZA
 	,MAGAZZINO_CODICE
 	,ESISTENZA 
 )
-SELECT [DataLista]
-      ,[MagazziniID]
-      ,[PrecodiceID]
-      ,[ArticoloID]
-      ,[MagazzinoCodice]
-      ,[Esistenza]
-FROM  Vision.[dbo].[_Maurizio_Giacenza_Alla_Data_Per_Magazzino];
+SELECT Vision.dbo.Liste.Data AS DATA_LISTA, Vision.dbo.Liste.MagazziniID as MAGAZZINI_ID, Vision.dbo.ArticoliCodifiche.PrecodiceID as PRECODICE_ID, Vision.dbo.ArticoliCodifiche.ArticoloID as ARTICOLO_ID, Vision.dbo.Magazzini.Codice AS MAGAZZINO_CODICE, 
+                   SUM(Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliProgressivi.Moltiplicatore) AS ESISTENZA
+FROM     Vision.dbo.ListeRighe INNER JOIN
+                  Vision.dbo.Liste ON Vision.dbo.ListeRighe.ListeID = Vision.dbo.Liste.ID INNER JOIN
+                  Vision.dbo.CausaliMagazzinoProgressivi ON Vision.dbo.ListeRighe.CausaliMagazzinoListeRigheTipoID = Vision.dbo.CausaliMagazzinoProgressivi.CausaliMagazzinoListeRigheTipoID INNER JOIN
+                  Vision.dbo.CausaliProgressivi ON Vision.dbo.CausaliMagazzinoProgressivi.CausaliProgressiviID = Vision.dbo.CausaliProgressivi.ID INNER JOIN
+                  Vision.dbo.ArticoliCodifiche ON Vision.dbo.ListeRighe.ArticoloID = Vision.dbo.ArticoliCodifiche.ArticoloID INNER JOIN
+                  Vision.dbo.Precodici ON Vision.dbo.ArticoliCodifiche.PrecodiceID = Vision.dbo.Precodici.ID INNER JOIN
+                  Vision.dbo.Magazzini ON Vision.dbo.Liste.MagazziniID = Vision.dbo.Magazzini.ID INNER JOIN
+                  Vision.dbo.MagazziniClassiRaggruppamenti ON Vision.dbo.Magazzini.ID = Vision.dbo.MagazziniClassiRaggruppamenti.MagazziniID INNER JOIN
+                  Vision.dbo.MagazziniClassi ON Vision.dbo.MagazziniClassiRaggruppamenti.MagazziniClassiID = Vision.dbo.MagazziniClassi.ID
+WHERE  (Vision.dbo.ArticoliCodifiche.ArticoliCodificheTipoID = 1) AND Vision.dbo.ListeRighe.Precodice not in ('SOVRAP','SOVRAB')
+AND (Vision.dbo.MagazziniClassi.ID IN (498, 499, 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 512, 516, 517, 518, 519, 520))
+AND (Vision.dbo.Liste.Data <= Convert(date, Getdate()-1))
+GROUP BY Vision.dbo.ArticoliCodifiche.ArticoloID, Vision.dbo.Precodici.Codice, Vision.dbo.ArticoliCodifiche.Articolo, Vision.dbo.Liste.Data, Vision.dbo.ArticoliCodifiche.PrecodiceID, Vision.dbo.Liste.MagazziniID, Vision.dbo.Magazzini.Codice, Vision.dbo.Magazzini.Descrizione;
+
 
 TRUNCATE TABLE opper.dbo.IDIR_ABC_ARTICOLI;
 
