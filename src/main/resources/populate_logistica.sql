@@ -1,20 +1,31 @@
-DROP TABLE opper.dbo.LOGISTICA_IDIR_PRELIEVI;
+TRUNCATE TABLE opper.dbo.LOGISTICA_IDIR_PRELIEVI;
 
-CREATE TABLE opper.dbo.LOGISTICA_IDIR_PRELIEVI
+INSERT INTO opper.dbo.LOGISTICA_IDIR_PRELIEVI
 (  
-	ID 						bigint IDENTITY(1,1),
-	FACT_PRELIEVI_ID		int NOT NULL,
-	OPERATORE_KEY			int NOT NULL,
-	ASSEGNAZIONE_DATA_KEY	int NULL,
-	ASSEGNAZIONE_TIME_KEY	int NULL,
-	PRELIEVO_DATA_KEY		int NOT NULL,
-	PRELIEVO_TIME_ATL_KEY	int NOT NULL,
-	ATTIVITA_KEY			int NOT NULL,
-	DETTAGLIO_KEY			int NOT NULL,
-	ARTICOLO_KEY			nvarchar(50) NOT NULL,
-	QUANTITA				int NOT NULL,
-	UBICAZIONE				nvarchar(25) NOT NULL
-);
+	FACT_PRELIEVI_ID	
+	,OPERATORE_KEY		
+	,ASSEGNAZIONE_DATA_KEY
+	,ASSEGNAZIONE_TIME_KEY
+	,PRELIEVO_DATA_KEY	
+	,PRELIEVO_TIME_ATL_KEY
+	,ATTIVITA_KEY		
+	,DETTAGLIO_KEY		
+	,ARTICOLO_KEY		
+	,QUANTITA			
+	,UBICAZIONE			
+)
+SELECT [FactPrelieviID]
+      ,[OperatoreKey] as OperatoreID
+      ,[AssegnazioneDataKey]
+      ,[AssegnazioneTimeKey]
+      ,[PrelievoDataKey]
+      ,[PrelievoTimeAtlkey]
+      ,[AttivitaKey] as AttivitaID
+      ,[DettaglioKey]
+      ,[ArticoloKey] as ArticoloID
+      ,[Quantita]
+      ,[Ubicazione]
+FROM [LogisticaDWH].[dbo].[_FactOperatoriPrelievi];
 
 TRUNCATE TABLE opper.dbo.LOGISTICA_IDIR_POSIZIONATURA;
 
