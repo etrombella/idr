@@ -1828,3 +1828,101 @@ FROM [Vision].[dbo].[ListeRighe]
 left join [Vision].[dbo].[Liste] on [Vision].[dbo].[Liste].id=[Vision].[dbo].[ListeRighe].[ListeID]
 left join opper.[dbo].IDIR_ARTICOLI on opper.[dbo].IDIR_ARTICOLI.ARTICOLO_ID=[Vision].[dbo].[ListeRighe].ArticoloID
 left join opper.dbo.IDIR_CLIENTE on opper.dbo.IDIR_CLIENTE.CLIENTIFORNITORIID = [Vision].[dbo].[Liste].[ClientiFornitoriID];
+
+TRUNCATE TABLE opper.dbo.IDIR_CARRELLO_DELETE;
+
+INSERT INTO opper.dbo.IDIR_CARRELLO_DELETE
+(
+	ArticoloID
+	,Tipo
+	,DataImpegno
+	,ClienteFornitoreID
+	,RigheTotali
+	,RigheEvase
+	,Importo
+	,ImportoEvaso
+)
+SELECT
+carrello_delete.ArticoloID,
+'Carrello Delete' AS Tipo,
+carrello_delete.Data as DataImpegno,
+carrello_delete.ClientiFornitoriCodice as ClienteFornitoreID,
+COUNT(carrello_delete.AziendaID) AS RigheTotali, 
+SUM(carrello_delete.Evaso) AS RigheEvase, 
+SUM(carrello_delete.Importo) AS Importo, 
+SUM(carrello_delete.ChildImporto) AS ImportoEvaso
+FROM
+(
+SELECT        
+Vision.dbo.WebCarrelloDelete.AziendaID, 
+Vision.dbo.WebCarrelloDelete.ClientiFornitoriID AS ClientiFornitoriCodice, 
+Vision.dbo.Articoli.VenditaQuantitaMin AS Quantita,                            
+(Vision.dbo.Articoli.VenditaQuantitaMin * (((Vision.dbo.WebCarrelloDelete.Prezzo * (1 + Vision.dbo.WebCarrelloDelete.Aumento / 100)) * (1 - Vision.dbo.WebCarrelloDelete.Sconto1 / 100)) * (1 - Vision.dbo.WebCarrelloDelete.Sconto2 / 100)))* (1 - Vision.dbo.WebCarrelloDelete.Sconto3 / 100) AS Importo, 
+Vision.dbo.WebCarrelloDelete.ArticoloID, 
+Vision.dbo.Articoli.SottoClasseID, 
+Vision.dbo.Clienti.AgenteID, 
+Vision.dbo.WebCarrelloDelete.Precodice AS ListeRighePrecodice,                            
+Vision.dbo.WebCarrelloDelete.Codice AS ListeRigheCodice, 
+Vision.dbo.WebCarrelloDelete.Descrizione AS ListeRigheDescrizione, 
+Vision.dbo.Articoli.CategoriaID AS CategorieID, 
+Vision.dbo.Precodici.Descrizione AS PrecodiciDescrizione,                            
+Vision.dbo.Classi.Descrizione AS ClassiDescrizione, 
+Vision.dbo.Contatti.Provincia AS ContattiProvincia, 
+Vision.dbo.Categorie.PrecodiciStatisticheID, 
+Vision.dbo.Contatti.SegmentazioneID, 
+Vision.dbo.Precodici.ID AS PrecodiciID, 
+Vision.dbo.Articoli.FamigliaID,                            
+Vision.dbo.SottoClassi.ClasseID, 
+Vision.dbo.SottoClassi.Descrizione AS SottoClassiDescrizione, 
+Vision.dbo.SottoClassi.PrecodiciStatisticheID AS PrecodiciStatisticheID2, 
+0 AS ListeRigheID, 
+0 AS ListeNumero, 
+Vision.dbo.WebCarrelloDelete.Data,                            
+Vision.dbo.WebCarrelloDelete.Data AS DataConsegna, 
+0 AS CausaliMagazzinoID, 
+0 AS ListeStatiID, 
+0 AS ChildListeRigheID, 
+0 AS ChildImporto, 
+NULL AS ListeDocumentiDataDocumento, 
+0 AS Evaso, 
+0 AS Ritardo  
+FROM
+Vision.dbo.Precodici WITH (READUNCOMMITTED) INNER JOIN                           
+Vision.dbo.WebCarrelloDelete INNER JOIN 
+Vision.dbo.ContattiContabili INNER JOIN                           
+Vision.dbo.ClientiFornitori WITH (READUNCOMMITTED) INNER JOIN                           
+Vision.dbo.Clienti WITH (READUNCOMMITTED) ON Vision.dbo.ClientiFornitori.ID = Vision.dbo.Clienti.ClientiFornitoriID ON Vision.dbo.ContattiContabili.ID = Vision.dbo.ClientiFornitori.ContattiContabiliID INNER JOIN                           
+Vision.dbo.Contatti ON Vision.dbo.ContattiContabili.ContattoID = Vision.dbo.Contatti.ID ON Vision.dbo.WebCarrelloDelete.ClientiFornitoriID = Vision.dbo.ClientiFornitori.ID INNER JOIN                           
+Vision.dbo.SottoClassi INNER JOIN                          
+Vision.dbo.Categorie INNER JOIN                       
+Vision.dbo.Articoli ON Vision.dbo.Categorie.ID = Vision.dbo.Articoli.CategoriaID ON Vision.dbo.SottoClassi.ID = Vision.dbo.Articoli.SottoClasseID ON Vision.dbo.WebCarrelloDelete.ArticoloID = Vision.dbo.Articoli.ID AND           
+Vision.dbo.WebCarrelloDelete.Giacenza - Vision.dbo.WebCarrelloDelete.Transito < Vision.dbo.Articoli.VenditaQuantitaMin ON Vision.dbo.Precodici.Codice = Vision.dbo.WebCarrelloDelete.Precodice INNER JOIN       
+Vision.dbo.Classi ON Vision.dbo.SottoClassi.ClasseID = Vision.dbo.Classi.ID 
+WHERE        (Vision.dbo.WebCarrelloDelete.ArticoloID > 0) AND (Vision.dbo.WebCarrelloDelete.Precodice <> 'IDP') 
+AND (NOT (Vision.dbo.Clienti.AgenteID IN (182, 159, 201, 177, 180, 145, 153, 202, 155, 200, 152, 208, 199, 154, 213, 181, 206, 158, 184, 119, 120,117, 128))) 
+AND (Vision.dbo.WebCarrelloDelete.Acquistato = 0)  
+GROUP BY Vision.dbo.WebCarrelloDelete.AziendaID, 
+Vision.dbo.WebCarrelloDelete.ClientiFornitoriID, 
+Vision.dbo.Articoli.VenditaQuantitaMin,
+(Vision.dbo.Articoli.VenditaQuantitaMin * (((Vision.dbo.WebCarrelloDelete.Prezzo * (1 + Vision.dbo.WebCarrelloDelete.Aumento / 100)) * (1 - Vision.dbo.WebCarrelloDelete.Sconto1 / 100)) * (1 - Vision.dbo.WebCarrelloDelete.Sconto2 / 100))) * (1 - Vision.dbo.WebCarrelloDelete.Sconto3 / 100),
+Vision.dbo.WebCarrelloDelete.ArticoloID,
+Vision.dbo.Articoli.SottoClasseID, 
+Vision.dbo.Clienti.AgenteID,                 
+Vision.dbo.WebCarrelloDelete.Precodice, 
+Vision.dbo.WebCarrelloDelete.Codice, 
+Vision.dbo.WebCarrelloDelete.Descrizione,
+Vision.dbo.Articoli.CategoriaID,
+Vision.dbo.Precodici.Descrizione,
+Vision.dbo.Classi.Descrizione,
+Vision.dbo.Contatti.Provincia, 
+Vision.dbo.Categorie.PrecodiciStatisticheID,
+Vision.dbo.Contatti.SegmentazioneID, 
+Vision.dbo.Precodici.ID,
+Vision.dbo.Articoli.FamigliaID, 
+Vision.dbo.SottoClassi.ClasseID,
+Vision.dbo.SottoClassi.Descrizione,
+Vision.dbo.SottoClassi.PrecodiciStatisticheID,  
+Vision.dbo.WebCarrelloDelete.Data ) as carrello_delete
+GROUP BY		carrello_delete.Data,
+				carrello_delete.ClientiFornitoriCodice, 
+				carrello_delete.ArticoloID;
