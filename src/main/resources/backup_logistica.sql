@@ -1,0 +1,396 @@
+DROP TABLE opper.dbo.LOGISTICA_IDIR_PRELIEVI;
+
+CREATE TABLE opper.dbo.LOGISTICA_IDIR_PRELIEVI
+(  
+	ID 						bigint IDENTITY(1,1),
+	FACT_PRELIEVI_ID		int NOT NULL,
+	OPERATORE_KEY			int NOT NULL,
+	ASSEGNAZIONE_DATA_KEY	int NULL,
+	ASSEGNAZIONE_TIME_KEY	int NULL,
+	PRELIEVO_DATA_KEY		int NOT NULL,
+	PRELIEVO_TIME_ATL_KEY	int NOT NULL,
+	ATTIVITA_KEY			int NOT NULL,
+	DETTAGLIO_KEY			int NOT NULL,
+	ARTICOLO_KEY			nvarchar(50) NOT NULL,
+	QUANTITA				int NOT NULL,
+	UBICAZIONE				nvarchar(25) NOT NULL
+);
+
+DROP TABLE opper.dbo.LOGISTICA_IDIR_POSIZIONATURA;
+
+CREATE TABLE opper.dbo.LOGISTICA_IDIR_POSIZIONATURA
+(  
+	ID 					 	bigint IDENTITY(1,1), 
+	FACT_POSIZIONATURA_ID	int NOT NULL,
+	OPERATORE_KEY		 	int NOT NULL,
+	ATTIVITA_KEY			int NOT NULL,
+	POSIZIONATURA_DATA_KEY  int NOT NULL,
+	POSIZIONATURA_TIME_KEY  int NOT NULL,
+	UNITA_CARICO_KEY		int NOT NULL,
+	CESTA_KEY			 	int NOT NULL,
+	ARTICOLO_KEY			nvarchar(50) NOT NULL,
+	QUANTITA			 	int NOT NULL,
+	UBICAZIONE			 	nvarchar(25) NOT NULL
+);
+
+
+
+DROP TABLE opper.dbo.LOGISTICA_IDIR_IMBALLO;
+
+CREATE TABLE opper.dbo.LOGISTICA_IDIR_IMBALLO
+(  
+	ID					bigint IDENTITY(1,1), 
+	FactImballiID 		int NOT NULL,
+	DettaglioKey  		int NOT NULL,
+	OperatoreKey  		int NOT NULL,
+	ImballoDataKey 		int NOT NULL,
+	ImballoTimeAtlkey 	int NOT NULL,
+	AttivitaKey 		int NOT NULL,
+	ArticoloKey 		nvarchar(50) NOT NULL,
+	ColloKey			int NOT NULL,
+	Quantita 			int NOT NULL,
+);
+
+DROP TABLE opper.dbo.LOGISTICA_IDIR_DISIMBALLO;
+
+CREATE TABLE opper.dbo.LOGISTICA_IDIR_DISIMBALLO
+(  
+	ID					bigint IDENTITY(1,1), 
+	FactDisimballoID 	int NOT NULL,
+	OperatoreKey  		int NOT NULL,
+	AttivitaKey 		int NOT NULL,
+	DisimballoDataKey 	int NOT NULL,
+	DisimballoTimeKey 	int NOT NULL,
+	UnitaCaricoKey 		int NOT NULL,
+	CestaKey 			int NOT NULL,
+	ArticoloKey 		nvarchar(50) NOT NULL,
+	Quantita 			int NOT NULL,
+);
+
+DROP TABLE opper.dbo.LOGISTICA_IDIR_COLLI;
+
+CREATE TABLE opper.dbo.LOGISTICA_IDIR_COLLI
+(  
+	ID	bigint IDENTITY(1,1), 
+	FactColloId	int NOT NULL,
+	ColloKey	nvarchar (50) NOT NULL,
+	Tracking	nvarchar (255) NULL,
+	StatoCollo	nvarchar (50) NOT NULL,
+	DataColloKey	int NOT NULL,
+	TimeAltColloKey	int NOT NULL,
+	TipoCollo	nvarchar (50) NOT NULL,
+	TipologiaCollo	nvarchar (50) NOT NULL,
+	PesoKG	float NOT NULL,
+	CostoCollo	float NOT NULL,
+	LunghezzaCM	int NOT NULL,
+	LarghezzaCM	int NOT NULL,
+	AltezzaCM	int NOT NULL,
+	ListaId	int NOT NULL,
+	ListeNumero	nvarchar (50) NOT NULL,
+	ClienteKey	nvarchar (50) NOT NULL,
+	CliRagioneSociale	nvarchar (100) NOT NULL,
+	CliIndirizzo	nvarchar (150) NOT NULL,
+	CliComune	nvarchar (50) NOT NULL,
+	CliCap	nvarchar (10) NOT NULL,
+	CliProvincia	nvarchar (2) NOT NULL,
+	CliRegione	nvarchar (255) NULL,
+	DestRagionesociale	nvarchar (255) NOT NULL,
+	DestIndirizzo	nvarchar (255) NOT NULL,
+	DestCap	nvarchar (255) NOT NULL,
+	DestComune	nvarchar (255) NOT NULL,
+	DestProvincia	nvarchar (255) NOT NULL,
+	DestRegione	nvarchar (255) NULL,
+	DestNazione	nvarchar (50) NULL,
+	VettoreKey	nvarchar (50) NOT NULL,
+	TimeAltKeyPreCutOff	int NOT NULL,
+	TimeAltKeyCutOff	int NOT NULL,
+	PackingListCode	nvarchar (50) NULL,
+	DataColloChiusuraKey	int NULL,
+	TimeAltColloChiusuraKey	int NULL,
+	DataColloCaricatoKey	int NULL,
+	TimeAltColloCaricatoKey	int NULL,
+	DataColloSpeditoKey	int NULL,
+	TimeAltColloSpeditoKey	int NULL,
+);
+
+DROP TABLE opper.dbo.LOGISTICA_IDIR_DIM_AZIENDE;
+
+CREATE TABLE opper.dbo.LOGISTICA_IDIR_DIM_AZIENDE
+(  
+	ID			bigint IDENTITY(1,1), 
+	AZIENDAKEY 	int NOT NULL,
+	AZIENDA 	varchar(40) NOT NULL,
+	TIPO 		varchar(20) NOT NULL
+);
+
+CREATE UNIQUE INDEX LOGISTICA_IDIR_DIM_AZIENDE_index01 ON opper.dbo.LOGISTICA_IDIR_DIM_AZIENDE(AZIENDA );
+
+
+DROP TABLE opper.dbo.LOGISTICA_IDIR_DIM_ATTIVITA_OPERATORI;
+
+CREATE TABLE opper.dbo.LOGISTICA_IDIR_DIM_ATTIVITA_OPERATORI
+(  
+	ID			bigint IDENTITY(1,1), 
+	ATTIVITAKEY int NOT NULL,
+	ATTIVITA 	nvarchar(50) NOT NULL,
+);
+
+CREATE UNIQUE INDEX LOGISTICA_IDIR_DIM_ATTIVITA_OPERATORI_index01 ON opper.dbo.LOGISTICA_IDIR_DIM_ATTIVITA_OPERATORI(ATTIVITAKEY );
+
+
+
+  
+DROP TABLE opper.dbo.LOGISTICA_IDIR_RIGHE_REAL_TIME;
+
+CREATE TABLE opper.dbo.LOGISTICA_IDIR_RIGHE_REAL_TIME
+(  
+	ID				bigint IDENTITY(1,1), 
+	ATTIVITA		int,
+	CHIAVE			int,
+	OPERATORE		int,
+	OPERATOREKEY	int,
+	RIGHE		 	nvarchar(50)
+);
+
+DROP TABLE opper.dbo.LOGISTICA_IDIR_RIGHE;
+
+CREATE TABLE opper.dbo.LOGISTICA_IDIR_RIGHE
+(  
+	ID					bigint IDENTITY(1,1), 
+	ATTIVITA			nvarchar(150),
+	DATADA				date,
+	CODICE_OPERATORE	int,
+	OPERATORE			nvarchar(150),
+	OPERATOREKEY		int,
+	RIGHE		 		nvarchar(50)
+);
+
+
+DROP TABLE opper.dbo.LOGISTICA_IDIR_ATTIVITA_OPERATORI;
+
+CREATE TABLE opper.dbo.LOGISTICA_IDIR_ATTIVITA_OPERATORI
+(  
+	ID					bigint IDENTITY(1,1), 
+	OPERATOREKEY		int,
+	CODICE_OPERATORE	int,
+	ATTIVITA			nvarchar(150),
+	DATAINIZIO			date,
+	DURATA				int,
+	RIGHE		 		nvarchar(50)
+);
+
+
+DROP TABLE opper.dbo.LOGISTICA_IDIR_PRESENZE_OPERATORI;
+
+CREATE TABLE opper.dbo.LOGISTICA_IDIR_PRESENZE_OPERATORI
+(  
+	ID_PK					bigint IDENTITY(1,1), 
+	ID 						int NOT NULL,
+	DATA 					smalldatetime NOT NULL,
+	AZIENDAID 				int NOT NULL,
+	OPERATOREID 			int NOT NULL,
+	CODICE 					varchar(10) NOT NULL,
+	DESCRIZIONE 			varchar(50) NOT NULL,
+	ORELAVOROPREVISTE 		float NOT NULL,
+	COSTOORA 				float NOT NULL,
+	COSTOGIORNO 			float NOT NULL,
+	PERCENTUALERETRIBUZIONE float NOT NULL,
+	ORELAVORATE 			float NOT NULL,
+	ORENONLAVORATE 			float NOT NULL,
+	ORERETRIBUITE 			float NOT NULL
+);
+
+
+DROP TABLE opper.dbo.LOGISTICA_IDIR_OPERATORI;
+
+CREATE TABLE opper.dbo.LOGISTICA_IDIR_OPERATORI
+(  
+	ID				bigint IDENTITY(1,1), 
+	OPERATOREID 	int NOT NULL,
+	OPERATOREID_WMS	int NOT NULL,
+	OPERATORECODICE varchar(50) NOT NULL,
+	COGNOME 		varchar(50) NOT NULL,
+	NOME 			varchar(50) NOT NULL,
+	AZIENDAID 		varchar(50) NOT NULL,
+);
+CREATE UNIQUE INDEX LOGISTICA_IDIR_OPERATORI_index01 ON opper.dbo.LOGISTICA_IDIR_OPERATORI(OPERATOREID_WMS);
+CREATE INDEX LOGISTICA_IDIR_OPERATORI_index02 ON opper.dbo.LOGISTICA_IDIR_OPERATORI(OPERATORECODICE );
+
+
+
+DROP TABLE opper.dbo.LOGISTICA_IDIR_LIMBO;
+
+CREATE TABLE opper.dbo.LOGISTICA_IDIR_LIMBO
+(  
+	ID				bigint IDENTITY(1,1), 
+	UNITACARICOID	int,
+	DISIMBALLO	 	datetime ,
+	CHIUSURA		datetime ,
+	CREAZIONE		datetime
+);
+DROP TABLE opper.dbo.LOGISTICA_IDIR_TAG_GIORNI;
+
+CREATE TABLE opper.dbo.LOGISTICA_IDIR_TAG_GIORNI
+(  
+	ID						bigint IDENTITY(1,1) 
+	,DATA 					date	
+	,RIGHEEVASE 			float
+	,PEZZIEVASI 			float
+	,IMPORTOEVASI 			money
+	,RIGHENONEVASENO 		float
+	,PEZZINONEVASINO 		money
+	,IMPORTONONEVASINO 		money
+	,RIGHENONEVASELIMBO 	float
+	,PEZZINONEVASILIMBO 	float
+	,IMPORTONONEVASILIMBO	money
+	,RIGHENONEVASE 			float
+    ,PEZZINONEVASI 			float
+	,IMPORTONONEVASI 		money
+	,TOTRIGHE 				float
+	,TOTPEZZI 				float
+	,TOTIMPORTO 			money
+	,TAGRIGHE 				float
+    ,TAGPEZZI 				float
+	,TAGIMPORTO 			money
+	,TALRIGHE 				float
+    ,TALPEZZI 				float
+	,TALIMPORTO 			money
+	,TATRIGHE 				float
+    ,TATPEZZI				float
+	,TATIMPORTO 			money
+	,COSTO					money			
+);
+
+DROP TABLE opper.dbo.LOGISTICA_IDIR_TAG_REAL_TIME;
+
+CREATE TABLE opper.dbo.LOGISTICA_IDIR_TAG_REAL_TIME
+(  
+	ID						bigint IDENTITY(1,1) 
+	,DATA 					date	
+	,RIGHEEVASE 			float
+	,PEZZIEVASI 			float
+	,IMPORTOEVASI 			money
+	,RIGHENONEVASENO 		float
+	,PEZZINONEVASINO 		money
+	,IMPORTONONEVASINO 		money
+	,RIGHENONEVASELIMBO 	float
+	,PEZZINONEVASILIMBO 	float
+	,IMPORTONONEVASILIMBO	money
+	,RIGHENONEVASE 			float
+    ,PEZZINONEVASI 			float
+	,IMPORTONONEVASI 		money
+	,TOTRIGHE 				float
+	,TOTPEZZI 				float
+	,TOTIMPORTO 			money
+	,TAGRIGHE 				float
+    ,TAGPEZZI 				float
+	,TAGIMPORTO 			money
+	,TALRIGHE 				float
+    ,TALPEZZI 				float
+	,TALIMPORTO 			money
+	,TATRIGHE 				float
+    ,TATPEZZI				float
+	,TATIMPORTO 			money
+	,COSTO					money			
+);
+
+
+DROP TABLE opper.dbo.LOGISTICA_IDIR_GIORNO_COSTO_RIGA;
+
+CREATE TABLE opper.dbo.LOGISTICA_IDIR_GIORNO_COSTO_RIGA
+(  
+	ID						bigint IDENTITY(1,1) 
+	,DATA 					date	
+	,COSTO 				money
+	,RIGHEPRELEVATE	float
+	,RIGHEPOSIZIONATE	float
+);
+
+
+
+DROP TABLE opper.dbo.LOGISTICA_IDIR_TARGET;
+
+CREATE TABLE opper.dbo.LOGISTICA_IDIR_TARGET
+(  
+	ID_PK					bigint IDENTITY(1,1) 
+	,ID						int 
+	,ANNO 					int	
+	,TAG 					float
+	,LIMBO 					float
+	,COSTORIGA 				float
+	,NUMEROLIMBO 			float
+);
+
+
+DROP TABLE opper.dbo.LOGISTICA_IDIR_LIMBO_REAL_TIME;
+
+CREATE TABLE opper.dbo.LOGISTICA_IDIR_LIMBO_REAL_TIME
+(  
+	ID							bigint IDENTITY(1,1) 
+	,DATARILEVAZIONEREALTIME	date
+	,DATAORARILEVAZIONEREALTIME	datetime
+	,VALORELIMBO 				money	
+);
+
+
+
+DROP TABLE opper.dbo.LOGISTICA_IDIR_REAL_TIME_OPERATORI_ATTIVITA;
+
+CREATE TABLE opper.dbo.LOGISTICA_IDIR_REAL_TIME_OPERATORI_ATTIVITA
+(  
+	ID					bigint IDENTITY(1,1), 
+	OPERATOREID 		int NOT NULL,
+	OPERATORECODICE 	varchar(50) NOT NULL,
+	COGNOME 			varchar(50) NOT NULL,
+	NOME 				varchar(50) NOT NULL,
+	DATA_INSERIMENTO 	date,
+	DATA_FINE		 	date,
+	DESCRIZIONE			varchar(50) NOT NULL
+);
+
+
+
+
+DROP TABLE opper.dbo.LOGISTICA_IDIR_RIGHE_OPERATORI;
+
+CREATE TABLE opper.dbo.LOGISTICA_IDIR_RIGHE_OPERATORI
+(
+	ID bigint IDENTITY(1,1) 
+	,OPERATOREKEY		DECIMAL(10, 0) NOT NULL
+	,DATA_OPERATORE 	DATE NOT NULL
+	,RIGHE				DECIMAL(10, 0) NOT NULL
+	,QTA				DECIMAL(10, 0) NOT NULL
+	,ATTIVITA			VARCHAR(100)   NOT NULL
+	,ID_1				DECIMAL(10, 0) NOT NULL
+	,WMS_OPERATOREID	DECIMAL(10, 0) NOT NULL
+	,AZIENDA			VARCHAR(100)   NOT NULL
+	,ID_2				DECIMAL(10, 0) NOT NULL
+	,COGNOME			VARCHAR(100)   NOT NULL
+	,NOME				VARCHAR(100)   NOT NULL
+	,OPERATORE			VARCHAR(100)   NOT NULL
+	,CODICE_OPERATORE	VARCHAR(100) NOT NULL
+);
+
+
+
+
+DROP TABLE opper.dbo.LOGISTICA_UBICAZIONI_ARTICOLI;
+
+CREATE TABLE opper.dbo.LOGISTICA_UBICAZIONI_ARTICOLI
+(
+	ID bigint IDENTITY(1,1) 
+	,ARTICOLIKEY		VARCHAR(100) NOT NULL
+	,UBICAZIONEID		DECIMAL(10, 0) NOT NULL
+	,QUANTITA			DECIMAL(10, 0) NOT NULL
+	,UBICAZIONE			VARCHAR(100)   NOT NULL	
+);
+
+DROP TABLE opper.dbo.LOGISTICA_UBICAZIONI;
+
+CREATE TABLE opper.dbo.LOGISTICA_UBICAZIONI
+(
+	ID 							bigint IDENTITY(1,1) 
+	,ID_LOGISTICA_UBICAZIONI	DECIMAL(10, 0) NOT NULL
+	,CODICE						VARCHAR(100)   NOT NULL
+	,MAGAZZINO					VARCHAR(100)   NOT NULL
+);

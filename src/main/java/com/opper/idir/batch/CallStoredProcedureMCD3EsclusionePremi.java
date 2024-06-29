@@ -1,4 +1,4 @@
-package com.opper.idir.run;
+package com.opper.idir.batch;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -9,29 +9,28 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.opper.idir.run.OpperBase;
 
-public class CallStoredProcedureMCD3EsclusionePremi {
+public class CallStoredProcedureMCD3EsclusionePremi  extends OpperBase{
 
-	private static Logger logger = LoggerFactory.getLogger(CallStoredProcedureMCD3EsclusionePremi.class);
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS");
 
-	public static void main(String[] args) throws SQLException {
+	public static void main(String[] args) throws Exception {
 
 		logger.info("START STORED MCD3 ESCLUSIONE PREMI " + sdf.format(new Date()));
-		call();
+		CallStoredProcedureMCD3EsclusionePremi callStoredProcedureMCD3EsclusionePremi = new CallStoredProcedureMCD3EsclusionePremi();
+		callStoredProcedureMCD3EsclusionePremi.call();
 		logger.info("END STORED MCD3 ESCLUSIONE PREMI" + sdf.format(new Date()));
 	}
 
-	private static Connection getConnection() throws SQLException {
+	private Connection getConnection() throws SQLException {
 
 		return DriverManager.getConnection(
 				"jdbc:sqlserver://svrsqldwh.idirspa.local:1433;instanceName=MSSQLSERVER;databaseName=opper;encrypt=true;trustServerCertificate=true",
 				"opper", "opper2023");
 	}
 
-	private static void call() throws SQLException {
+	private void call() throws Exception {
 
 		try (Connection conn = getConnection();) {
 //			try (PreparedStatement statement = conn.prepareCall("TRUNCATE TABLE opper.dbo.IDIR_MDC3_ESCLUSIONE_PREMI");) {
@@ -45,10 +44,13 @@ public class CallStoredProcedureMCD3EsclusionePremi {
 			populateTable(conn);
 //				}
 //			}
+		}catch(Exception e) {
+			sendEmail(e);
+			throw e;
 		}
 	}
 
-	private static void populateTable(Connection conn) throws SQLException {
+	private void populateTable(Connection conn) throws SQLException {
 
 		String scriptSql = "INSERT INTO opper.dbo.IDIR_MDC3_ESCLUSIONE_PREMI"
 				+ "(ListeRigheID,CapoArea,Agente,AgenteCodice,Cliente,ClienteCodice,ClientiFornitoriID"

@@ -1,6 +1,5 @@
-package com.opper.idir.run;
+package com.opper.idir.batch;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
@@ -13,12 +12,29 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.TextNode;
 
-public class Scraping2 {
+import com.opper.idir.run.OpperBase;
 
-	// public void run() {
-	public static void main(String[] args) throws IOException {
+public class Scraping2 extends OpperBase {
+
+	public static void main(String[] args) throws Exception {
+
+		Scraping2 scraping2 = new Scraping2();
+		scraping2.run();
+	}
+
+	public void run() throws Exception {
+
+		try {
+			downloadFiles();
+		} catch (Exception e) {
+			sendEmail(e);
+			throw e;
+		}
+	}
+
+	private void downloadFiles() throws IOException {
 		SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS");
-		System.out.println("START " + sdf.format(new Date()));
+		System.out.println("START DOWNLOAD " + sdf.format(new Date()));
 		// get login form
 		Connection.Response loginForm = Jsoup.connect("https://app.qricambi.com/").method(Connection.Method.GET)
 				.ignoreHttpErrors(true).execute();
@@ -67,7 +83,8 @@ public class Scraping2 {
 		// String xmlBodyPublicKey =
 		// "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3OkKtalHx7JvNS8QRxFTejToPnVRDDtisea93FIiWJIA0l3uTUOD0swFCdHhTWCqaorhchB34HZ2nHnuWrYKI19KqStesHNPf/hUIR+H4uYRa9wU00wWP9ycOzkeHvnL3iYXhSRD4BlSU1WjEtSLuxn4KfMXn0UaUvo+1jb/19GgTGGy+8YCom4M7uUspToDLogyOmzJj6drMCdafqWCZAvLIjjBCuzYcetJx0xIVTXHWmmEdGOfkuw4T97dyjeqUsUS21Aex50KZJXAjxUQQbz2bJi0i9X4DZ02VrznoHpXFPhNXLF8neiBZf4PqhrKEyyMIbU0P2vZPRSv4uSxbwIDAQAB";
 
-		Connection.Response execute1 = Jsoup.connect("https://app.qricambi.com/api/User/CheckIfOtherUserAlreadyLogged")
+		// Connection.Response execute1 =
+		Jsoup.connect("https://app.qricambi.com/api/User/CheckIfOtherUserAlreadyLogged")
 				.header("Content-Type", "application/json").header("Accept", "application/json, text/plain, */*")
 				.header("Authorization", authorization).followRedirects(true).ignoreHttpErrors(true)
 				.ignoreContentType(true)
@@ -113,11 +130,12 @@ public class Scraping2 {
 					String url = "https://app.qricambi.com/api/SearchScheduler/DownloadExcel?task="
 							.concat(String.valueOf(innerObject.get("Task")).concat(String.valueOf("&userid=")
 									.concat(String.valueOf(inputs.get("UserId"))).concat("&newdownload=testnew")));
-					System.out.println(url);
+					System.out.println("URL " + url);
 
 					// Connection.Response fileDownload = Jsoup.connect(url)
-					
-					File downloadFile = new File("C:\\temp\\filecsv\\file_2222".concat(".xlsx"));
+
+					// sFile downloadFile = new
+					// File("C:\\temp\\filecsv\\file_2222".concat(".xlsx"));
 //
 //					Connection con = Jsoup.connect("https://app.qricambi.com/api/SearchScheduler/DownloadExcel?task=projects%2Fqricambi%2Flocations%2Feurope-west3%2Fqueues%2Fscheduled-searches%2Ftasks%2F38610179009514844651&userid=801&newdownload=testnew")
 //					    .timeout(300000)
@@ -129,13 +147,10 @@ public class Scraping2 {
 //					Files.copy(body, downloadFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 //
 //					System.out.println("Saved URL to " + downloadFile.getAbsolutePath());
-					
-					
-					
-					
+
 					Connection.Response fileDownload = Jsoup.connect(url)
-							//"https://app.qricambi.com/api/SearchScheduler/DownloadExcel?task=projects%2Fqricambi%2Flocations%2Feurope-west3%2Fqueues%2Fscheduled-searches%2Ftasks%2F38610179009514844651&userid=801&newdownload=testnew")
-							//"https://app.qricambi.com/api/SearchScheduler/DownloadExcel?task=projects/qricambi/locations/europe-west3/queues/scheduled-searches/tasks/38610179009514844651&userid=801&newdownload=testnew")
+							// "https://app.qricambi.com/api/SearchScheduler/DownloadExcel?task=projects%2Fqricambi%2Flocations%2Feurope-west3%2Fqueues%2Fscheduled-searches%2Ftasks%2F38610179009514844651&userid=801&newdownload=testnew")
+							// "https://app.qricambi.com/api/SearchScheduler/DownloadExcel?task=projects/qricambi/locations/europe-west3/queues/scheduled-searches/tasks/38610179009514844651&userid=801&newdownload=testnew")
 
 							.header("Content-Type", "application/csv")
 							.header("Accept", "application/json, text/plain, */*")
@@ -147,11 +162,10 @@ public class Scraping2 {
 																													// mb
 																													// ~
 							.timeout(0) // infinite timeout
-							.maxBodySize(0)
-							.execute();
+							.maxBodySize(0).execute();
 //					BufferedInputStream body = fileDownload.bodyStream();
 //					Files.copy(body, downloadFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-					
+
 //					File file = new File("C:\\temp\\filecsv\\file_1111".concat(".xlsx"));
 //					BufferedInputStream inputStream = fileDownload.bodyStream();
 //			        FileOutputStream fos = new FileOutputStream(file);
@@ -162,30 +176,31 @@ public class Scraping2 {
 //			        }
 //			        inputStream.close();
 //			        fos.close();
-					
-					
+
 					Document document = fileDownload.parse();
-					TextNode node = (TextNode)document.childNodes().get(0).childNodes().get(1).childNode(0);
-					//System.out.println("INIZIO --> " + node.getWholeText() + " <-- FINE");
-					//String content = document.childNodes().get(0).childNodes().get(1).childNode(0).toString();
-					try (PrintWriter out = new PrintWriter("C:\\temp\\filecsv\\file_".concat("" + index).concat(".csv"))) {
+					TextNode node = (TextNode) document.childNodes().get(0).childNodes().get(1).childNode(0);
+					// System.out.println("INIZIO --> " + node.getWholeText() + " <-- FINE");
+					// String content =
+					// document.childNodes().get(0).childNodes().get(1).childNode(0).toString();
+					try (PrintWriter out = new PrintWriter(
+							"C:\\temp\\filecsv\\file_".concat("" + index).concat(".csv"))) {
 						String[] array = node.getWholeText().replace("\"", "").split("\n");
-						for(int ind=0;ind<array.length;ind++) {
-							//String[] split = array[ind].split("\\t");
-							if(array[ind].indexOf("risultato non trovato") != -1)
+						for (int ind = 0; ind < array.length; ind++) {
+							// String[] split = array[ind].split("\\t");
+							if (array[ind].indexOf("risultato non trovato") != -1)
 								continue;
-							out.println(array[ind].replace("\t",";"));
+							out.println(array[ind].replace("\t", ";"));
 						}
 					}
 					index++;
-					//System.out.println("END CALL URL");
+					// System.out.println("END CALL URL");
 
 				}
 
 			}
 			page++;
 		}
-		System.out.println("END " + sdf.format(new Date()));
+		System.out.println("END DOWNLOAD " + sdf.format(new Date()));
 
 		// GET page
 //	    Connection.Response document = Jsoup.connect("https://www.elit.com.ar/productos/computadoras.html")
@@ -194,5 +209,6 @@ public class Scraping2 {
 //	        .timeout(100000)
 //	        .execute();
 		// System.out.println(document.getAllElements());
+
 	}
 }

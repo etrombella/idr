@@ -1,0 +1,583 @@
+DROP TABLE opper.dbo.IDIR_AGENTE;
+
+CREATE TABLE opper.dbo.IDIR_AGENTE
+(  
+	ID bigint IDENTITY(1,1)  
+	,CODICE_AGENTE varchar(100)
+	,AGENTE_ID int
+	,NOME varchar(100)
+	,COGNOME varchar(100)
+	,AREA_ID int
+	,AREA_DESCRIZIONE varchar(100)
+	,AREA_SUB_ID int
+	,AREA_SUB_DESCRIZIONE varchar(100)
+);
+CREATE UNIQUE INDEX IDIR_AGENTE_index01 ON opper.dbo.IDIR_AGENTE(AGENTE_ID);
+CREATE UNIQUE INDEX IDIR_AGENTE_index02 ON opper.dbo.IDIR_AGENTE(CODICE_AGENTE);
+
+
+DROP TABLE opper.dbo.IDIR_FORNITORI;
+CREATE TABLE opper.dbo.IDIR_FORNITORI
+(  
+	ID bigint  IDENTITY(1,1)  
+	,ID_CLIENTEFORNITORE int
+	,CODICE_FORNITORE varchar(100)
+	,NOME varchar(100)
+	,COGNOME varchar(100)
+	,INDIRIZZO varchar(100)
+	,CAP varchar(100)
+	,COMUNE varchar(100)
+	,PROVINCIA varchar(100)
+	,REGIONE varchar(100)
+	,NAZIONE_SIGLA varchar(100)
+	,NAZIONE varchar(100)
+	,PARTITAIVA varchar(100)
+	,CODICE_FISCALE varchar(100)
+);
+CREATE UNIQUE INDEX IDIR_FORNITORI_index01 ON opper.dbo.IDIR_FORNITORI(ID_CLIENTEFORNITORE);
+
+DROP TABLE opper.dbo.IDIR_CLIENTE;
+CREATE TABLE opper.dbo.IDIR_CLIENTE
+(  
+	ID bigint IDENTITY(1,1)  
+	,CLIENTIFORNITORIID int
+	,ID_AGENTE int
+	,NOME varchar(100)
+	,COGNOME varchar(100)
+	,INDIRIZZO varchar(100)
+	,CODICE_CLIENTE varchar(100)
+	,CAP varchar(100)
+	,COMUNE varchar(100)
+	,PROVINCIA  varchar(100)
+	,REGIONE varchar(100)
+	,NAZIONE_SIGLA varchar(100)
+	,NAZIONE varchar(100)
+	,PARTITAIVA varchar(100)
+	,CODICE_FISCALE varchar(100)
+	,BLOCCO_INSOLUTI varchar(100)
+);
+CREATE UNIQUE INDEX IDIR_CLIENTE_index01 ON opper.dbo.IDIR_CLIENTE(CODICE_CLIENTE);
+DROP TABLE opper.dbo.IDIR_IMPEGNI_CLIENTI ;
+CREATE TABLE opper.dbo.IDIR_IMPEGNI_CLIENTI
+(  
+	ID bigint IDENTITY(1,1)  
+	,LISTA_RIGA_ID int
+	,LISTA_ID int
+	,DATA_IMPEGNO date
+	,NUMERO_IMPEGNO float
+	,QTA float
+	,PREZZO_BASE money
+	,COSTO_UNITARIO money
+	,DATA_CONSEGNA date
+	,ARTICOLO_ID int
+	,PRECODICE varchar(100)
+	,CODICE varchar(100)
+	,ID_CLIENTE int
+	,ID_MAGAZZINO int
+	,TIPO_RIGA varchar(100)
+	,QTA_INEVASA float
+	,INEV_QTA float
+	,IMP_VAL float
+	,INEV_VAL float	
+	,QTA_FORZATA float
+	,BACK_ORDER varchar(100)
+	,PROVENIENZA varchar(100)
+);
+
+DROP TABLE opper.dbo.IDIR_VENDITE;
+CREATE TABLE opper.dbo.IDIR_VENDITE
+(
+	ID bigint IDENTITY(1,1)  
+	,LISTA_RIGA_ID int
+	,LISTA_ID int
+	,PARENTLISTARIGHEID int
+	,DETTAGLIOKEY varchar(100)
+	,QTA float
+	,PREZZO money
+	,COSTO_UNITARIO money
+	,DATA date
+	,DATA_RIFERIMENTO date
+	,ARTICOLO_ID int
+	,ID_CLIENTE int
+	,ID_AGENTE int
+	,ID_MAGAZZINO int
+	,ID_AREA int
+	,CAUSALE_MAGAZZINO varchar(100)
+	,ID_VETTORE int
+	,VETTORE  varchar(100)
+	,VETTORE_FORNITORE varchar(100)
+	,VALORE  varchar(100)
+	,MARGINE  varchar(100)
+	,LISTINO  varchar(100)
+	,LISTINOCODICE  varchar(100)
+	,TIPOOPERAZIONE   varchar(100)
+	,TIPOMERCE  varchar(100)
+	,TIPORIGA varchar(100)
+);
+
+
+
+DROP TABLE opper.dbo.IDIR_FATTO_ORDINE_ACQUISTO;
+CREATE TABLE opper.dbo.IDIR_FATTO_ORDINE_ACQUISTO
+(  
+	ID bigint IDENTITY(1,1)  
+	,PARENT_LISTE_RIGHE_ID int
+	,LISTA_RIGA_ID int
+	,LISTA_ID int
+	,DATA_ORDINE date
+	,QTA float
+	,NUMERO float
+	,QTA_INEVASA float
+	,QTA_EVASA float
+	,QTA_FORZATA float
+	,PREZZO_BASE money
+	,VALORE_ORDINE money
+	,COSTO_UNITARIO money
+	,DATA_CONSEGNA date
+	,ARTICOLO_ID int
+	,ID_FORNITORE int
+	,ID_MAGAZZINO int
+	,LEAD_TIME float
+	,TIPO_RIGA varchar(100)
+);
+
+drop table opper.dbo.IDIR_FATTO_CARICHI; 
+CREATE TABLE opper.dbo.IDIR_FATTO_CARICHI
+(  
+	ID bigint IDENTITY(1,1)  
+	,PARENT_LISTE_RIGHE_ID int
+	,LISTA_RIGA_ID int
+	,LISTA_ID int
+	,DATA_DOCUMENTO date
+	,IMPORTO money
+	,DATA_ORDINE date
+	,QTA float
+	,PREZZO_BASE money
+	,COSTO_UNITARIO money
+	,DATA_BOLLA date
+	,DATA_CONSEGNA date
+	,ARTICOLO_ID int
+	,ID_FORNITORE int
+	,ID_MAGAZZINO int
+	,DESCRIZIONE varchar(100)
+	,TIPO_OPERAZIONE varchar(100)
+	,TIPO_MERCE varchar(100)
+);
+
+DROP TABLE opper.dbo.IDIR_VETTORI;
+CREATE TABLE opper.dbo.IDIR_VETTORI
+(  
+	ID bigint IDENTITY(1,1)  
+	,ID_VETTORE int   
+	,CODICE varchar(20)
+	,NOME varchar(100)
+	,COGNOME varchar(100)
+	,INDIRIZZO varchar(100)
+	,TIME_ALT_KEY_PRE_CUT_OFF int   
+	,TIME_ALT_KEY_CUT_OFF int   
+	,VETTORE varchar(100)
+	,VETTORE_FORNITORE varchar(100)
+);
+CREATE UNIQUE INDEX IDIR_VETTORI_index01 ON opper.dbo.IDIR_VETTORI(ID_VETTORE );
+
+
+DROP TABLE opper.dbo.IDIR_LISTINO;
+
+CREATE TABLE opper.dbo.IDIR_LISTINO
+(  
+	ID bigint IDENTITY(1,1)  
+	,ID_LISTINO int   
+	,CODICE varchar(20)
+	,SIGLA varchar(100)
+	,AZIENDAID int
+	,DESCRIZIONE varchar(100)
+);
+		
+
+DROP TABLE opper.dbo.IDIR_AREE;
+
+CREATE TABLE opper.dbo.IDIR_AREE
+(  
+	ID bigint IDENTITY(1,1)  
+	,AREA_ID int
+	,AREA_DESCRIZIONE varchar(100)
+);
+
+CREATE UNIQUE INDEX IDIR_AREE_index01 ON opper.dbo.IDIR_AREE(AREA_ID);
+CREATE UNIQUE INDEX IDIR_AREE_index02 ON opper.dbo.IDIR_AREE(AREA_DESCRIZIONE);
+
+
+
+DROP TABLE opper.dbo.IDIR_AREE_SUB;
+
+CREATE TABLE opper.dbo.IDIR_AREE_SUB
+(  
+	ID bigint IDENTITY(1,1)  
+	,AREA_SUB_ID int
+	,AREA_SUB_DESCRIZIONE varchar(100)
+);
+
+
+DROP TABLE opper.dbo.IDIR_AREE_AGENTI;
+
+CREATE TABLE opper.dbo.IDIR_AREE_AGENTI
+(  
+	ID bigint IDENTITY(1,1)  
+	,AGENTE_ID int
+	,AREA_SUB_ID varchar(100)
+);
+
+
+DROP TABLE opper.dbo.IDIR_ARTICOLI;
+
+CREATE TABLE opper.dbo.IDIR_ARTICOLI
+(  
+	ID bigint IDENTITY(1,1)  
+	,ARTICOLO_ID int
+	,PRECODICE_STATISTICHE_ID int
+	,PRECODICE varchar(100)
+	,DESCRIZIONE_PRECODICE varchar(100)
+	,CODICE varchar(100)
+	,ID_FORNITORE int
+	,FORNITORE_CODICE varchar(100)
+	,FORNITORE varchar(100)
+	,CLIENTE_FORNITORE_ID varchar(100)
+	,CATEGORIA varchar(100)
+	,CATEGORIA_DESCRIZIONE varchar(100)
+	,CLASSE_CODICE varchar(100)
+	,CLASSE_DESCRIZIONE varchar(100)
+	,SOTTOCLASSE_CODICE varchar(100)
+	,SOTTOCLASSE_DESCRIZIONE varchar(100)
+	,FAMIGLIA varchar(100)
+	,FAMIGLIA_DESCRIZIONE varchar(100)
+	,GIORNI_CONSEGNA int
+	,PREZZO_LISTINO_92 money
+	,PREZZO_LISTINO_800 money
+	,PREZZO_LISTINO_90 money
+	,PREZZO_LISTINO_PLATINUM_2073 money
+	,BLOCCATO varchar(100)
+	,SOSTITUITO varchar(100)
+	,PRECODICISTATISTICHEDESCRIZIONE varchar(200)
+);
+
+CREATE UNIQUE INDEX IDIR_ARTICOLI_index01 ON opper.dbo.IDIR_ARTICOLI(ARTICOLO_ID);
+
+DROP TABLE opper.dbo.IDIR_PRECODICI;
+
+CREATE TABLE opper.dbo.IDIR_PRECODICI
+(  
+	ID bigint IDENTITY(1,1)  
+	,ID_PRECODICE int
+	,PRECODICE varchar(100)
+	,DESCRIZIONE varchar(100)
+	,FORNITORE_ID int
+	,LT_CONSEGNA int	
+);
+
+
+
+DROP TABLE opper.dbo.IDIR_CODICI;
+
+CREATE TABLE opper.dbo.IDIR_CODICI
+(  
+	ID bigint IDENTITY(1,1)  
+	,ID_CODICE int
+	,ID_PRECODICE int
+	,CODICE varchar(100)
+	,FORNITORE_ID int
+);
+
+
+DROP TABLE opper.dbo.IDIR_MAGAZZINI;
+
+CREATE TABLE opper.dbo.IDIR_MAGAZZINI
+(  
+	ID bigint IDENTITY(1,1)  
+	,ID_MAGAZZINO int
+	,CODICE varchar(100)
+	,DESCRIZIONE varchar(100)
+	,AZIENDAID int
+);
+CREATE UNIQUE INDEX IDIR_MAGAZZINI_index01 ON opper.dbo.IDIR_MAGAZZINI(ID_MAGAZZINO );
+
+
+
+DROP TABLE opper.dbo.IDIR_CAUSALI_MAGAZZINO;
+
+CREATE TABLE opper.dbo.IDIR_CAUSALI_MAGAZZINO
+(  
+	ID bigint IDENTITY(1,1)  
+	,CAUSALI_MAGAZZINO_ID int
+	,DESCRIZIONE varchar(100)
+	,ID_MAGAZZINO int
+);
+
+
+DROP TABLE opper.dbo.IDIR_BUDGET;
+
+CREATE TABLE opper.dbo.IDIR_BUDGET
+(  
+	ID bigint IDENTITY(1,1)  
+	,BUDGET_ID int
+	,DESCRIZIONE varchar(100)
+	,ID_ESERCIZIO int
+	,ANNO smalldatetime
+	,ID_CLIENTE int
+	,ID_AGENTE int
+	,ARTICOLO_ID int
+	,QTA float
+	,PREZZO money
+);
+
+
+
+
+DROP TABLE opper.dbo.ESISTENZE_ARTICOLI;
+
+
+CREATE TABLE opper.dbo.ESISTENZE_ARTICOLI
+(  
+	ID bigint IDENTITY(1,1)  
+	,ARTICOLO_ID int
+	,ES_TOT float
+	,ES_CENTR float
+	,ES_MECC float
+	,ES_CARR float
+	,ES_EXP float
+	,ES_RESI_N float
+	,ES_OLIO float
+	,ES_COD_S float
+	,ES_TRANS float
+	,ES_TRASF float
+);
+
+
+
+DROP TABLE opper.dbo.IDIR_RESI;
+
+CREATE TABLE opper.dbo.IDIR_RESI
+(  
+	ID bigint IDENTITY(1,1)  
+	,LISTA_RIGA_ID int
+	,LISTA_ID int
+	,DOCUMENTO_DATE DATE
+	,LISTA_DATI  varchar(100)
+	,CAUSALE_MAGAZZINO varchar(100)
+	,DOCUMENTO varchar(100)
+	,TIPO_MERCE varchar(100)
+	,ID_MAGAZZINO int
+	,ID_CLIENTE int
+	,DOCUMENTO_NUMERO  int
+	,CAUZIONE  varchar(100)
+	,ARTICOLO_ID int
+	,PEZZI float
+	,VALORE money
+	,COSTO  money
+	,MARGINE  money
+	,PARENT_LISTA_RIGA_ID int
+	,RICONOSCIUTA money 
+	,PM_RESO money 
+	,PM_VENDITE money 
+	,SCONTO money 
+);
+
+DROP TABLE opper.dbo.IDIR_RESI_APP;
+
+CREATE TABLE opper.dbo.IDIR_RESI_APP
+(  
+	ID bigint IDENTITY(1,1)  
+	,LISTA_RIGA_ID int
+	,LISTA_ID int
+	,DOCUMENTO_DATE DATE
+	,LISTA_DATI  varchar(100)
+	,CAUSALE_MAGAZZINO varchar(100)
+	,DOCUMENTO varchar(100)
+	,TIPO_MERCE varchar(100)
+	,ID_MAGAZZINO int
+	,ID_CLIENTE int
+	,DOCUMENTO_NUMERO  int
+	,CAUZIONE  varchar(100)
+	,ARTICOLO_ID int
+	,PEZZI float
+	,VALORE money
+	,COSTO  money
+	,MARGINE  money
+	,PARENT_LISTA_RIGA_ID int
+	,RICONOSCIUTA money 
+	,PM_RESO money 
+	,PM_VENDITE money 
+	,SCONTO money 
+);
+
+DROP TABLE opper.dbo.IDIR_INTERCOMPANY;
+
+
+CREATE TABLE opper.dbo.IDIR_INTERCOMPANY
+(  
+	ID bigint IDENTITY(1,1)  
+	,LISTA_RIGA_ID int
+	,LISTA_ID int
+	,ARTICOLO_ID int
+	,INTERCOMPANY varchar(100)
+	,INTERCOMPANY_CODICE varchar(100)
+	,LIST_DATA date
+	,LISTA_NUMERO float
+	,MAGAZZINO_ID int
+	,QTA float
+	,QTA_EVASA float
+	,QTA_INEVASA float
+	,QTA_FORZATA float
+	,CAUSALE_MAGAZZINO varchar(100)
+);
+
+DROP TABLE opper.dbo.IDIR_GIACENZA;
+
+CREATE TABLE opper.dbo.IDIR_GIACENZA
+(  
+	  ID bigint IDENTITY(1,1),
+	  DATA_LISTA smalldatetime,
+      MAGAZZINI_ID int,
+      PRECODICE_ID int,
+      ARTICOLO_ID int,
+      MAGAZZINO_CODICE int,
+      ESISTENZA float
+);
+
+
+DROP TABLE opper.dbo.IDIR_ABC_ARTICOLI;
+
+CREATE TABLE opper.dbo.IDIR_ABC_ARTICOLI
+(  
+	ID bigint IDENTITY(1,1)  
+	,ARTICOLO_ID int
+	,PRECODICE varchar(100)
+	,CODICE varchar(100)
+	,VALORE_TOT money
+	,RANK money
+	,VENDUTO_TOTALE money
+	,TOTALE money
+	,VENDUTO_CUMULATO money
+	,CUMULATA money
+	,ABC varchar(100)
+	,ABC_PRECODICE varchar(100)
+);
+
+
+
+DROP TABLE opper.dbo.IDIR_VENDITE_TIME;
+
+--SELECT * FROM opper.dbo.IDIR_SALE
+
+CREATE TABLE opper.dbo.IDIR_VENDITE_TIME
+(
+	ID bigint IDENTITY(1,1)  
+	,ID_VENDITA int
+	,LISTA_RIGA_ID int
+	,LISTA_ID int
+	,PARENTLISTARIGHEID int
+	,QTA float
+	,PREZZO money
+	,COSTO_UNITARIO money
+	,DATA date
+	,DATA_RIFERIMENTO date
+	,ARTICOLO_ID int
+	,ID_CLIENTE int
+	,ID_AGENTE int
+	,ID_MAGAZZINO int
+	,ID_AREA int
+	,CAUSALE_MAGAZZINO varchar(100)
+	,ID_VETTORE int
+	,VETTORE  varchar(100)
+	,VETTORE_FORNITORE varchar(100)
+	,VALORE  varchar(100)
+	,MARGINE  varchar(100)
+	,LISTINO  varchar(100)
+	,LISTINOCODICE  varchar(100)
+	,TIPOOPERAZIONE   varchar(100)
+	,TIPOMERCE  varchar(100)
+	,TIPORIGA varchar(100)
+	,ORDINEDATAKEY varchar(100)
+	,ORDINETIMEATLKEY varchar(100)
+	,RIGAORDINETIMEATLKEY varchar(100)
+	,RIGAORDINEWMSDATAKEY varchar(100)
+	,RIGAORDINEWMSTIMEATLKEY varchar(100)
+	,TIMEALTKEYCUTOFF varchar(100)
+	,DETTAGLIOKEY  varchar(100)
+);
+
+
+
+DROP TABLE opper.dbo.IDIR_COMPORTAMENTO_CLIENTE;
+
+CREATE TABLE opper.dbo.IDIR_COMPORTAMENTO_CLIENTE
+(
+	ID bigint IDENTITY(1,1)  
+	,ID_CLIENTE int
+	,LISTA_ID varchar(100)
+	,DATA date
+	,VETTORE varchar(100)
+	,NumRighe int
+	,DeltaDataConsegnaDataMax DECIMAL(10, 2)
+	,DeltaDataConsegnaDataMin DECIMAL(10, 2)
+	,DeltaDataDataMinDataMax DECIMAL(10, 2)
+	,ScoreCutoff DECIMAL(10, 2)
+	,ScoreGruppo DECIMAL(10, 2)
+);
+
+
+
+DROP TABLE opper.dbo.IDIR_KPI_FORNITORI;
+
+CREATE TABLE opper.dbo.IDIR_KPI_FORNITORI
+(
+	ID bigint IDENTITY(1,1)  
+	,ANNO varchar(100)
+	,CLIENTEFORNITOREID varchar(100)
+	,FORNITORE varchar(100)
+	,OBIETTIVO varchar(100)
+	,PREMIO_PREVISTO varchar(100)
+	,ACQUISTATO varchar(100)
+);
+
+
+DROP TABLE opper.dbo.IDIR_KPI_GIACENZA;
+
+CREATE TABLE opper.dbo.IDIR_KPI_GIACENZA
+(
+	ID bigint IDENTITY(1,1)  
+	,ANNO varchar(100)
+	,PRECODICISTATISTICHEID varchar(100)
+	,OBIETTIVOMAGAZZINO varchar(100)
+);
+	
+
+DROP TABLE opper.dbo.IDIR_KPI_BUDGET;
+
+CREATE TABLE opper.dbo.IDIR_KPI_BUDGET
+(
+	ID bigint IDENTITY(1,1)  
+	,BUDGETRIGHE_ID varchar(100)
+	,DESCRIZIONE varchar(100)
+    ,BUDGETID varchar(100)
+    ,MESIID varchar(100)
+    ,AGENTIID varchar(100)
+	,PRECODICISTATISTICHEID varchar(100)
+	,PRECODICESTATISTICHE varchar(100)
+    ,QUANTITA varchar(100)
+    ,VALORE	 varchar(100)
+    ,APPROVATO varchar(100)
+);
+
+DROP TABLE opper.dbo. IDIR_CAPOAREA_AGENTI;
+
+CREATE TABLE opper.dbo. IDIR_CAPOAREA_AGENTI
+(
+	ID bigint IDENTITY(1,1) 
+	,CAPO_AREA varchar(100) NOT NULL
+	,CONTATTO_ID int NOT NULL
+	,Agente varchar(100) NOT NULL
+	,AGENTE_ID int NOT NULL	
+);
+
+
+	

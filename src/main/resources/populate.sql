@@ -1926,3 +1926,34 @@ Vision.dbo.WebCarrelloDelete.Data ) as carrello_delete
 GROUP BY		carrello_delete.Data,
 				carrello_delete.ClientiFornitoriCodice, 
 				carrello_delete.ArticoloID;
+				
+TRUNCATE TABLE opper.dbo.IDIR_ARTICOLI_DIMENSIONI_UBICAZIONI;
+
+INSERT INTO opper.dbo.IDIR_ARTICOLI_DIMENSIONI_UBICAZIONI
+(
+      ARTICOLO_ID_WMS
+	  ,PRECODICE
+      ,CODICE
+      ,ID_UBICAZIONE
+	  ,CODICE_UBICAZIONE
+	  ,MAGAZZINO
+      ,LUNGHEZZA_MM
+      ,LARGHEZZA_MM
+      ,ALTEZZA_MM
+      ,PESO_GR	  
+)
+SELECT 
+      [ArticoloId] as ARTICOLO_ID_WMS
+	  ,[Logistica].[dbo].[Articoli].[PreCodice] as PRECODICE
+      ,[Logistica].[dbo].[Articoli].[Codice] as CODICE
+      ,[UbicazioneId] as ID_UBICAZIONE
+	  ,[Logistica].[dbo].[Containers].[Codice] as CODICE_UBICAZIONE
+	  ,LEFT([Logistica].[dbo].[Containers].[Codice],1) as 'MAGAZZINO'
+      ,[Logistica].[dbo].[Articoli].[Lunghezza] as LUNGHEZZA_MM
+      ,[Logistica].[dbo].[Articoli].[Larghezza] as LARGHEZZA_MM
+      ,[Logistica].[dbo].[Articoli].[Altezza] as ALTEZZA_MM
+      ,[Logistica].[dbo].[Articoli].[Peso] as PESO_GR
+  FROM [Logistica].[dbo].[Articoli_Ubicazioni]
+  LEFT JOIN [Logistica].[dbo].[Containers] ON [Logistica].[dbo].[Containers].Id=[Logistica].[dbo].[Articoli_Ubicazioni].[UbicazioneId]
+  LEFT JOIN [Logistica].[dbo].[Articoli] on [Logistica].[dbo].[Articoli].id=[Logistica].[dbo].[Articoli_Ubicazioni].[ArticoloId];
+

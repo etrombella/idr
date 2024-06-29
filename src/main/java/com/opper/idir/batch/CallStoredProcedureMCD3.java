@@ -1,4 +1,4 @@
-package com.opper.idir.run;
+package com.opper.idir.batch;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -9,28 +9,27 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.opper.idir.run.OpperBase;
 
-public class CallStoredProcedureMCD3 {
+public class CallStoredProcedureMCD3 extends OpperBase{
 
-	private static Logger logger = LoggerFactory.getLogger(CallStoredProcedureMCD3.class);
 	private static final SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.SSS");
 
-	public static void main(String[] args) throws SQLException {
+	public static void main(String[] args) throws Exception {
 		logger.info("START STORED MCD3 " + sdf.format(new Date()));
-		call();
+		CallStoredProcedureMCD3 callStoredProcedureMCD3 = new CallStoredProcedureMCD3();
+		callStoredProcedureMCD3.call();
 		logger.info("END STORED MCD3 " + sdf.format(new Date()));
 	}
 
-	private static Connection getConnection() throws SQLException {
+	private Connection getConnection() throws SQLException {
 
 		return DriverManager.getConnection(
 				"jdbc:sqlserver://svrsqldwh.idirspa.local:1433;instanceName=MSSQLSERVER;databaseName=opper;encrypt=true;trustServerCertificate=true",
 				"opper", "opper2023");
 	}
 
-	private static void call() throws SQLException {
+	private void call() throws Exception {
 
 		try (Connection conn = getConnection();) {
 //			try (PreparedStatement statement = conn.prepareCall("TRUNCATE TABLE opper.dbo.IDIR_MDC3");) {
@@ -44,6 +43,9 @@ public class CallStoredProcedureMCD3 {
 			populateTable(conn);
 //				}
 //			}
+		}catch(Exception e) {
+			sendEmail(e);
+			throw e;
 		}
 	}
 

@@ -1,4 +1,4 @@
-package com.opper.idir.run;
+package com.opper.idir.batch;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -24,12 +23,10 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.TextNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class ScrapingFinal {
+import com.opper.idir.run.OpperBase;
 
-	private static Logger logger = LoggerFactory.getLogger(ScrapingFinal.class);
+public class ScrapingFinal extends OpperBase {
 
 	private static final String PUNTO_VIRGOLA = ";";
 	private static final String COMMA = ",";
@@ -44,39 +41,45 @@ public class ScrapingFinal {
 	private final static String PATH_DOWNLOAD = "T:\\OPPER\\jar\\download";
 	// private final static String PATH_DOWNLOAD = "C:\\temp\\filecsv";
 
-	public static void main(String[] args) throws IOException, SQLException {
+	public static void main(String[] args) throws Exception {
 
-		downloadFiles();
-		truncateTable();
-		populateTable();
-		moveFileToEndDirectory();
+		ScrapingFinal scrapingFinal = new ScrapingFinal();
+		scrapingFinal.run();
 	}
 
-	private static void moveFileToEndDirectory() {
+	public void run() throws Exception {
+
+		try {
+			downloadFiles();
+			truncateTable();
+			populateTable();
+			moveFileToEndDirectory();
+		} catch (Exception e) {
+			sendEmail(e);
+			throw e;
+		}
+	}
+
+	private void moveFileToEndDirectory() {
 
 		String outputPath = PATH_DOWNLOAD.concat("\\").concat(sdfOutput.format(new Date()));
-		
 		File directoryOutput = new File(outputPath);
 		directoryOutput.mkdirs();
-		
 		File[] files = new File(PATH_DOWNLOAD).listFiles();
-		//If this pathname does not denote a directory, then listFiles() returns null. 
-
-		for (File file : files) {
-		    if (file.isFile()) 
-		        file.renameTo(new File(outputPath.concat("\\").concat(file.getName())));
-		}
-		
+		// If this pathname does not denote a directory, then listFiles() returns null.
+		for (File file : files)
+			if (file.isFile())
+				file.renameTo(new File(outputPath.concat("\\").concat(file.getName())));
 	}
 
-	private static java.sql.Connection getConnection() throws SQLException {
+	private java.sql.Connection getConnection() throws SQLException {
 
 		return DriverManager.getConnection(
 				"jdbc:sqlserver://svrsqldwh.idirspa.local:1433;instanceName=MSSQLSERVER;databaseName=opper;encrypt=true;trustServerCertificate=true",
 				"opper", "opper2023");
 	}
 
-	private static String deleteCommna(String value) {
+	private String deleteCommna(String value) {
 
 		long occurence = value.chars().filter(ch -> ch == COMMA_CHAR).count();
 		if (occurence > 1) {
@@ -93,20 +96,20 @@ public class ScrapingFinal {
 		}
 		return value;
 	}
-	
-	private static void truncateTable() throws IOException, SQLException {
+
+	private void truncateTable() throws IOException, SQLException {
 
 		logger.info("START TRUNCATE " + sdf.format(new Date()));
 		try (java.sql.Connection conn = getConnection();) {
 			String scriptSql = "TRUNCATE TABLE opper.dbo.IDIR_RICERCHE_SCHEDULATE;";
-				try (PreparedStatement preparedStatement = conn.prepareStatement(scriptSql);) {
-					preparedStatement.execute();
-				}
-		}		
+			try (PreparedStatement preparedStatement = conn.prepareStatement(scriptSql);) {
+				preparedStatement.execute();
+			}
+		}
 		logger.info("END TRUNCATE " + sdf.format(new Date()));
 	}
-	
-	private static void populateTable() throws IOException, SQLException {
+
+	private void populateTable() throws IOException, SQLException {
 
 		logger.info("START POPULATE " + sdf.format(new Date()));
 		Set<String> listFiles = Stream.of(new File(PATH_DOWNLOAD).listFiles()).filter(file -> !file.isDirectory())
@@ -186,7 +189,7 @@ public class ScrapingFinal {
 		logger.info("END POPULATE " + sdf.format(new Date()));
 	}
 
-	private static void downloadFiles() throws IOException {
+	private void downloadFiles() throws IOException {
 
 		logger.info("START DOWNLOAD " + sdf.format(new Date()));
 		Connection.Response loginForm = Jsoup.connect("https://app.qricambi.com/").method(Connection.Method.GET)
@@ -211,7 +214,8 @@ public class ScrapingFinal {
 				.timeout(0) // infinite timeout
 				.execute().body();
 
-		Connection.Response execute1 = Jsoup.connect("https://app.qricambi.com/api/User/CheckIfOtherUserAlreadyLogged")
+		// Connection.Response execute1 =
+		Jsoup.connect("https://app.qricambi.com/api/User/CheckIfOtherUserAlreadyLogged")
 				.header("Content-Type", "application/json").header("Accept", "application/json, text/plain, */*")
 				.header("Authorization", authorization).followRedirects(true).ignoreHttpErrors(true)
 				.ignoreContentType(true)

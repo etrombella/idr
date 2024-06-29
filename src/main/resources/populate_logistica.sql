@@ -248,7 +248,6 @@ where (CAST(DataAttivita AS date) = CAST(GETDATE() AS date))AND AttivitaKey=3
 GROUP BY _LogAttivitaOperatori.OperatoreKey) as tabella ON tabella.OperatoreKey=_DimOperatori.OperatoreKey;
 
 
-
 TRUNCATE TABLE opper.dbo.LOGISTICA_IDIR_RIGHE;
 
 INSERT INTO opper.dbo.LOGISTICA_IDIR_RIGHE
