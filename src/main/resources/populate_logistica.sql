@@ -994,6 +994,8 @@ INSERT INTO opper.dbo.LOGISTICA_COLLI_SPESE
 	,DATA_CHIUSURA     		
 	,CODICE_PORTO      		
 	,PORTO	         		
+	,IMPORTO_COLLO_BIS
+	,IMABLLATO_BIS
 	,TRASPORTO	     		
 	,PROVENIENZA	 		
 	,IMPORTO_COLLO	 		
@@ -1029,3 +1031,233 @@ Round(isnull((SELECT (SUM(Logistica.dbo.ColliPrelievi.Quantita)) AS Imballatto
                          PowerBI.dbo.ListeProvenienzaTipo ON PowerBI.dbo.ListeProvenienzaTipo.ID = PowerBI.dbo.Liste.ListeProvenienzaTipoID left outer join
 						(SELECT Tracking, SUM(CostoSpedizione) AS Totale, Vettore, CodiceFornitore
 FROM Logistica.dbo.Vettori_FattureCorrieri GROUP BY Tracking, CodiceFornitore, Vettore) as Vettori_FattureCorrieriG on Logistica.dbo.View_Colli.Tracking = Vettori_FattureCorrieriG.Tracking;
+
+TRUNCATE TABLE opper.dbo.LOGISTICA_IDIR_RIGHE_NEW;
+
+INSERT INTO opper.dbo.LOGISTICA_IDIR_RIGHE_NEW
+(  
+	DATADA			
+	,OPERATOREKEY	
+	,QTA
+	,RIGHE		 		
+	,ATTIVITA		
+)
+Select Tot.* 
+From(
+
+Select Tab.Data,Tab.OperatoreKey,sum(Tab.QTA) as QTA,sum(Tab.Conta) as Righe, 'Prelievo' as Attivita
+from
+	(
+select Data,OperatoreKey,DettaglioKey,sum(CAST(Quantita AS BIGINT)) as QTA,1 as Conta
+	From [Opper].[dbo].[LOGISTICA_IDIR_NEW] 
+	WHERE AttivitaKey=1
+	group by  Data,OperatoreKey,DettaglioKey) as Tab
+WHERE Tab.QTA>0
+group by  Tab.Data,Tab.OperatoreKey
+Union
+Select Tab.Data,Tab.OperatoreKey,sum(Tab.QTA) as QTA,sum(Tab.Conta) as Righe, 'Imballo' as Attivita
+from
+	(
+select Data,OperatoreKey,ColloKey,sum(CAST(Quantita AS BIGINT)) as QTA,1 as Conta
+	From [Opper].[dbo].[LOGISTICA_IDIR_NEW] 
+	WHERE AttivitaKey=2
+	group by  Data,OperatoreKey,ColloKey) as Tab
+WHERE Tab.QTA>0
+group by  Tab.Data,Tab.OperatoreKey
+union
+Select Tab.Data,Tab.OperatoreKey,sum(Tab.QTA) as QTA,sum(Tab.Conta) as Righe, 'Disimballo' as Attivita
+from
+	(
+select Data,OperatoreKey,UnitaCaricoKey,ArticoloKey,sum(CAST(Quantita AS BIGINT)) as QTA,1 as Conta
+	From [Opper].[dbo].[LOGISTICA_IDIR_NEW] 
+	WHERE AttivitaKey=3
+	group by  Data,OperatoreKey,UnitaCaricoKey,ArticoloKey) as Tab
+WHERE Tab.QTA>0
+group by  Tab.Data,Tab.OperatoreKey
+union
+Select Tab.Data,Tab.OperatoreKey,sum(Tab.QTA) as QTA,sum(Tab.Conta) as Righe, 'Posizionatura' as Attivita
+from
+	(
+select Data,OperatoreKey,UnitaCaricoKey,ArticoloKey,sum(CAST(Quantita AS BIGINT)) as QTA,1 as Conta
+	From [Opper].[dbo].[LOGISTICA_IDIR_NEW] 
+	WHERE AttivitaKey=4
+	group by  Data,OperatoreKey,UnitaCaricoKey,ArticoloKey) as Tab
+WHERE Tab.QTA>0
+group by  Tab.Data,Tab.OperatoreKey
+) as Tot;
+
+TRUNCATE TABLE opper.dbo.LOGISTICA_IDIR_ATTIVITA_NEW;
+
+INSERT INTO opper.dbo.LOGISTICA_IDIR_ATTIVITA_NEW
+(  
+	Id,
+	OperatoreId,
+	AttivitaOperatoreId,
+	Descrizione,
+	DataInserimento,
+	DataFine,
+	Magazzino
+)
+SELECT [Logistica].[dbo].[Operatori_AttivitaOperatori].[Id]
+      ,[Logistica].[dbo].[Operatori_AttivitaOperatori].[OperatoreId]
+      ,[Logistica].[dbo].[Operatori_AttivitaOperatori].[AttivitaOperatoreId]
+	  ,[Logistica].[dbo].[AttivitaOperatori].[Descrizione]
+      ,[Logistica].[dbo].[Operatori_AttivitaOperatori].[DataInserimento]
+      ,[Logistica].[dbo].[Operatori_AttivitaOperatori].[DataFine]
+ ,'Maddaloni' as Magazzino
+
+  FROM [Logistica].[dbo].[Operatori_AttivitaOperatori]
+  left join [Logistica].[dbo].[AttivitaOperatori] on [Logistica].[dbo].[AttivitaOperatori].[id]=[Logistica].[dbo].[Operatori_AttivitaOperatori].[AttivitaOperatoreId];
+
+
+TRUNCATE TABLE opper.dbo.LOGISTICA_IDIR_UBICAZIONI_NEW;
+
+INSERT INTO opper.dbo.LOGISTICA_IDIR_UBICAZIONI_NEW
+(  
+	Id,
+	Codice,
+	UBI
+)
+SELECT *, 
+LEFT(codice,2) as 'UBI' 
+FROM [Logistica].[dbo].[Containers];
+
+TRUNCATE TABLE opper.dbo.LOGISTICA_IDIR_NEW;
+
+INSERT INTO opper.dbo.LOGISTICA_IDIR_NEW
+(   
+	Id,
+	Data,
+	DataAttivita,
+	OperatoreKey,
+	Cognome,
+	Nome,
+	CodiceOperatore,
+	AttivitaKey,
+	DettaglioKey,
+	PreCodice,
+	Codice,
+	ArticoloKey,
+	Ubicazione,
+	Ubi,
+	Quantita,
+	UnitaCaricoKey,
+	CestaKey,
+	ColloKey,
+	ErpListaId,
+	ErpListaRigaId,
+	QuantitaOrdinata,
+	DataLista,
+	DataListaRiga,
+	DataPreCutOff,
+	DataCutOff,
+	ErpVettoreId,
+	ClienteId,
+	Operatore,
+	Rigedis,
+	Rigepos,
+	Rigepre,
+	Rigeimb,
+	Magazzino
+)
+SELECT 
+	 [Logistica].[dbo].[_LogAttivitaOperatori].[Id]
+	  ,format([Logistica].[dbo].[_LogAttivitaOperatori].[DataAttivita],'yyyy-MM-dd') as 'Data'
+      ,[Logistica].[dbo].[_LogAttivitaOperatori].[DataAttivita]
+      ,[Logistica].[dbo].[_LogAttivitaOperatori].[OperatoreKey]
+	  ,[Logistica].[dbo].[Operatori].[Cognome]
+      ,[Logistica].[dbo].[Operatori].[Nome]
+      ,[Logistica].[dbo].[Operatori].[CodiceOperatore]
+      ,[Logistica].[dbo].[_LogAttivitaOperatori].[AttivitaKey]
+      ,[Logistica].[dbo].[_LogAttivitaOperatori].[DettaglioKey]
+	  ,[Logistica].[dbo].[Articoli].[PreCodice]
+	  ,[Logistica].[dbo].[Articoli].[Codice]
+	  ,CASE [Logistica].[dbo].[_LogAttivitaOperatori].[AttivitaKey]
+			WHEN 1 then [Logistica].[dbo].[Articoli].[PreCodice]+'|'+[Logistica].[dbo].[Articoli].[Codice]
+			WHEN 2 then [Logistica].[dbo].[Articoli].[PreCodice]+'|'+[Logistica].[dbo].[Articoli].[Codice]
+			WHEN 3 then [Logistica].[dbo].[_LogAttivitaOperatori].[ArticoloKey]
+			ELSE  [Logistica].[dbo].[_LogAttivitaOperatori].[ArticoloKey]
+		end as 'ArticoloKey'
+      ,[Logistica].[dbo].[_LogAttivitaOperatori].[Ubicazione]
+	  ,left([Logistica].[dbo].[_LogAttivitaOperatori].[Ubicazione],2) as Ubi
+      ,[Logistica].[dbo].[_LogAttivitaOperatori].[Quantita]
+      ,[Logistica].[dbo].[_LogAttivitaOperatori].[UnitaCaricoKey]
+      ,[Logistica].[dbo].[_LogAttivitaOperatori].[CestaKey]
+      ,[Logistica].[dbo].[_LogAttivitaOperatori].[ColloKey]
+
+	  ,[Logistica].[dbo].[Ordini].[ErpListaId]
+      ,[Logistica].[dbo].[OrdiniDettagli].[ErpListaRigaId]
+      ,[Logistica].[dbo].[OrdiniDettagli].[QuantitaOrdinata]
+	  ,[Logistica].[dbo].[Ordini].[DataLista]
+      ,[Logistica].[dbo].[OrdiniDettagli].[DataListaRiga]
+
+
+
+      ,format([Logistica].[dbo].[Ordini].[DataConsegna],'yyyy-MM-dd')+' '+format([Logistica].[dbo].[VettoriOrari].[OraRitiro],'00')+':'+format([Logistica].[dbo].[VettoriOrari].[MinutiRitiro],'00')+':00' as DataPreCutOff
+      ,format([Logistica].[dbo].[Ordini].[DataConsegna],'yyyy-MM-dd')+' '+format([Logistica].[dbo].[VettoriOrari].[OraCutOff],'00')+':'+format([Logistica].[dbo].[VettoriOrari].[MinutiCutOff],'00')+':00' as DataCutOff
+      ,[Logistica].[dbo].[VettoriOrari].[ErpVettoreId]
+	  ,[Logistica].[dbo].[Ordini].[ClienteId]
+	  ,[Logistica].[dbo].[Operatori].[Cognome] + ' ' +[Logistica].[dbo].[Operatori].[Nome] as Operatore
+	  ,format([Logistica].[dbo].[_LogAttivitaOperatori].[DataAttivita],'yyyyMMdd')+str([Logistica].[dbo].[_LogAttivitaOperatori].[OperatoreKey])+str([Logistica].[dbo].[_LogAttivitaOperatori].[UnitaCaricoKey])+ [Logistica].[dbo].[_LogAttivitaOperatori].[ArticoloKey] as 'Rigedis'
+	  ,format([Logistica].[dbo].[_LogAttivitaOperatori].[DataAttivita],'yyyyMMdd')+str([Logistica].[dbo].[_LogAttivitaOperatori].[OperatoreKey])+str( [Logistica].[dbo].[_LogAttivitaOperatori].[UnitaCaricoKey])+ [Logistica].[dbo].[_LogAttivitaOperatori].[ArticoloKey] as 'Rigepos'
+	  ,format([Logistica].[dbo].[_LogAttivitaOperatori].[DataAttivita],'yyyyMMdd')+str([Logistica].[dbo].[_LogAttivitaOperatori].[OperatoreKey])+str( [Logistica].[dbo].[_LogAttivitaOperatori].[DettaglioKey]) as 'Rigepre'
+	  ,format([Logistica].[dbo].[_LogAttivitaOperatori].[DataAttivita],'yyyyMMdd')+str([Logistica].[dbo].[_LogAttivitaOperatori].[OperatoreKey])+ [Logistica].[dbo].[_LogAttivitaOperatori].[ColloKey] as 'Rigeimb'
+
+	  ,'Maddaloni' as Magazzino
+
+  FROM [Logistica].[dbo].[_LogAttivitaOperatori]
+  left join [Logistica].[dbo].[Operatori] on [Logistica].[dbo].[_LogAttivitaOperatori].[OperatoreKey]=[Logistica].[dbo].[Operatori].[Id]
+  left join [Logistica].[dbo].[OrdiniDettagli] on [Logistica].[dbo].[_LogAttivitaOperatori].[DettaglioKey]=[Logistica].[dbo].[OrdiniDettagli].id
+  left join [Logistica].[dbo].[Articoli] on [Logistica].[dbo].[OrdiniDettagli].[ArticoloId]=[Logistica].[dbo].[Articoli].[Id]
+  left join [Logistica].[dbo].[Ordini] on [Logistica].[dbo].[Ordini].[Id]=[Logistica].[dbo].[OrdiniDettagli].[OrdineId]
+  left join [Logistica].[dbo].[VettoriOrari] on [Logistica].[dbo].[VettoriOrari].[Id] = [Logistica].[dbo].[Ordini].[VettoreOrarioId];
+
+
+TRUNCATE TABLE opper.dbo.LOGISTICA_IDIR_SCORTA_NEW;
+
+INSERT INTO opper.dbo.LOGISTICA_IDIR_SCORTA_NEW
+(   
+	ArticoloId,
+	UbicazioneId,
+	Quantita,
+	QuantitaMinStock,
+	QuantitaReFilling,
+	QuantitaMaxPezzi,
+	RimuoviAZero,
+	DataUpdate,
+	DataMovimentazione,
+	PreCodice,
+	Codice,
+	Descrizione,
+	ArticoloKey,
+	QtaMinR,
+	QtaMaxR,
+	Ubicazione,
+	UBI
+)
+SELECT
+[ArticoloId]
+,[UbicazioneId]
+,[Quantita]
+,[QuantitaMinStock]
+,[QuantitaReFilling]
+,[QuantitaMaxPezzi]
+,[RimuoviAZero]
+,[DataUpdate]
+,[DataMovimentazione]
+,[PreCodice]
+,[Articoli].[Codice]
+,[Articoli].Descrizione
+, concat([PreCodice],'|',[Articoli].[Codice]) as 'ArticoloKey'
+,[Articoli].[QtaMin] as 'QtaMinR'
+,[Articoli].[QtaMax]as 'QtaMaxR'
+,[Containers].[Codice] as 'Ubicazione',
+ left([Containers].[Codice],2) as 'UBI'
+
+ 
+FROM [Logistica].[dbo].[Articoli_Ubicazioni],[Logistica].[dbo].[Articoli],[Logistica].[dbo].[Containers]
+WHERE
+[Articoli_Ubicazioni].[ArticoloId]=[Articoli].[Id] AND
+[Articoli_Ubicazioni].[UbicazioneId]=[Containers].[Id];
+
+
