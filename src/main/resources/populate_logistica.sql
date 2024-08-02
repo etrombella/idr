@@ -1233,7 +1233,8 @@ INSERT INTO opper.dbo.LOGISTICA_IDIR_SCORTA_NEW
 	QtaMinR,
 	QtaMaxR,
 	Ubicazione,
-	UBI
+	UBI,
+	MAGAZZINO
 )
 SELECT
 [ArticoloId]
@@ -1251,8 +1252,9 @@ SELECT
 , concat([PreCodice],'|',[Articoli].[Codice]) as 'ArticoloKey'
 ,[Articoli].[QtaMin] as 'QtaMinR'
 ,[Articoli].[QtaMax]as 'QtaMaxR'
-,[Containers].[Codice] as 'Ubicazione',
- left([Containers].[Codice],2) as 'UBI'
+,[Containers].[Codice] as 'Ubicazione'
+,left([Containers].[Codice],2) as 'UBI'
+,'Maddaloni' as 'Magazzino'
 
  
 FROM [Logistica].[dbo].[Articoli_Ubicazioni],[Logistica].[dbo].[Articoli],[Logistica].[dbo].[Containers]
