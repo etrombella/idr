@@ -1957,3 +1957,62 @@ SELECT
   LEFT JOIN [Logistica].[dbo].[Containers] ON [Logistica].[dbo].[Containers].Id=[Logistica].[dbo].[Articoli_Ubicazioni].[UbicazioneId]
   LEFT JOIN [Logistica].[dbo].[Articoli] on [Logistica].[dbo].[Articoli].id=[Logistica].[dbo].[Articoli_Ubicazioni].[ArticoloId];
 
+TRUNCATE TABLE  opper.dbo.IDIR_ABC_GIACENZA;
+
+INSERT INTO opper.dbo.IDIR_ABC_GIACENZA
+(
+      ARTICOLO_ID
+	  ,ABC
+)
+SELECT
+tabella_ABC.ARTICOLO_ID,
+tabella_ABC.ABC
+FROM(
+SELECT 
+    tabella_giacenza.ARTICOLO_ID,
+	tabella_giacenza.GIACENZA,
+	tabella_listini.Costo,
+	tabella_listini.Costo*tabella_giacenza.GIACENZA  as Giacenza_Valore,
+	ROW_NUMBER() OVER (ORDER BY SUM(CAST(tabella_listini.Costo*tabella_giacenza.GIACENZA AS DECIMAL(18, 2))) DESC) AS [Rank],
+	SUM(SUM(CAST(tabella_listini.Costo*tabella_giacenza.GIACENZA AS DECIMAL(18, 2)))) OVER () AS Giacenza_Valore_Tot,
+	CAST(
+            CAST(SUM(CAST(tabella_listini.Costo*tabella_giacenza.GIACENZA AS DECIMAL(18, 8))) AS NUMERIC(18, 8)) /
+            CAST(SUM(SUM(CAST(tabella_listini.Costo*tabella_giacenza.GIACENZA AS DECIMAL(18, 8)))) OVER () AS NUMERIC(18, 8)) 
+            AS NUMERIC(18, 8)
+        ) AS [% su Tot],
+	Sum(SUM(CAST(tabella_listini.Costo*tabella_giacenza.GIACENZA AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST(tabella_listini.Costo*tabella_giacenza.GIACENZA AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) as [GiacenzaValoreCumulata],
+CAST(Sum(SUM(CAST(tabella_listini.Costo*tabella_giacenza.GIACENZA AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST(tabella_listini.Costo*tabella_giacenza.GIACENZA AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(SUM(SUM(CAST(tabella_listini.Costo*tabella_giacenza.GIACENZA AS DECIMAL(18, 8)))) OVER () AS numeric(18,8)) [% Cumulata],
+CASE
+            WHEN  CAST(Sum(SUM(CAST(tabella_listini.Costo*tabella_giacenza.GIACENZA AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST(tabella_listini.Costo*tabella_giacenza.GIACENZA AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(SUM(SUM(CAST(tabella_listini.Costo*tabella_giacenza.GIACENZA AS DECIMAL(18, 8)))) OVER () AS numeric(18,8))<= 0.60 THEN 'A'
+            WHEN  CAST(Sum(SUM(CAST(tabella_listini.Costo*tabella_giacenza.GIACENZA AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST(tabella_listini.Costo*tabella_giacenza.GIACENZA AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(SUM(SUM(CAST(tabella_listini.Costo*tabella_giacenza.GIACENZA AS DECIMAL(18, 8)))) OVER () AS numeric(18,8))<= 0.85 THEN 'B'
+            WHEN  CAST(Sum(SUM(CAST(tabella_listini.Costo*tabella_giacenza.GIACENZA AS DECIMAL(18, 8)))) OVER (ORDER BY SUM(CAST(tabella_listini.Costo*tabella_giacenza.GIACENZA AS DECIMAL(18, 8))) DESC Rows BETWEEN unbounded preceding AND CURRENT row) AS numeric(18,8))/ CAST(SUM(SUM(CAST(tabella_listini.Costo*tabella_giacenza.GIACENZA AS DECIMAL(18, 8)))) OVER () AS numeric(18,8))<= 0.95 THEN 'C'
+            ELSE 'D'
+        END AS ABC
+FROM (
+    SELECT 
+        Opper.dbo.IDIR_GIACENZA.ARTICOLO_ID,
+        SUM(Opper.dbo.IDIR_GIACENZA.ESISTENZA) AS GIACENZA
+    FROM 
+        Opper.dbo.IDIR_GIACENZA
+    GROUP BY 
+        Opper.dbo.IDIR_GIACENZA.ARTICOLO_ID
+) AS tabella_giacenza
+LEFT JOIN (
+    SELECT
+        Opper.dbo.IDIR_ARTICOLI.ARTICOLO_ID,
+        CASE 
+            WHEN Opper.dbo.IDIR_ARTICOLI.PREZZO_LISTINO_92 > 0 THEN ROUND(Opper.dbo.IDIR_ARTICOLI.PREZZO_LISTINO_92, 2)
+            WHEN Opper.dbo.IDIR_ARTICOLI.PREZZO_LISTINO_90 > 0 THEN ROUND(Opper.dbo.IDIR_ARTICOLI.PREZZO_LISTINO_90, 2) 
+            WHEN Opper.dbo.IDIR_ARTICOLI.PREZZO_LISTINO_800 > 0 THEN ROUND(Opper.dbo.IDIR_ARTICOLI.PREZZO_LISTINO_800, 2)
+            WHEN Opper.dbo.IDIR_ARTICOLI.PREZZO_LISTINO_900 > 0 THEN ROUND(Opper.dbo.IDIR_ARTICOLI.PREZZO_LISTINO_900, 2)
+            ELSE 0 
+        END AS Costo
+    FROM 
+        Opper.dbo.IDIR_ARTICOLI
+) AS tabella_listini 
+ON tabella_giacenza.ARTICOLO_ID = tabella_listini.ARTICOLO_ID
+WHERE tabella_giacenza.GIACENZA>=0
+GROUP BY tabella_giacenza.ARTICOLO_ID,tabella_giacenza.GIACENZA,
+	tabella_listini.Costo
+) as tabella_ABC;
+
