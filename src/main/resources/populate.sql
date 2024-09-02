@@ -2016,3 +2016,62 @@ GROUP BY tabella_giacenza.ARTICOLO_ID,tabella_giacenza.GIACENZA,
 	tabella_listini.Costo
 ) as tabella_ABC;
 
+TRUNCATE TABLE  opper.dbo.IDIR_CLASSE_M_VENDUTO;
+
+INSERT INTO opper.dbo.IDIR_CLASSE_M_VENDUTO
+(
+      ARTICOLO_ID
+	  ,CLASSE_M
+)
+SELECT
+tabella_finale.ARTICOLO_ID,
+tabella_finale.STATUS as CLASSE_M
+FROM(
+SELECT 
+    ARTICOLI.ARTICOLO_ID,
+    GIACENZA.TOTAL_ESISTENZA,
+    ORDERS.FIRST_ORDER_DATE,
+    CASE 
+        WHEN GIACENZA.TOTAL_ESISTENZA > 0 
+             AND (ORDERS.FIRST_ORDER_DATE IS NULL 
+                  OR ORDERS.FIRST_ORDER_DATE < DATEADD(MONTH, -12, GETDATE())) 
+        THEN 'M' 
+        ELSE NULL 
+    END AS STATUS
+FROM 
+    opper.dbo.IDIR_ARTICOLI AS ARTICOLI
+
+-- Join with IDIR_ABC_ARTICOLI to find missing ARTICOLO_IDs
+LEFT JOIN 
+    opper.dbo.IDIR_ABC_ARTICOLI AS ABC_ARTICOLI
+    ON ARTICOLI.ARTICOLO_ID = ABC_ARTICOLI.ARTICOLO_ID
+
+-- Join with a subquery to get the sum of ESISTENZA from IDIR_GIACENZA
+LEFT JOIN (
+    SELECT 
+        ARTICOLO_ID, 
+        SUM(ESISTENZA) AS TOTAL_ESISTENZA
+    FROM 
+        opper.dbo.IDIR_GIACENZA
+    GROUP BY 
+        ARTICOLO_ID
+) AS GIACENZA
+    ON ARTICOLI.ARTICOLO_ID = GIACENZA.ARTICOLO_ID
+-- Join with a subquery to find the first order date from IDIR_FATTO_CARICHI
+LEFT JOIN (
+    SELECT 
+        ARTICOLO_ID, 
+        MIN(DATA_DOCUMENTO) AS FIRST_ORDER_DATE
+    FROM 
+        opper.dbo.IDIR_FATTO_CARICHI
+    GROUP BY 
+        ARTICOLO_ID
+) AS ORDERS
+    ON ARTICOLI.ARTICOLO_ID = ORDERS.ARTICOLO_ID
+-- Apply the filtering conditions
+WHERE 
+    ABC_ARTICOLI.ARTICOLO_ID IS NULL
+	) as tabella_finale
+	WHERE tabella_finale.STATUS = 'M';
+
+
