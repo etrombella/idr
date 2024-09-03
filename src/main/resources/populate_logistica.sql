@@ -1262,4 +1262,118 @@ WHERE
 [Articoli_Ubicazioni].[ArticoloId]=[Articoli].[Id] AND
 [Articoli_Ubicazioni].[UbicazioneId]=[Containers].[Id];
 
+TRUNCATE TABLE opper.dbo.LOGISTICA_IDIR_RIGHE_NEW2;
 
+INSERT INTO opper.dbo.LOGISTICA_IDIR_RIGHE_NEW2
+(
+    OperatoreId,
+	Attivita,
+	Data,
+	Righe,
+	Qta,
+	Magazzino
+)
+SELECT  OrdiniDettagli_Operatori.OperatoreId,   
+'Assegnazione' as Attivita,
+CAST(OrdiniDettagli_Operatori.TimeStamp AS date) AS Data,
+COUNT(DISTINCT OrdiniDettagli_Operatori.OrdineDettaglioId) AS Righe,  
+0 as Qta,
+'Maddaloni' as Magazzino
+FROM  [logistica].[dbo].OrdiniDettagli_Operatori 
+Left Outer Join [logistica].[dbo].OrdiniDettagliPrelievi ON OrdiniDettagliPrelievi.OrdineDettaglioId = OrdiniDettagli_Operatori.OrdineDettaglioId 
+INNER JOIN  [logistica].[dbo].Operatori ON OrdiniDettagli_Operatori.OperatoreId = Operatori.Id
+group by OrdiniDettagli_Operatori.OperatoreId, Operatori.Cognome + ' ' + Operatori.Nome, CAST(OrdiniDettagli_Operatori.TimeStamp as date)
+
+union
+SELECT  OrdiniDettagli_Operatori.OperatoreId,  
+'Prelievo' as Attivita,
+CAST(OrdiniDettagli_Operatori.TimeStamp AS date) AS Data, 
+COUNT(DISTINCT OrdiniDettagliPrelievi.OrdineDettaglioId) AS Righe, 
+SUM(OrdiniDettagliPrelievi.Quantita)as Qta,
+'Maddaloni' as Magazzino
+FROM  [logistica].[dbo].OrdiniDettagli_Operatori 
+Left Outer Join [logistica].[dbo].OrdiniDettagliPrelievi ON OrdiniDettagliPrelievi.OrdineDettaglioId = OrdiniDettagli_Operatori.OrdineDettaglioId 
+INNER JOIN  [logistica].[dbo].Operatori ON OrdiniDettagli_Operatori.OperatoreId = Operatori.Id
+group by OrdiniDettagli_Operatori.OperatoreId, Operatori.Cognome + ' ' + Operatori.Nome, CAST(OrdiniDettagli_Operatori.TimeStamp as date)
+
+union
+SELECT        
+ColliPrelievi.OperatoreId, 
+'Imballo' as Attivita,
+CAST(Colli.DataCollo AS date) AS Data ,
+COUNT(DISTINCT ColliPrelievi.OrdineDettaglioPrelievoId) AS Righe,
+0 as Qta,
+'Maddaloni' as Magazzino
+FROM            [logistica].[dbo].ColliPrelievi INNER JOIN
+                         [logistica].[dbo].Colli ON ColliPrelievi.ColloId = Colli.Id INNER JOIN
+                         [logistica].[dbo].Operatori ON ColliPrelievi.OperatoreId = Operatori.Id
+WHERE         (DATEPART(D, Colli.DataCollo) = DATEPART(D, Colli.DataChiusura)) 
+GROUP BY CAST(Colli.DataCollo AS date), ColliPrelievi.OperatoreId, Operatori.Cognome + ' ' + Operatori.Nome
+
+union
+
+Select 
+
+Tab.OperatoreKey,
+'Posizionatura' as Attivita,
+Tab.Data,
+sum(Tab.Conta) as Righe, 
+sum(Tab.QTA) as QTA,
+'Maddaloni' as Magazzino
+
+from
+	(
+select Data,OperatoreKey,UnitaCaricoKey,ArticoloKey,sum(CAST(Quantita AS BIGINT)) as QTA,1 as Conta
+	From [Opper].[dbo].[LOGISTICA_IDIR_NEW] 
+	WHERE AttivitaKey=4
+	group by  Data,OperatoreKey,UnitaCaricoKey,ArticoloKey) as Tab
+WHERE Tab.QTA>0
+group by  Tab.Data,Tab.OperatoreKey
+union
+Select 
+Tab.OperatoreKey,
+'Disimballo' as Attivita,
+Tab.Data,
+sum(Tab.Conta) as Righe, 
+sum(Tab.QTA) as Qta,
+'Maddaloni' as Magazzino
+from
+	(
+select Data,OperatoreKey,UnitaCaricoKey,ArticoloKey,sum(CAST(Quantita AS BIGINT)) as QTA,1 as Conta
+	From [Opper].[dbo].[LOGISTICA_IDIR_NEW] 
+	WHERE AttivitaKey=3
+	group by  Data,OperatoreKey,UnitaCaricoKey,ArticoloKey) as Tab
+WHERE Tab.QTA>0
+group by  Tab.Data,Tab.OperatoreKey;
+
+TRUNCATE TABLE opper.dbo.LOGISTICA_IDIR_TEMPO_POSIZIONAMENTO_NEW;
+
+INSERT INTO opper.dbo.LOGISTICA_IDIR_TEMPO_POSIZIONAMENTO_NEW
+(
+	[UnitaCaricoId]
+	,[ClienteFornitoreId]
+	,[RagioneSociale]
+	,[DataInizioDisimballo]
+	,[DataFinePosizionatura]
+	,[DurataMin]
+	,[DurataH]
+)
+SELECT 
+	  [UnitaCaricoId]
+	  ,[ClienteFornitoreId]
+	  ,[RagioneSociale]
+	  ,min([DataInizioDisimballo]) as DataInizioDisimballo
+      ,max([DataFinePosizionatura]) as DataFinePosizionatura
+	  ,DATEDIFF(minute,min([DataInizioDisimballo]),max([DataFinePosizionatura])) as DurataMin
+	  ,DATEDIFF(HOUR,min([DataInizioDisimballo]),max([DataFinePosizionatura])) as DurataH
+from(
+SELECT 
+	[Logistica].[dbo].[UdcCeste].*
+	,[ClienteFornitoreId]
+	, [RagioneSociale]
+  FROM [Logistica].[dbo].[UdcCeste]
+  left join  [Logistica].[dbo].[UnitaCarico] on [Logistica].[dbo].[UnitaCarico].[Id] =  [Logistica].[dbo].[UdcCeste].[UnitaCaricoId] 
+  left join  [Logistica].[dbo].[ClientiFornitori] on [Logistica].[dbo].[UnitaCarico].[ClienteFornitoreId] =  [Logistica].[dbo].[ClientiFornitori].[Id] 
+  ) as tabella
+  group by 	  [UnitaCaricoId],[ClienteFornitoreId],[RagioneSociale];
+  
