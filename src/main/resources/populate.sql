@@ -919,131 +919,127 @@ INSERT INTO opper.dbo.IDIR_RESI
 )
 
 
-SELECT 
-Vision.dbo.ListeRighe.ID AS ListaRigaID,
-Vision.dbo.Liste.ID AS ListaID,
-ListeDocumenti.DataDocumento AS DocumentoData, 
-Vision.dbo.Liste.Data as ListaData,
-Vision.dbo.CausaliMagazzino.Descrizione AS CausaleMagazzino, 
-Vision.dbo.Documenti.Descrizione AS Documento, 
-CASE WHEN MagazziniDifettosi.MagazzinoID > 0 THEN 'Difettoso' ELSE 'Nuovo' END AS TipoMerce, 
-Vision.dbo.Liste.MagazziniID AS ID_MAGAZZINO,
-opper.dbo.IDIR_CLIENTE.ID as ID_CLIENTE,
-ListeDocumenti.NumeroDocumento AS DocumentoNumero, 
-CASE WHEN Vision.dbo.Precodici.PrecodiceCauzioni = - 1 THEN 'Si' ELSE 'No' END AS Cauzione, 
-Vision.dbo.ListeRighe.ArticoloID,
-Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVenditaQuantita * - 1 AS Pezzi, 
-Vision.dbo.ListeRighe.Importo * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVendita * - 1 AS Valore, 
-ISNULL(Vision.dbo.ListeRighe.Quantita * Vision.dbo.ListeRighe.ListinoCosto * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheCosto, 0) * - 1 AS Costo, 
-(ISNULL(Vision.dbo.ListeRighe.Importo * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVendita, 0) - ISNULL(Vision.dbo.ListeRighe.Quantita * Vision.dbo.ListeRighe.ListinoCosto * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheCosto, 0)) * - 1 AS Margine, 
-Vision.dbo.ListeRighe.ParentListeRigheID,
-PrecodiciPercentuali.p_Riconosciuta as '% Riconosciuta',
-(Vision.dbo.ListeRighe.Importo * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVendita * - 1) / (Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVenditaQuantita * - 1) AS PmReso, 
-CASE WHEN Vision.dbo.ListeRighe.ParentListeRigheID > 0 THEN ListeRigheVendite.Importo / ListeRigheVendite.Quantita ELSE 0 END AS PmVendite, 
- Vision.dbo.vCondizioniSconto.CondizioniScontoPercentuale AS Sconto
-
-FROM   Vision.dbo.ClientiFornitori INNER JOIN
-             Vision.dbo.ListeDocumenti AS ListeDocumenti INNER JOIN
-             Vision.dbo.Liste ON ListeDocumenti.ListeID = Vision.dbo.Liste.ID INNER JOIN
-             Vision.dbo.ListeRighe ON Vision.dbo.Liste.ID = Vision.dbo.ListeRighe.ListeID INNER JOIN
-             Vision.dbo.CausaliMagazzinoListeRigheTipo ON Vision.dbo.ListeRighe.CausaliMagazzinoListeRigheTipoID = Vision.dbo.CausaliMagazzinoListeRigheTipo.ID INNER JOIN
-             Vision.dbo.Documenti ON ListeDocumenti.DocumentiID = Vision.dbo.Documenti.ID INNER JOIN
-             Vision.dbo.DocumentiClassiRaggruppamenti ON Vision.dbo.Documenti.ID = Vision.dbo.DocumentiClassiRaggruppamenti.DocumentiID INNER JOIN
-             Vision.dbo.DocumentiTipo ON Vision.dbo.Documenti.DocumentiTipoID = Vision.dbo.DocumentiTipo.ID INNER JOIN
-             Vision.dbo.CausaliMagazzino ON Vision.dbo.Liste.CausaliMagazzinoID = Vision.dbo.CausaliMagazzino.ID ON Vision.dbo.ClientiFornitori.ID = Vision.dbo.Liste.ClientiFornitoriID INNER JOIN
-             Vision.dbo.ContattiContabili ON Vision.dbo.ClientiFornitori.ContattiContabiliID = Vision.dbo.ContattiContabili.ID INNER JOIN
-             Vision.dbo.Contatti ON Vision.dbo.ContattiContabili.ContattoID = Vision.dbo.Contatti.ID INNER JOIN
-             Vision.dbo.Magazzini ON Vision.dbo.Liste.MagazziniID = Vision.dbo.Magazzini.ID INNER JOIN
-             Vision.dbo.CausaliMagazzinoProgressivi ON Vision.dbo.ListeRighe.CausaliMagazzinoListeRigheTipoID = Vision.dbo.CausaliMagazzinoProgressivi.CausaliMagazzinoListeRigheTipoID INNER JOIN
-             Vision.dbo.Articoli ON Vision.dbo.ListeRighe.ArticoloID = Vision.dbo.Articoli.ID INNER JOIN
-             Vision.dbo.Precodici ON Vision.dbo.ListeRighe.Precodice = Vision.dbo.Precodici.Codice INNER JOIN
-			Vision.dbo.vCondizioniSconto ON Vision.dbo.ListeRighe.CondizioniScontoID = Vision.dbo.vCondizioniSconto.ID INNER JOIN
-			opper.dbo.IDIR_CLIENTE ON opper.dbo.IDIR_CLIENTE.CLIENTIFORNITORIID = Vision.dbo.Liste.ClientiFornitoriID INNER JOIN
-			Vision.dbo.ListeRighe AS ListeRigheVendite ON Vision.dbo.ListeRighe.ParentListeRigheID = ListeRigheVendite.ID LEFT JOIN
-			(
-    SELECT
-        [PrecodiceID],
-        AVG([% Riconosciuta]) AS p_Riconosciuta
-    FROM
-        Vision.[dbo].[_PowerBI_RF_Fornitori_Anni_Precodici]
-    GROUP BY
-        [PrecodiceID]
-) AS PrecodiciPercentuali ON PrecodiciPercentuali.[PrecodiceID] = Vision.dbo.Precodici.ID INNER JOIN
-             Vision.dbo.Categorie ON Vision.dbo.Articoli.CategoriaID = Vision.dbo.Categorie.ID LEFT OUTER JOIN
-                 (SELECT ContattiID, 'Si' AS ClienteAts
-                 FROM    Vision.dbo.ContattiRecapiti
-                 WHERE (Valore = 'ATS') AND (ContattiRecapitiTipoID = 100)) AS ClientiATS ON Vision.dbo.Contatti.ID = ClientiATS.ContattiID LEFT OUTER JOIN
-                 (SELECT MagazziniID AS MagazzinoID
-                 FROM    Vision.dbo.MagazziniClassiRaggruppamenti
-                 WHERE (MagazziniClassiID = 409)) AS MagazziniDifettosi ON Vision.dbo.Liste.MagazziniID = MagazziniDifettosi.MagazzinoID
-WHERE (Vision.dbo.DocumentiClassiRaggruppamenti.DocumentiClassiID = 10) 
-AND (Vision.dbo.DocumentiTipo.RettificheVendite = 1) 
-AND (YEAR(ListeDocumenti.DataDocumento) >= 2021) 
-AND (Vision.dbo.ListeRighe.ArticoloID > 0) 
-AND (Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVenditaQuantita * - 1 > 0) 
-AND (NOT (Vision.dbo.ListeRighe.Precodice IN ('SOVRAP', 'SOVRAB')))
-
-UNION
-
 SELECT
 Vision.dbo.ListeRighe.ID AS ListaRigaID,
 Vision.dbo.Liste.ID AS ListaID,
-ListeDocumenti.DataDocumento AS DocumentoData, 
+ListeDocumenti.DataDocumento AS DocumentoData,
 Vision.dbo.Liste.Data as ListaData,
-Vision.dbo.CausaliMagazzino.Descrizione AS CausaleMagazzino, 
-Vision.dbo.Documenti.Descrizione AS Documento, 
-CASE WHEN MagazziniDifettosi.MagazzinoID > 0 THEN 'Difettoso' ELSE 'Nuovo' END AS TipoMerce, 
+Vision.dbo.CausaliMagazzino.Descrizione AS CausaleMagazzino,
+Vision.dbo.Documenti.Descrizione AS Documento,
+CASE WHEN MagazziniDifettosi.MagazzinoID > 0 THEN 'Difettoso' ELSE 'Nuovo' END AS TipoMerce,
 Vision.dbo.Liste.MagazziniID AS ID_MAGAZZINO,
-opper.dbo.IDIR_CLIENTE.ID as ID_CLIENTE, /*DA AGGIUNGERE JOIN*/
-ListeDocumenti.NumeroDocumento AS DocumentoNumero, 
-CASE WHEN Vision.dbo.Precodici.PrecodiceCauzioni = - 1 THEN 'Si' ELSE 'No' END AS Cauzione, 
+opper.dbo.IDIR_CLIENTE.ID as ID_CLIENTE,
+ListeDocumenti.NumeroDocumento AS DocumentoNumero,
+CASE WHEN Vision.dbo.Precodici.PrecodiceCauzioni = - 1 THEN 'Si' ELSE 'No' END AS Cauzione,
 Vision.dbo.ListeRighe.ArticoloID,
-Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVenditaQuantita * - 1 AS Pezzi, 
-Vision.dbo.ListeRighe.Importo * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVendita * - 1 AS Valore, 
-ISNULL(Vision.dbo.ListeRighe.Quantita * Vision.dbo.ListeRighe.ListinoCosto * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheCosto, 0) * - 1 AS Costo, 
-(ISNULL(Vision.dbo.ListeRighe.Importo * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVendita, 0) - ISNULL(Vision.dbo.ListeRighe.Quantita * Vision.dbo.ListeRighe.ListinoCosto * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheCosto, 0)) * - 1 AS Margine, 
+Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVenditaQuantita * - 1 AS Pezzi,
+Vision.dbo.ListeRighe.Importo * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVendita * - 1 AS Valore,
+ISNULL(Vision.dbo.ListeRighe.Quantita * Vision.dbo.ListeRighe.ListinoCosto * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheCosto, 0) * - 1 AS Costo,
+(ISNULL(Vision.dbo.ListeRighe.Importo * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVendita, 0) - ISNULL(Vision.dbo.ListeRighe.Quantita * Vision.dbo.ListeRighe.ListinoCosto * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheCosto, 0)) * - 1 AS Margine,
 Vision.dbo.ListeRighe.ParentListeRigheID,
 PrecodiciPercentuali.p_Riconosciuta as '% Riconosciuta',
-(Vision.dbo.ListeRighe.Importo * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVendita * - 1) / (Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVenditaQuantita * - 1) AS PmReso, 
-CASE WHEN Vision.dbo.ListeRighe.ParentListeRigheID > 0 THEN ListeRigheVendite.Importo / ListeRigheVendite.Quantita ELSE 0 END AS PmVendite, 
- Vision.dbo.vCondizioniSconto.CondizioniScontoPercentuale AS Sconto
-
-FROM   Vision.dbo.ClientiFornitori INNER JOIN
-             Vision.dbo.ListeDocumenti AS ListeDocumenti INNER JOIN
-             Vision.dbo.Liste ON ListeDocumenti.ListeID = Vision.dbo.Liste.ID INNER JOIN
-             Vision.dbo.ListeRighe ON Vision.dbo.Liste.ID = Vision.dbo.ListeRighe.ListeID INNER JOIN
-             Vision.dbo.CausaliMagazzinoListeRigheTipo ON Vision.dbo.ListeRighe.CausaliMagazzinoListeRigheTipoID = Vision.dbo.CausaliMagazzinoListeRigheTipo.ID INNER JOIN
-             Vision.dbo.Documenti ON ListeDocumenti.DocumentiID = Vision.dbo.Documenti.ID INNER JOIN
-             Vision.dbo.DocumentiTipo ON Vision.dbo.Documenti.DocumentiTipoID = Vision.dbo.DocumentiTipo.ID INNER JOIN
-             Vision.dbo.CausaliMagazzino ON Vision.dbo.Liste.CausaliMagazzinoID = Vision.dbo.CausaliMagazzino.ID ON Vision.dbo.ClientiFornitori.ID =Vision. dbo.Liste.ClientiFornitoriID INNER JOIN
-             Vision.dbo.ContattiContabili ON Vision.dbo.ClientiFornitori.ContattiContabiliID = Vision.dbo.ContattiContabili.ID INNER JOIN
-             Vision.dbo.Contatti ON Vision.dbo.ContattiContabili.ContattoID = Vision.dbo.Contatti.ID INNER JOIN
-             Vision.dbo.Magazzini ON Vision.dbo.Liste.MagazziniID = Vision.dbo.Magazzini.ID INNER JOIN
-             Vision.dbo.CausaliMagazzinoProgressivi ON Vision.dbo.ListeRighe.CausaliMagazzinoListeRigheTipoID = Vision.dbo.CausaliMagazzinoProgressivi.CausaliMagazzinoListeRigheTipoID INNER JOIN
-             Vision.dbo.Articoli ON Vision.dbo.ListeRighe.ArticoloID = Vision.dbo.Articoli.ID INNER JOIN
-             Vision.dbo.Precodici ON Vision.dbo.ListeRighe.Precodice = Vision.dbo.Precodici.Codice INNER JOIN
-			Vision.dbo.vCondizioniSconto ON Vision.dbo.ListeRighe.CondizioniScontoID = Vision.dbo.vCondizioniSconto.ID INNER JOIN
-			opper.dbo.IDIR_CLIENTE ON opper.dbo.IDIR_CLIENTE.CLIENTIFORNITORIID = Vision.dbo.Liste.ClientiFornitoriID INNER JOIN
-			Vision.dbo.ListeRighe AS ListeRigheVendite ON Vision.dbo.ListeRighe.ParentListeRigheID = ListeRigheVendite.ID LEFT JOIN
-			(
-    SELECT
-        [PrecodiceID],
-        AVG([% Riconosciuta]) AS p_Riconosciuta
-    FROM
-        Vision.[dbo].[_PowerBI_RF_Fornitori_Anni_Precodici]
-    GROUP BY
-        [PrecodiceID]
-) AS PrecodiciPercentuali ON PrecodiciPercentuali.[PrecodiceID] = Vision.dbo.Precodici.ID  INNER JOIN
-             Vision.dbo.Categorie ON Vision.dbo.Articoli.CategoriaID = Vision.dbo.Categorie.ID LEFT OUTER JOIN
-                 (SELECT ContattiID, 'Si' AS ClienteAts
-                 FROM    Vision.dbo.ContattiRecapiti
-                 WHERE (Valore = 'ATS') AND (ContattiRecapitiTipoID = 100)) AS ClientiATS ON Vision.dbo.Contatti.ID = ClientiATS.ContattiID LEFT OUTER JOIN
-                 (SELECT MagazziniID AS MagazzinoID
-                 FROM    Vision.dbo.MagazziniClassiRaggruppamenti
-                 WHERE (MagazziniClassiID = 409)) AS MagazziniDifettosi ON Vision.dbo.Liste.MagazziniID = MagazziniDifettosi.MagazzinoID
-WHERE (YEAR(ListeDocumenti.DataDocumento) >= 2021) 
-AND (Vision.dbo.ListeRighe.ArticoloID > 0) 
-AND (NOT (Vision.dbo.ListeRighe.Precodice IN ('SOVRAP', 'SOVRAB'))) 
+(Vision.dbo.ListeRighe.Importo * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVendita * - 1) / NULLIF((Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVenditaQuantita * - 1),0) AS PmReso,
+CASE WHEN Vision.dbo.ListeRighe.ParentListeRigheID > 0 THEN ListeRigheVendite.Importo / NULLIF(ListeRigheVendite.Quantita,0) ELSE 0 END AS PmVendite,
+Vision.dbo.vCondizioniSconto.CondizioniScontoPercentuale AS Sconto
+FROM Vision.dbo.ClientiFornitori INNER JOIN
+Vision.dbo.ListeDocumenti AS ListeDocumenti INNER JOIN
+Vision.dbo.Liste ON ListeDocumenti.ListeID = Vision.dbo.Liste.ID INNER JOIN
+Vision.dbo.ListeRighe ON Vision.dbo.Liste.ID = Vision.dbo.ListeRighe.ListeID INNER JOIN
+Vision.dbo.CausaliMagazzinoListeRigheTipo ON Vision.dbo.ListeRighe.CausaliMagazzinoListeRigheTipoID = Vision.dbo.CausaliMagazzinoListeRigheTipo.ID INNER JOIN
+Vision.dbo.Documenti ON ListeDocumenti.DocumentiID = Vision.dbo.Documenti.ID INNER JOIN
+Vision.dbo.DocumentiClassiRaggruppamenti ON Vision.dbo.Documenti.ID = Vision.dbo.DocumentiClassiRaggruppamenti.DocumentiID INNER JOIN
+Vision.dbo.DocumentiTipo ON Vision.dbo.Documenti.DocumentiTipoID = Vision.dbo.DocumentiTipo.ID INNER JOIN
+Vision.dbo.CausaliMagazzino ON Vision.dbo.Liste.CausaliMagazzinoID = Vision.dbo.CausaliMagazzino.ID ON Vision.dbo.ClientiFornitori.ID = Vision.dbo.Liste.ClientiFornitoriID INNER JOIN
+Vision.dbo.ContattiContabili ON Vision.dbo.ClientiFornitori.ContattiContabiliID = Vision.dbo.ContattiContabili.ID INNER JOIN
+Vision.dbo.Contatti ON Vision.dbo.ContattiContabili.ContattoID = Vision.dbo.Contatti.ID INNER JOIN
+Vision.dbo.Magazzini ON Vision.dbo.Liste.MagazziniID = Vision.dbo.Magazzini.ID INNER JOIN
+Vision.dbo.CausaliMagazzinoProgressivi ON Vision.dbo.ListeRighe.CausaliMagazzinoListeRigheTipoID = Vision.dbo.CausaliMagazzinoProgressivi.CausaliMagazzinoListeRigheTipoID INNER JOIN
+Vision.dbo.Articoli ON Vision.dbo.ListeRighe.ArticoloID = Vision.dbo.Articoli.ID INNER JOIN
+Vision.dbo.Precodici ON Vision.dbo.ListeRighe.Precodice = Vision.dbo.Precodici.Codice INNER JOIN
+Vision.dbo.vCondizioniSconto ON Vision.dbo.ListeRighe.CondizioniScontoID = Vision.dbo.vCondizioniSconto.ID INNER JOIN
+opper.dbo.IDIR_CLIENTE ON opper.dbo.IDIR_CLIENTE.CLIENTIFORNITORIID = Vision.dbo.Liste.ClientiFornitoriID INNER JOIN
+Vision.dbo.ListeRighe AS ListeRigheVendite ON Vision.dbo.ListeRighe.ParentListeRigheID = ListeRigheVendite.ID LEFT JOIN
+(
+SELECT
+[PrecodiceID],
+AVG([% Riconosciuta]) AS p_Riconosciuta
+FROM
+Vision.[dbo].[_PowerBI_RF_Fornitori_Anni_Precodici]
+GROUP BY
+[PrecodiceID]
+) AS PrecodiciPercentuali ON PrecodiciPercentuali.[PrecodiceID] = Vision.dbo.Precodici.ID INNER JOIN
+Vision.dbo.Categorie ON Vision.dbo.Articoli.CategoriaID = Vision.dbo.Categorie.ID LEFT OUTER JOIN
+(SELECT ContattiID, 'Si' AS ClienteAts
+FROM Vision.dbo.ContattiRecapiti
+WHERE (Valore = 'ATS') AND (ContattiRecapitiTipoID = 100)) AS ClientiATS ON Vision.dbo.Contatti.ID = ClientiATS.ContattiID LEFT OUTER JOIN
+(SELECT MagazziniID AS MagazzinoID
+FROM Vision.dbo.MagazziniClassiRaggruppamenti
+WHERE (MagazziniClassiID = 409)) AS MagazziniDifettosi ON Vision.dbo.Liste.MagazziniID = MagazziniDifettosi.MagazzinoID
+WHERE (Vision.dbo.DocumentiClassiRaggruppamenti.DocumentiClassiID = 10)
+AND (Vision.dbo.DocumentiTipo.RettificheVendite = 1)
+AND (YEAR(ListeDocumenti.DataDocumento) >= 2021)
+AND (Vision.dbo.ListeRighe.ArticoloID > 0)
+AND (Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVenditaQuantita * - 1 > 0)
+AND (NOT (Vision.dbo.ListeRighe.Precodice IN ('SOVRAP', 'SOVRAB')))
+UNION
+SELECT
+Vision.dbo.ListeRighe.ID AS ListaRigaID,
+Vision.dbo.Liste.ID AS ListaID,
+ListeDocumenti.DataDocumento AS DocumentoData,
+Vision.dbo.Liste.Data as ListaData,
+Vision.dbo.CausaliMagazzino.Descrizione AS CausaleMagazzino,
+Vision.dbo.Documenti.Descrizione AS Documento,
+CASE WHEN MagazziniDifettosi.MagazzinoID > 0 THEN 'Difettoso' ELSE 'Nuovo' END AS TipoMerce,
+Vision.dbo.Liste.MagazziniID AS ID_MAGAZZINO,
+opper.dbo.IDIR_CLIENTE.ID as ID_CLIENTE, /*DA AGGIUNGERE JOIN*/
+ListeDocumenti.NumeroDocumento AS DocumentoNumero,
+CASE WHEN Vision.dbo.Precodici.PrecodiceCauzioni = - 1 THEN 'Si' ELSE 'No' END AS Cauzione,
+Vision.dbo.ListeRighe.ArticoloID,
+Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVenditaQuantita * - 1 AS Pezzi,
+Vision.dbo.ListeRighe.Importo * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVendita * - 1 AS Valore,
+ISNULL(Vision.dbo.ListeRighe.Quantita * Vision.dbo.ListeRighe.ListinoCosto * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheCosto, 0) * - 1 AS Costo,
+(ISNULL(Vision.dbo.ListeRighe.Importo * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVendita, 0) - ISNULL(Vision.dbo.ListeRighe.Quantita * Vision.dbo.ListeRighe.ListinoCosto * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheCosto, 0)) * - 1 AS Margine,
+Vision.dbo.ListeRighe.ParentListeRigheID,
+PrecodiciPercentuali.p_Riconosciuta as '% Riconosciuta',
+(Vision.dbo.ListeRighe.Importo * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVendita * - 1) / NULLIF((Vision.dbo.ListeRighe.Quantita * Vision.dbo.CausaliMagazzinoListeRigheTipo.StatisticheVenditaQuantita * - 1),0) AS PmReso,
+CASE WHEN Vision.dbo.ListeRighe.ParentListeRigheID > 0 THEN ListeRigheVendite.Importo / NULLIF(ListeRigheVendite.Quantita,0) ELSE 0 END AS PmVendite,
+Vision.dbo.vCondizioniSconto.CondizioniScontoPercentuale AS Sconto
+FROM Vision.dbo.ClientiFornitori INNER JOIN
+Vision.dbo.ListeDocumenti AS ListeDocumenti INNER JOIN
+Vision.dbo.Liste ON ListeDocumenti.ListeID = Vision.dbo.Liste.ID INNER JOIN
+Vision.dbo.ListeRighe ON Vision.dbo.Liste.ID = Vision.dbo.ListeRighe.ListeID INNER JOIN
+Vision.dbo.CausaliMagazzinoListeRigheTipo ON Vision.dbo.ListeRighe.CausaliMagazzinoListeRigheTipoID = Vision.dbo.CausaliMagazzinoListeRigheTipo.ID INNER JOIN
+Vision.dbo.Documenti ON ListeDocumenti.DocumentiID = Vision.dbo.Documenti.ID INNER JOIN
+Vision.dbo.DocumentiTipo ON Vision.dbo.Documenti.DocumentiTipoID = Vision.dbo.DocumentiTipo.ID INNER JOIN
+Vision.dbo.CausaliMagazzino ON Vision.dbo.Liste.CausaliMagazzinoID = Vision.dbo.CausaliMagazzino.ID ON Vision.dbo.ClientiFornitori.ID =Vision. dbo.Liste.ClientiFornitoriID INNER JOIN
+Vision.dbo.ContattiContabili ON Vision.dbo.ClientiFornitori.ContattiContabiliID = Vision.dbo.ContattiContabili.ID INNER JOIN
+Vision.dbo.Contatti ON Vision.dbo.ContattiContabili.ContattoID = Vision.dbo.Contatti.ID INNER JOIN
+Vision.dbo.Magazzini ON Vision.dbo.Liste.MagazziniID = Vision.dbo.Magazzini.ID INNER JOIN
+Vision.dbo.CausaliMagazzinoProgressivi ON Vision.dbo.ListeRighe.CausaliMagazzinoListeRigheTipoID = Vision.dbo.CausaliMagazzinoProgressivi.CausaliMagazzinoListeRigheTipoID INNER JOIN
+Vision.dbo.Articoli ON Vision.dbo.ListeRighe.ArticoloID = Vision.dbo.Articoli.ID INNER JOIN
+Vision.dbo.Precodici ON Vision.dbo.ListeRighe.Precodice = Vision.dbo.Precodici.Codice INNER JOIN
+Vision.dbo.vCondizioniSconto ON Vision.dbo.ListeRighe.CondizioniScontoID = Vision.dbo.vCondizioniSconto.ID INNER JOIN
+opper.dbo.IDIR_CLIENTE ON opper.dbo.IDIR_CLIENTE.CLIENTIFORNITORIID = Vision.dbo.Liste.ClientiFornitoriID INNER JOIN
+Vision.dbo.ListeRighe AS ListeRigheVendite ON Vision.dbo.ListeRighe.ParentListeRigheID = ListeRigheVendite.ID LEFT JOIN
+(
+SELECT
+[PrecodiceID],
+AVG([% Riconosciuta]) AS p_Riconosciuta
+FROM
+Vision.[dbo].[_PowerBI_RF_Fornitori_Anni_Precodici]
+GROUP BY
+[PrecodiceID]
+) AS PrecodiciPercentuali ON PrecodiciPercentuali.[PrecodiceID] = Vision.dbo.Precodici.ID INNER JOIN
+Vision.dbo.Categorie ON Vision.dbo.Articoli.CategoriaID = Vision.dbo.Categorie.ID LEFT OUTER JOIN
+(SELECT ContattiID, 'Si' AS ClienteAts
+FROM Vision.dbo.ContattiRecapiti
+WHERE (Valore = 'ATS') AND (ContattiRecapitiTipoID = 100)) AS ClientiATS ON Vision.dbo.Contatti.ID = ClientiATS.ContattiID LEFT OUTER JOIN
+(SELECT MagazziniID AS MagazzinoID
+FROM Vision.dbo.MagazziniClassiRaggruppamenti
+WHERE (MagazziniClassiID = 409)) AS MagazziniDifettosi ON Vision.dbo.Liste.MagazziniID = MagazziniDifettosi.MagazzinoID
+WHERE (YEAR(ListeDocumenti.DataDocumento) >= 2021)
+AND (Vision.dbo.ListeRighe.ArticoloID > 0)
+AND (NOT (Vision.dbo.ListeRighe.Precodice IN ('SOVRAP', 'SOVRAB')))
 AND (Vision.dbo.Documenti.ID = 73);
 
 
