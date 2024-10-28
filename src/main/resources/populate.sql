@@ -2068,87 +2068,47 @@ WHERE
 
 TRUNCATE TABLE  opper.dbo.IDIR_ARTICOLI_DIMENSIONI_NEW_UBICATI;
 
-INSERT INTO opper.dbo.IDIR_ARTICOLI_DIMENSIONI_NEW_UBICATI
+INSERT INTO opper.dbo. IDIR_ARTICOLI_DIMENSIONI_NEW_UBICATI
 (
-    OperatoreId,
-	Attivita,
-	Data,
-	Righe,
-	Qta,
-	Magazzino
+	ARTICOLO_ID_VISION 
+	,ARTICOLO_ID_WMS
+	,PRECODICE
+	,CODICE
+	,MAGAZZINO
+	,LUNGHEZZA_MM
+	,LARGHEZZA_MM
+	,ALTEZZA_MM
+	,PESO_GR
 )
-SELECT  OrdiniDettagli_Operatori.OperatoreId,   
-'Assegnazione' as Attivita,
-CAST(OrdiniDettagli_Operatori.TimeStamp AS date) AS Data,
-COUNT(DISTINCT OrdiniDettagli_Operatori.OrdineDettaglioId) AS Righe,  
-0 as Qta,
-'Maddaloni' as Magazzino
-FROM  [logistica].[dbo].OrdiniDettagli_Operatori 
-Left Outer Join [logistica].[dbo].OrdiniDettagliPrelievi ON OrdiniDettagliPrelievi.OrdineDettaglioId = OrdiniDettagli_Operatori.OrdineDettaglioId 
-INNER JOIN  [logistica].[dbo].Operatori ON OrdiniDettagli_Operatori.OperatoreId = Operatori.Id
-group by OrdiniDettagli_Operatori.OperatoreId, Operatori.Cognome + ' ' + Operatori.Nome, CAST(OrdiniDettagli_Operatori.TimeStamp as date)
-
-union
-SELECT  OrdiniDettagli_Operatori.OperatoreId,  
-'Prelievo' as Attivita,
-CAST(OrdiniDettagli_Operatori.TimeStamp AS date) AS Data, 
-COUNT(DISTINCT OrdiniDettagliPrelievi.OrdineDettaglioId) AS Righe, 
-SUM(OrdiniDettagliPrelievi.Quantita)as Qta,
-'Maddaloni' as Magazzino
-FROM  [logistica].[dbo].OrdiniDettagli_Operatori 
-Left Outer Join [logistica].[dbo].OrdiniDettagliPrelievi ON OrdiniDettagliPrelievi.OrdineDettaglioId = OrdiniDettagli_Operatori.OrdineDettaglioId 
-INNER JOIN  [logistica].[dbo].Operatori ON OrdiniDettagli_Operatori.OperatoreId = Operatori.Id
-group by OrdiniDettagli_Operatori.OperatoreId, Operatori.Cognome + ' ' + Operatori.Nome, CAST(OrdiniDettagli_Operatori.TimeStamp as date)
-
-union
-SELECT        
-ColliPrelievi.OperatoreId, 
-'Imballo' as Attivita,
-CAST(Colli.DataCollo AS date) AS Data ,
-COUNT(DISTINCT ColliPrelievi.OrdineDettaglioPrelievoId) AS Righe,
-0 as Qta,
-'Maddaloni' as Magazzino
-FROM            [logistica].[dbo].ColliPrelievi INNER JOIN
-                         [logistica].[dbo].Colli ON ColliPrelievi.ColloId = Colli.Id INNER JOIN
-                         [logistica].[dbo].Operatori ON ColliPrelievi.OperatoreId = Operatori.Id
-WHERE         (DATEPART(D, Colli.DataCollo) = DATEPART(D, Colli.DataChiusura)) 
-GROUP BY CAST(Colli.DataCollo AS date), ColliPrelievi.OperatoreId, Operatori.Cognome + ' ' + Operatori.Nome
-
-union
-
-Select 
-
-Tab.OperatoreKey,
-'Posizionatura' as Attivita,
-Tab.Data,
-sum(Tab.Conta) as Righe, 
-sum(Tab.QTA) as QTA,
-'Maddaloni' as Magazzino
-
-from
-	(
-select Data,OperatoreKey,UnitaCaricoKey,ArticoloKey,sum(CAST(Quantita AS BIGINT)) as QTA,1 as Conta
-	From [Opper].[dbo].[LOGISTICA_IDIR_NEW] 
-	WHERE AttivitaKey=4
-	group by  Data,OperatoreKey,UnitaCaricoKey,ArticoloKey) as Tab
-WHERE Tab.QTA>0
-group by  Tab.Data,Tab.OperatoreKey
-union
-Select 
-Tab.OperatoreKey,
-'Disimballo' as Attivita,
-Tab.Data,
-sum(Tab.Conta) as Righe, 
-sum(Tab.QTA) as Qta,
-'Maddaloni' as Magazzino
-from
-	(
-select Data,OperatoreKey,UnitaCaricoKey,ArticoloKey,sum(CAST(Quantita AS BIGINT)) as QTA,1 as Conta
-	From [Opper].[dbo].[LOGISTICA_IDIR_NEW] 
-	WHERE AttivitaKey=3
-	group by  Data,OperatoreKey,UnitaCaricoKey,ArticoloKey) as Tab
-WHERE Tab.QTA>0
-group by  Tab.Data,Tab.OperatoreKey;
-
+SELECT 
+DISTINCT
+      ErpArtId as ARTICOLO_ID_VISION,
+      [ARTICOLO_ID_WMS],
+      [Opper].[dbo].[IDIR_ARTICOLI_DIMENSIONI_UBICAZIONI].[PRECODICE],
+      [Opper].[dbo].[IDIR_ARTICOLI_DIMENSIONI_UBICAZIONI].[CODICE],
+      [MAGAZZINO],
+      CASE 
+          WHEN [Opper].[dbo].[IDIR_ARTICOLI_DIMENSIONI_UBICAZIONI].[LUNGHEZZA_MM] = 0 AND [Opper].[dbo].[IDIR_PESI_MISURE_LISTINI].lunghezza_mm > 0 
+          THEN [Opper].[dbo].[IDIR_PESI_MISURE_LISTINI].lunghezza_mm
+          ELSE [Opper].[dbo].[IDIR_ARTICOLI_DIMENSIONI_UBICAZIONI].[LUNGHEZZA_MM]
+      END as LUNGHEZZA_MM,
+      CASE 
+          WHEN [Opper].[dbo].[IDIR_ARTICOLI_DIMENSIONI_UBICAZIONI].[LARGHEZZA_MM] = 0 AND [Opper].[dbo].[IDIR_PESI_MISURE_LISTINI].larghezza_mm > 0 
+          THEN [Opper].[dbo].[IDIR_PESI_MISURE_LISTINI].larghezza_mm
+          ELSE [Opper].[dbo].[IDIR_ARTICOLI_DIMENSIONI_UBICAZIONI].[LARGHEZZA_MM]
+      END as LARGHEZZA_MM,
+      CASE 
+          WHEN [Opper].[dbo].[IDIR_ARTICOLI_DIMENSIONI_UBICAZIONI].[ALTEZZA_MM] = 0 AND [Opper].[dbo].[IDIR_PESI_MISURE_LISTINI].altezza_mm > 0 
+          THEN [Opper].[dbo].[IDIR_PESI_MISURE_LISTINI].altezza_mm
+          ELSE [Opper].[dbo].[IDIR_ARTICOLI_DIMENSIONI_UBICAZIONI].[ALTEZZA_MM]
+      END as ALTEZZA_MM,
+      CASE 
+          WHEN [Opper].[dbo].[IDIR_ARTICOLI_DIMENSIONI_UBICAZIONI].[PESO_GR] = 0 AND [Opper].[dbo].[IDIR_PESI_MISURE_LISTINI].peso_kg * 1000 > 0 
+          THEN [Opper].[dbo].[IDIR_PESI_MISURE_LISTINI].peso_kg * 1000
+          ELSE [Opper].[dbo].[IDIR_ARTICOLI_DIMENSIONI_UBICAZIONI].[PESO_GR]
+      END as PESO_GR
+FROM [Opper].[dbo].[IDIR_ARTICOLI_DIMENSIONI_UBICAZIONI]
+LEFT JOIN [Logistica].[dbo].[Articoli] ON [Logistica].[dbo].[Articoli].Id = [Opper].[dbo].[IDIR_ARTICOLI_DIMENSIONI_UBICAZIONI].ARTICOLO_ID_WMS
+LEFT JOIN [Opper].[dbo].[IDIR_PESI_MISURE_LISTINI] ON [Opper].[dbo].[IDIR_PESI_MISURE_LISTINI].articolo_id = [Logistica].[dbo].[Articoli].ErpArtId;
 
 
