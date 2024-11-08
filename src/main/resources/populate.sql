@@ -2111,4 +2111,30 @@ FROM [Opper].[dbo].[IDIR_ARTICOLI_DIMENSIONI_UBICAZIONI]
 LEFT JOIN [Logistica].[dbo].[Articoli] ON [Logistica].[dbo].[Articoli].Id = [Opper].[dbo].[IDIR_ARTICOLI_DIMENSIONI_UBICAZIONI].ARTICOLO_ID_WMS
 LEFT JOIN [Opper].[dbo].[IDIR_PESI_MISURE_LISTINI] ON [Opper].[dbo].[IDIR_PESI_MISURE_LISTINI].articolo_id = [Logistica].[dbo].[Articoli].ErpArtId;
 
+TRUNCATE TABLE  opper.dbo.IDIR_CLIENTI_DATE_NASCITA;
 
+INSERT INTO opper.dbo.IDIR_CLIENTI_DATE_NASCITA
+(
+	CLIENTIFORNITORIID 
+	,VALORE
+)
+SELECT		Vision.dbo.ClientiFornitori.ID AS ClientiFornitoriID,
+			Vision.dbo.ContattiRecapiti.Valore
+FROM   		Vision.dbo.ClientiFornitori LEFT JOIN
+			(SELECT 
+			DISTINCT 
+				Vision.dbo.ClientiFornitoriBlocchi.ClientiFornitoriID, 
+				CASE Vision.dbo.ClientiFornitoriBlocchi.BlocchiMotivazioniID WHEN 1 THEN 'S' END AS BloccoInsoluti
+				FROM     Vision.dbo.ClientiFornitoriBlocchi INNER JOIN
+						Vision.dbo.BlocchiMotivazioni ON Vision.dbo.ClientiFornitoriBlocchi.BlocchiMotivazioniID = Vision.dbo.BlocchiMotivazioni.ID
+				WHERE  (Vision.dbo.ClientiFornitoriBlocchi.ClientiFornitoriID > 0) AND (Vision.dbo.ClientiFornitoriBlocchi.BlocchiMotivazioniID = 1)) as BlocchiInsoluti ON BlocchiInsoluti.ClientiFornitoriID = Vision.dbo.ClientiFornitori.ID,
+            Vision.dbo.ContattiContabili ,
+            Vision.dbo.Contatti ,
+            Vision.dbo.Clienti ,
+			Vision.dbo.ContattiRecapiti
+WHERE	Vision.dbo.ClientiFornitori.ContattiContabiliID 	= Vision.dbo.ContattiContabili.ID
+AND 	Vision.dbo.ContattiContabili.ContattoID 			= Vision.dbo.Contatti.ID
+AND 	Vision.dbo.ClientiFornitori.ID 						= Vision.dbo.Clienti.ClientiFornitoriID
+AND 	Vision.dbo.ContattiContabili.ContattiTipoID 		IN(2,10)
+AND		Vision.dbo.Contatti.ID = Vision.dbo.ContattiRecapiti.ContattiID
+AND		Vision.dbo.ContattiRecapiti.ContattiRecapitiTipoID = 113;
