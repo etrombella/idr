@@ -1425,11 +1425,14 @@ INSERT INTO opper.dbo.LOGISTICA_IDIR_COLLI2
 	DescrizionePorto,
 	NumeroDocumento,
 	TrasportoACuraCodice,
-	TrasportoACuraDescrizione
+	TrasportoACuraDescrizione,
+	Magazzino
 )
-SELECT
-ROW_NUMBER() OVER (ORDER BY [DataCollo]) as 'FactColloId'
-,FORMAT([DataCollo], 'yyyyMMddHHmmss') as 'ColloKey'
+SELECT 
+ ROW_NUMBER() OVER (ORDER BY Tabtot.ColloKey) as 'FactColloId'
+,Tabtot.*
+FROM (SELECT 
+FORMAT([DataCollo], 'yyyyMMddHHmmss') as 'ColloKey'
 ,[Tracking]
 ,[Logistica].[dbo].[ColliStati].[Descrizione] as 'StatoCollo'
 ,FORMAT([DataCollo], 'yyyyMMdd') as 'DataColloKey'
@@ -1472,6 +1475,8 @@ ROW_NUMBER() OVER (ORDER BY [DataCollo]) as 'FactColloId'
 ,Tab2.NumeroDocumento
 ,Tab2.TrasportoACuraCodice
 ,Tab2.TrasportoACuraDescrizione
+,'Maddaloni' as Magazzino
+
 FROM [Logistica].[dbo].[Colli]
 left join [Logistica].[dbo].[ColliStati] on [Logistica].[dbo].[ColliStati].[Id]=[Logistica].[dbo].[Colli].[ColloStatoId]
 left join (SELECT
@@ -1540,5 +1545,124 @@ from [Logistica].[dbo].[ClientiFornitori]
 left join [Opper].[dbo].[Province] on [Opper].[dbo].[Province].[Sigla]COLLATE Latin1_General_CI_AS=[Logistica].[dbo].[ClientiFornitori].[Provincia] COLLATE Latin1_General_CI_AS) as Tab3 on Tab3.[Id]=[Logistica].[dbo].[Ordini].[ClienteId]
 left join [Logistica].[dbo].[VettoriOrari] on [Logistica].[dbo].[VettoriOrari].[Id]=[Logistica].[dbo].[Ordini].[VettoreOrarioId]
 left join [Logistica].[dbo].[ClientiPorti] on [Logistica].[dbo].[ClientiPorti].[Id]=[Logistica].[dbo].[Ordini].[PortoId]
-) as Tab2 on Tab2.Id=[Logistica].[dbo].[Colli].[OrdineId];
+) as Tab2 on Tab2.Id=[Logistica].[dbo].[Colli].[OrdineId]
 
+union
+
+SELECT 
+FORMAT([DataCollo], 'yyyyMMddHHmmss') as 'ColloKey'
+,[Tracking]
+,[Logistica-Mi].[dbo].[ColliStati].[Descrizione] as 'StatoCollo'
+,FORMAT([DataCollo], 'yyyyMMdd') as 'DataColloKey'
+,FORMAT([DataCollo], 'HHmmss') as 'TimeAltColloKey'
+,Tab1.[TipoCollo]
+,Tab1.[TipologiaCollo]
+,[Peso]/1000 as 'PesoKG'
+, 0 as 'CostoCollo'
+,Tab1.[LunghezzaCM]
+,Tab1.[LarghezzaCM]
+,Tab1.[AltezzaCM]
+,Tab2.ListaId
+,Tab2.ListeNumero
+,Tab2.ClienteKey
+,Tab2.CliRagioneSociale
+,Tab2.CliIndirizzo
+,Tab2.CliComune
+,Tab2.CliCap
+,Tab2.CliProvincia
+,Tab2.CliRegione
+,Tab2.DestRagionesociale
+,Tab2.DestIndirizzo
+,Tab2.DestCap
+,Tab2.DestComune
+,Tab2.DestProvincia
+,Tab2.DestRegione
+,Tab2.DestNazione
+,Tab2.VettoreKey
+,Tab2.TimeAltKeyPreCutOff
+,Tab2.TimeAltKeyCutOff
+,[Logistica-Mi].[dbo].[Colli].[PackingListCode] as 'PackingListCode'
+,FORMAT([DataChiusura], 'yyyyMMdd') as 'DataColloChiusuraKey'
+,FORMAT([DataChiusura], 'HHmmss') as 'TimeAltColloChiusuraKey'
+,FORMAT([DataInizioCarico], 'yyyyMMdd') as 'DataColloCaricatoKey'
+,FORMAT([DataInizioCarico], 'HHmmss') as 'TimeAltColloCaricatoKey'
+,FORMAT([DataColloSpedito], 'yyyyMMdd') as 'DataColloSpeditoKey'
+,FORMAT([DataColloSpedito], 'HHmmss') as 'TimeAltColloSpeditoKey'
+,Tab2.CodicePorto
+,Tab2.DescrizionePorto
+,Tab2.NumeroDocumento
+,Tab2.TrasportoACuraCodice
+,Tab2.TrasportoACuraDescrizione
+,'Milano' as Magazzino
+
+FROM [Logistica-Mi].[dbo].[Colli]
+left join [Logistica-Mi].[dbo].[ColliStati] on [Logistica-Mi].[dbo].[ColliStati].[Id]=[Logistica-Mi].[dbo].[Colli].[ColloStatoId]
+left join (SELECT
+[Logistica-Mi].[dbo].[ColliTipo].[Id]
+,[ColloTipologiaId]
+,[Logistica-Mi].[dbo].[ColliTipo].[Descrizione] as 'TipoCollo'
+,[Logistica-Mi].[dbo].[ColliTipologia].[Descrizione] as 'TipologiaCollo'
+,[Lato] as 'LunghezzaCM'
+,[Profondita] as 'LarghezzaCM'
+,[Altezza] as 'AltezzaCM'
+,[SpesaId]
+,[PesoMax]
+FROM [Logistica-Mi].[dbo].[ColliTipo]
+left join [Logistica-Mi].[dbo].[ColliTipologia] on [Logistica-Mi].[dbo].[ColliTipologia].[Id]=[Logistica-Mi].[dbo].[ColliTipo].[ColloTipologiaId]) as Tab1 on Tab1.[Id]=[Logistica-Mi].[dbo].[Colli].[ColloTipoId]
+left join (SELECT
+[Logistica-Mi].[dbo].[Ordini].[Id]
+,[Logistica-Mi].[dbo].[Ordini].[ClienteId]
+,[ErpListaId] as 'ListaId'
+,[ListeNumero] as 'ListeNumero'
+,Tab3.[ErpCliForId] as 'ClienteKey'
+,Tab3.[RagioneSociale] as 'CliRagioneSociale'
+,Tab3.[Indirizzo] as 'CliIndirizzo'
+,Tab3.[Comune] as 'CliComune'
+,Tab3.[Cap] as 'CliCap'
+,Tab3.[Provincia] as 'CliProvincia'
+,Tab3.[Regione] as 'CliRegione'
+,Tab4.[Ragionesociale] as 'DestRagionesociale'
+,Tab4.[Indirizzo] as 'DestIndirizzo'
+,Tab4.[Cap] as 'DestCap'
+,Tab4.[Comune] as 'DestComune'
+,Tab4.[Provincia] as 'DestProvincia'
+,Tab4.[Regione] as 'DestRegione'
+,Tab4.[Nazione] as 'DestNazione'
+,[Logistica-Mi].[dbo].[ClientiPorti].[CodicePorto] as 'CodicePorto'
+,[Logistica-Mi].[dbo].[ClientiPorti].[Descrizione] as 'DescrizionePorto'
+,[NumeroDocumento]
+,[Logistica-Mi].[dbo].[VettoriOrari].[ErpVettoreId] as 'VettoreKey'
+
+,Tab5.TrasportoACuraCodice
+,Tab5.TrasportoACuraDescrizione
+
+,CONCAT( RIGHT(REPLICATE('0', 2) + CAST([Logistica-Mi].[dbo].[VettoriOrari].[OraRitiro] AS VARCHAR), 2),
+RIGHT(REPLICATE('0', 2) + CAST([Logistica-Mi].[dbo].[VettoriOrari].[MinutiRitiro] AS VARCHAR), 2)) as 'TimeAltKeyPreCutOff'
+,CONCAT( RIGHT(REPLICATE('0', 2) + CAST([Logistica-Mi].[dbo].[VettoriOrari].[OraCutOff] AS VARCHAR), 2),
+RIGHT(REPLICATE('0', 2) + CAST([Logistica-Mi].[dbo].[VettoriOrari].[MinutiCutOff] AS VARCHAR), 2)) as 'TimeAltKeyCutOff'
+FROM [Logistica-Mi].[dbo].[Ordini]
+left join
+(SELECT
+[ListeID]
+,vision.dbo.TrasportoACura.Codice as TrasportoACuraCodice
+,vision.dbo.TrasportoACura.Descrizione as TrasportoACuraDescrizione
+FROM [Vision].[dbo].[ListeDocumenti]
+LEFT JOIN vision.dbo.TrasportoACura ON vision.dbo.ListeDocumenti.TrasportoACuraID = vision.dbo.TrasportoACura.ID) as Tab5 on Tab5.[ListeID]=[Logistica-Mi].[dbo].[Ordini].[ErpListaId]
+left join
+
+(Select
+[Logistica-Mi].[dbo].[OrdiniDestinatari].*
+,[Opper].[dbo].[Province].[Regione]
+from [Logistica-Mi].[dbo].[OrdiniDestinatari]
+left join [Opper].[dbo].[Province] on [Opper].[dbo].[Province].[Sigla]COLLATE Latin1_General_CI_AS=[Logistica-Mi].[dbo].[OrdiniDestinatari].[Provincia] COLLATE Latin1_General_CI_AS) as Tab4 on Tab4.[id]=[Logistica-Mi].[dbo].[Ordini].[DestinatarioId]
+left join
+(Select
+[Logistica-Mi].[dbo].[ClientiFornitori].*
+,[Opper].[dbo].[Province].[Regione]
+from [Logistica-Mi].[dbo].[ClientiFornitori]
+left join [Opper].[dbo].[Province] on [Opper].[dbo].[Province].[Sigla]COLLATE Latin1_General_CI_AS=[Logistica-Mi].[dbo].[ClientiFornitori].[Provincia] COLLATE Latin1_General_CI_AS) as Tab3 on Tab3.[Id]=[Logistica-Mi].[dbo].[Ordini].[ClienteId]
+left join [Logistica-Mi].[dbo].[VettoriOrari] on [Logistica-Mi].[dbo].[VettoriOrari].[Id]=[Logistica-Mi].[dbo].[Ordini].[VettoreOrarioId]
+left join [Logistica-Mi].[dbo].[ClientiPorti] on [Logistica-Mi].[dbo].[ClientiPorti].[Id]=[Logistica-Mi].[dbo].[Ordini].[PortoId]
+) as Tab2 on Tab2.Id=[Logistica-Mi].[dbo].[Colli].[OrdineId]
+WHERE [Logistica-Mi].[dbo].[Colli].[DataChiusura]>='2023-02-02'
+) as Tabtot;
