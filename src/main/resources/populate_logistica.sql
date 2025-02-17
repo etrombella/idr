@@ -1723,5 +1723,4 @@ SELECT
 FROM [Logistica-MI].[dbo].[OrdiniDettagliPrelievi]
 left join [Logistica-MI].[dbo].[OrdiniDettagli] on [Logistica-MI].[dbo].[OrdiniDettagli].[id]=[Logistica-MI].[dbo].[OrdiniDettagliPrelievi].[OrdineDettaglioId]
 left join [Logistica-MI].[dbo].[Articoli] on [Logistica-MI].[dbo].[Articoli].[id]= [Logistica-MI].[dbo].[OrdiniDettagli].[ArticoloId]
-
-) as tab
+) as tab;
