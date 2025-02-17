@@ -1379,59 +1379,61 @@ SELECT
   group by 	  [UnitaCaricoId],[ClienteFornitoreId],[RagioneSociale];
   
 TRUNCATE TABLE opper.dbo.LOGISTICA_IDIR_COLLI2;
-  
+
 INSERT INTO opper.dbo.LOGISTICA_IDIR_COLLI2
-(  
-	FactColloId,
-	ColloKey,
-	Tracking,
-	StatoCollo,
-	DataColloKey,
-	TimeAltColloKey,
-	TipoCollo,
-	TipologiaCollo,
-	PesoKG,
-	CostoCollo,
-	LunghezzaCM,
-	LarghezzaCM,
-	AltezzaCM,
-	ListaId,
-	ListeNumero,
-	ClienteKey,
-	CliRagioneSociale,
-	CliIndirizzo,
-	CliComune,
-	CliCap,
-	CliProvincia,
-	CliRegione,
-	DestRagionesociale,
-	DestIndirizzo,
-	DestCap,
-	DestComune,
-	DestProvincia,
-	DestRegione,
-	DestNazione,
-	VettoreKey,
-	TimeAltKeyPreCutOff,
-	TimeAltKeyCutOff,
-	PackingListCode,
-	DataColloChiusuraKey,
-	TimeAltColloChiusuraKey,
-	DataColloCaricatoKey,
-	TimeAltColloCaricatoKey,
-	DataColloSpeditoKey,
-	TimeAltColloSpeditoKey,
-	CodicePorto,
-	DescrizionePorto,
-	NumeroDocumento,
-	TrasportoACuraCodice,
-	TrasportoACuraDescrizione,
-	Magazzino
+(
+FactColloId,
+ColloKey,
+Tracking,
+StatoCollo,
+DataColloKey,
+TimeAltColloKey,
+TipoCollo,
+TipologiaCollo,
+PesoKG,
+CostoCollo,
+LunghezzaCM,
+LarghezzaCM,
+AltezzaCM,
+ListaId,
+ListeNumero,
+ClienteKey,
+CliRagioneSociale,
+CliIndirizzo,
+CliComune,
+CliCap,
+CliProvincia,
+CliRegione,
+DestErpID,
+DestRagionesociale,
+DestIndirizzo,
+DestCap,
+DestComune,
+DestProvincia,
+DestRegione,
+DestNazione,
+VettoreKey,
+TimeAltKeyPreCutOff,
+TimeAltKeyCutOff,
+PackingListCode,
+DataColloChiusuraKey,
+TimeAltColloChiusuraKey,
+DataColloCaricatoKey,
+TimeAltColloCaricatoKey,
+DataColloSpeditoKey,
+TimeAltColloSpeditoKey,
+CodicePorto,
+DescrizionePorto,
+NumeroDocumento,
+TrasportoACuraCodice,
+TrasportoACuraDescrizione,
+Magazzino
 )
-SELECT 
- ROW_NUMBER() OVER (ORDER BY Tabtot.ColloKey) as 'FactColloId'
+
+SELECT
+ROW_NUMBER() OVER (ORDER BY Tabtot.ColloKey) as 'FactColloId'
 ,Tabtot.*
-FROM (SELECT 
+FROM (SELECT
 FORMAT([DataCollo], 'yyyyMMddHHmmss') as 'ColloKey'
 ,[Tracking]
 ,[Logistica].[dbo].[ColliStati].[Descrizione] as 'StatoCollo'
@@ -1453,6 +1455,7 @@ FORMAT([DataCollo], 'yyyyMMddHHmmss') as 'ColloKey'
 ,Tab2.CliCap
 ,Tab2.CliProvincia
 ,Tab2.CliRegione
+,Tab2.DestErpID
 ,Tab2.DestRagionesociale
 ,Tab2.DestIndirizzo
 ,Tab2.DestCap
@@ -1503,6 +1506,7 @@ left join (SELECT
 ,Tab3.[Cap] as 'CliCap'
 ,Tab3.[Provincia] as 'CliProvincia'
 ,Tab3.[Regione] as 'CliRegione'
+,Tab4.[ErpDestinatarioId] as 'DestErpID'
 ,Tab4.[Ragionesociale] as 'DestRagionesociale'
 ,Tab4.[Indirizzo] as 'DestIndirizzo'
 ,Tab4.[Cap] as 'DestCap'
@@ -1549,7 +1553,7 @@ left join [Logistica].[dbo].[ClientiPorti] on [Logistica].[dbo].[ClientiPorti].[
 
 union
 
-SELECT 
+SELECT
 FORMAT([DataCollo], 'yyyyMMddHHmmss') as 'ColloKey'
 ,[Tracking]
 ,[Logistica-Mi].[dbo].[ColliStati].[Descrizione] as 'StatoCollo'
@@ -1571,6 +1575,7 @@ FORMAT([DataCollo], 'yyyyMMddHHmmss') as 'ColloKey'
 ,Tab2.CliCap
 ,Tab2.CliProvincia
 ,Tab2.CliRegione
+,Tab2.DestErpID
 ,Tab2.DestRagionesociale
 ,Tab2.DestIndirizzo
 ,Tab2.DestCap
@@ -1621,6 +1626,7 @@ left join (SELECT
 ,Tab3.[Cap] as 'CliCap'
 ,Tab3.[Provincia] as 'CliProvincia'
 ,Tab3.[Regione] as 'CliRegione'
+,Tab4.[ErpDestinatarioId] as 'DestErpID'
 ,Tab4.[Ragionesociale] as 'DestRagionesociale'
 ,Tab4.[Indirizzo] as 'DestIndirizzo'
 ,Tab4.[Cap] as 'DestCap'
