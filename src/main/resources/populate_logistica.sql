@@ -1672,3 +1672,56 @@ left join [Logistica-Mi].[dbo].[ClientiPorti] on [Logistica-Mi].[dbo].[ClientiPo
 ) as Tab2 on Tab2.Id=[Logistica-Mi].[dbo].[Colli].[OrdineId]
 WHERE [Logistica-Mi].[dbo].[Colli].[DataChiusura]>='2023-02-02'
 ) as Tabtot;
+
+
+TRUNCATE TABLE opper.dbo.LOGISTICA_IDIR_PRELIEVI2;
+
+INSERT INTO opper.dbo.LOGISTICA_IDIR_PRELIEVI2
+(
+ID,
+OrdineDettaglioId,
+Quantita,
+ErpListaRigaId,
+ErpArtId,
+ArticoloKey,
+PreCodice,
+Codice,
+OperatoreId,
+Data,
+Magazzino
+)
+Select
+ROW_NUMBER() OVER (ORDER BY tab.[ErpListaRigaId]) as 'ID',
+tab.*
+from(
+SELECT
+[Logistica].[dbo].[OrdiniDettagliPrelievi].[OrdineDettaglioId]
+,[Logistica].[dbo].[OrdiniDettagliPrelievi].[Quantita]
+,[Logistica].[dbo].[OrdiniDettagli].[ErpListaRigaId]
+,[Logistica].[dbo].[Articoli].[ErpArtId]
+, concat([Logistica].[dbo].[Articoli].[PreCodice],'|',[Logistica].[dbo].[Articoli].[Codice]) as ArticoloKey
+,[Logistica].[dbo].[Articoli].[PreCodice]
+,[Logistica].[dbo].[Articoli].[Codice]
+,[Logistica].[dbo].[OrdiniDettagliPrelievi].[OperatoreId]
+,CAST([Logistica].[dbo].[OrdiniDettagliPrelievi].DataInizio AS Date) AS Data
+, 'Maddaloni' as Magazzino
+FROM [Logistica].[dbo].[OrdiniDettagliPrelievi]
+left join [Logistica].[dbo].[OrdiniDettagli] on [Logistica].[dbo].[OrdiniDettagli].[id]=[Logistica].[dbo].[OrdiniDettagliPrelievi].[OrdineDettaglioId]
+left join [Logistica].[dbo].[Articoli] on [Logistica].[dbo].[Articoli].[id]= [Logistica].[dbo].[OrdiniDettagli].[ArticoloId]
+union
+SELECT
+[Logistica-MI].[dbo].[OrdiniDettagliPrelievi].[OrdineDettaglioId]
+,[Logistica-MI].[dbo].[OrdiniDettagliPrelievi].[Quantita]
+,[Logistica-MI].[dbo].[OrdiniDettagli].[ErpListaRigaId]
+,[Logistica-MI].[dbo].[Articoli].[ErpArtId]
+, concat([Logistica-MI].[dbo].[Articoli].[PreCodice],'|',[Logistica-MI].[dbo].[Articoli].[Codice]) as ArticoloKey
+,[Logistica-MI].[dbo].[Articoli].[PreCodice]
+,[Logistica-MI].[dbo].[Articoli].[Codice]
+,[Logistica-MI].[dbo].[OrdiniDettagliPrelievi].[OperatoreId]
+,CAST([Logistica-MI].[dbo].[OrdiniDettagliPrelievi].DataInizio AS Date) AS Data
+, 'Milano' as Magazzino
+FROM [Logistica-MI].[dbo].[OrdiniDettagliPrelievi]
+left join [Logistica-MI].[dbo].[OrdiniDettagli] on [Logistica-MI].[dbo].[OrdiniDettagli].[id]=[Logistica-MI].[dbo].[OrdiniDettagliPrelievi].[OrdineDettaglioId]
+left join [Logistica-MI].[dbo].[Articoli] on [Logistica-MI].[dbo].[Articoli].[id]= [Logistica-MI].[dbo].[OrdiniDettagli].[ArticoloId]
+
+) as tab
