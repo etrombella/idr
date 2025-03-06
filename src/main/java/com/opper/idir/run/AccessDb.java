@@ -69,46 +69,51 @@ public class AccessDb {
 	}
 
 	public void run() throws IOException, ParseException, SQLException {
-
-		Database opper = DatabaseBuilder.open(new File(this.pathDbAccess));
-	    Set<String> tableName = opper.getTableNames();
-		Connection connectionDb = null;
-		try {
-			connectionDb = getConnection();
-		    for(String key : tableName) {
-		    	logger.info("TABLE: " + key);		
-			    Table table = opper.getTable(key);
-//			    if("IDIR_CMR".equals(key)) 
-//			    	insertIDIR_CMR(table, connectionDb);
-//			    if("IDIR_CMR_Colli".equals(key)) 
-//			    	insertIDIR_CMR_Colli(table, connectionDb);
-//			    if("IDIR_CMR_Contrassegni".equals(key)) 
-//			    	insertIDIR_CMR_Contrassegni(table, connectionDb);
-//			    if("IDIR_CMR_Documenti".equals(key)) 
-//		    		insertIDIR_CMR_Documenti(table, connectionDb);
-//			    if("IDIR_CMR_Imballaggi".equals(key)) 
-//	    			insertIDIR_CMR_Imballaggi(table, connectionDb);
-//			    if("IDIR_CMR_Numeratore".equals(key)) 
-//					insertIDIR_CMR_Numeratore(table, connectionDb);
-//			    if("IDIR_CMR_Pagamento_Noli".equals(key)) 
-//					insertIDIR_CMR_Pagamento_Noli(table, connectionDb);
-//			    if("IDIR_CMR_Statistica".equals(key)) 
-//					insertIDIR_CMR_Statistica(table, connectionDb);
-//			    if("IDIR_CMR_TipoMerce".equals(key)) 
-//					insertIDIR_CMR_TipoMerce(table, connectionDb);
-		    }
-		} finally {
-			try {
-				if (connectionDb != null)
-					connectionDb.close();
-			} catch (Exception e) {
-				StringWriter sw = new StringWriter();
-				PrintWriter pw = new PrintWriter(sw);
-				e.printStackTrace(pw);
-				String sStackTrace = sw.toString(); // stack trace as a string
-				logger.error(sStackTrace);
-			}
-		}		
+		
+	File folder = new File(this.pathDbAccess);
+		for (final File fileEntry : folder.listFiles()) {
+	        if (!fileEntry.isDirectory() && fileEntry.getName().indexOf(".accdb") != -1) {
+				Database opper = DatabaseBuilder.open(fileEntry);
+			    Set<String> tableName = opper.getTableNames();
+				Connection connectionDb = null;
+				try {
+					connectionDb = getConnection();
+				    for(String key : tableName) {
+				    	logger.info("TABLE: " + key);		
+					    Table table = opper.getTable(key);
+					    if("IDIR_CMR".equals(key)) 
+					    	insertIDIR_CMR(table, connectionDb);
+					    if("IDIR_CMR_Colli".equals(key)) 
+					    	insertIDIR_CMR_Colli(table, connectionDb);
+					    if("IDIR_CMR_Contrassegni".equals(key)) 
+					    	insertIDIR_CMR_Contrassegni(table, connectionDb);
+					    if("IDIR_CMR_Documenti".equals(key)) 
+				    		insertIDIR_CMR_Documenti(table, connectionDb);
+					    if("IDIR_CMR_Imballaggi".equals(key)) 
+			    			insertIDIR_CMR_Imballaggi(table, connectionDb);
+					    if("IDIR_CMR_Numeratore".equals(key)) 
+							insertIDIR_CMR_Numeratore(table, connectionDb);
+					    if("IDIR_CMR_Pagamento_Noli".equals(key)) 
+							insertIDIR_CMR_Pagamento_Noli(table, connectionDb);
+					    if("IDIR_CMR_Statistica".equals(key)) 
+							insertIDIR_CMR_Statistica(table, connectionDb);
+					    if("IDIR_CMR_TipoMerce".equals(key)) 
+							insertIDIR_CMR_TipoMerce(table, connectionDb);
+				    }
+				} finally {
+					try {
+						if (connectionDb != null)
+							connectionDb.close();
+					} catch (Exception e) {
+						StringWriter sw = new StringWriter();
+						PrintWriter pw = new PrintWriter(sw);
+						e.printStackTrace(pw);
+						String sStackTrace = sw.toString(); // stack trace as a string
+						logger.error(sStackTrace);
+					}
+				}
+	        }
+		}
 	}
 
 	private void insertIDIR_CMR_Colli(Table table, Connection connectionDb) throws SQLException {
