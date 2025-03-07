@@ -347,20 +347,46 @@ INSERT INTO opper.dbo.LOGISTICA_IDIR_PRESENZE_OPERATORI
 	,ORENONLAVORATE 			
 	,ORERETRIBUITE 			
 )
-select	[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].ID
-		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].Data
-		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].AziendaID
-		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].OperatoreID
-		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].Codice
-		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].Descrizione
-		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].OreLavoroPreviste
-		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].CostoOra
-		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].CostoGiorno
-		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].PercentualeRetribuzione
-		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].OreLavorate
-		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].OreNonLavorate
-		,[Vision].[dbo].[_PowerBI_OL_Aziende_Presenze].OreRetribuite
-FROM [Vision].dbo._PowerBI_OL_Aziende_Presenze;
+select Vision.[dbo].[_PowerBI_OL_Aziende_Presenze].ID
+
+
+,Vision.[dbo].[_PowerBI_OL_Aziende_Presenze].Data
+
+
+,Vision.[dbo].[_PowerBI_OL_Aziende_Presenze].AziendaID
+
+
+,Vision.[dbo].[_PowerBI_OL_Aziende_Presenze].OperatoreID
+
+
+,Vision.[dbo].[_PowerBI_OL_Aziende_Presenze].Codice
+
+
+,Vision.[dbo].[_PowerBI_OL_Aziende_Presenze].Descrizione
+
+
+,Vision.[dbo].[_PowerBI_OL_Aziende_Presenze].OreLavoroPreviste
+
+
+,Vision.[dbo].[_PowerBI_OL_Aziende_Presenze].CostoOra
+
+
+,Vision.[dbo].[_PowerBI_OL_Aziende_Presenze].CostoGiorno
+
+
+,Vision.[dbo].[_PowerBI_OL_Aziende_Presenze].PercentualeRetribuzione
+
+
+,Vision.[dbo].[_PowerBI_OL_Aziende_Presenze].OreLavorate
+
+
+,Vision.[dbo].[_PowerBI_OL_Aziende_Presenze].OreNonLavorate
+
+
+,Vision.[dbo].[_PowerBI_OL_Aziende_Presenze].OreRetribuite
+
+
+FROM Vision.dbo._PowerBI_OL_Aziende_Presenze;
 
 
 TRUNCATE TABLE opper.dbo.LOGISTICA_IDIR_OPERATORI;
@@ -852,96 +878,277 @@ INSERT INTO opper.dbo.LOGISTICA_FATTURE_CORRIERI_PROVENIENZA
 	,CITTADESTINAZIONE	         
 )
 SELECT Vettori_FattureCorrieriG.CodiceFornitore, Vettori_FattureCorrieriG.Vettore, Vettori_FattureCorrieriG.DataFattura, Vettori_FattureCorrieriG.NumFattura, Vettori_FattureCorrieriG.Tracking, Vettori_FattureCorrieriG.DataSpedizione,
-                         Vettori_FattureCorrieriG.Colli, Vettori_FattureCorrieriG.CostoSpedizione /CASE WHEN (select top 1 IsCorriereNazionale from Logistica.dbo.Vettori where CodiceFornitore = Vettori_FattureCorrieriG.CodiceFornitore) = 1 THEN CASE WHEN Isnull ((SELECT        COUNT(DISTINCT (ordineId))
-                                 FROM            Logistica.dbo.Colli
-                                 WHERE        (Tracking = Vettori_FattureCorrieriG.Tracking)), 1) = 0 THEN 1 ELSE Isnull
-                             ((SELECT        COUNT(DISTINCT (ordineId))
-                                 FROM            Logistica.dbo.Colli
-                                 WHERE        (Tracking = Vettori_FattureCorrieriG.Tracking)), 1) END ELSE CASE WHEN Isnull
-                             ((SELECT        COUNT(Logistica.dbo.ColliCosti.Id)
-                                 FROM            Logistica.dbo.Colli INNER JOIN
-                                                          Logistica.dbo.ColliCosti ON Logistica.dbo.Colli.Id = Logistica.dbo.ColliCosti.ColloId
-                                 WHERE        (Logistica.dbo.Colli.Codice = Vettori_FattureCorrieriG.Tracking)), 1) = 0 THEN 1 ELSE Isnull
-                             ((SELECT        COUNT(Logistica.dbo.ColliCosti.Id)
-                                 FROM            Logistica.dbo.Colli INNER JOIN
-                                                          Logistica.dbo.ColliCosti ON Logistica.dbo.Colli.Id = Logistica.dbo.ColliCosti.ColloId
-                                 WHERE        (Logistica.dbo.Colli.Codice = Vettori_FattureCorrieriG.Tracking)), 1) END END AS [Costo Spedizione], Logistica.dbo.View_Colli.ErpListaId, Logistica.dbo.View_Colli.ListeNumero, Logistica.dbo.View_Colli.NumeroDocumento, Logistica.dbo.View_Colli.DataLista, Logistica.dbo.View_Colli.CliCodice, 
-                         Logistica.dbo.View_Colli.DestRagionesociale, Logistica.dbo.View_Colli.DestNazione, ISNULL(Logistica.dbo.View_Colli.CliRagioneSociale, Vettori_FattureCorrieriG.TipoSpedizione) AS CliRagioneSociale, 
-						ISNULL(((SELECT SUM(Valore) AS Expr1
-                                 FROM PowerBI.dbo.ListeDocumentiSpeseAccessorie
-                                 WHERE (SpeseAccessorieID IN (10, 11, 3)) AND (ListeDocumentiID = PowerBI.dbo.ListeDocumenti.ID)) +
-						ISNULL((SELECT SUM(ListeRighe.Importo) AS Expr1 FROM PowerBI.dbo.ListeRighe INNER JOIN
-									PowerBI.dbo.CausaliMagazzinoListeRigheTipo ON ListeRighe.CausaliMagazzinoListeRigheTipoID = CausaliMagazzinoListeRigheTipo.ID INNER JOIN
-									PowerBI.dbo.ListeRigheTipo ON CausaliMagazzinoListeRigheTipo.ListeRigheTipoID = ListeRigheTipo.ID
-									WHERE (ListeRighe.ListeID = PowerBI.dbo.ListeDocumenti.ListeID) AND (ListeRigheTipo.Codice = 42) 
-									AND (ListeRighe.Codice IN('TR1010', 'TR1011', 'TR1012', 'IMB1111','TraspAts'))), 0))
-									/
-						ISNULL((SELECT COUNT(DISTINCT Codice) AS Expr1
-								FROM Logistica.dbo.View_Colli AS v1
-                                 WHERE (ErpListaId = Logistica.dbo.View_Colli.ErpListaId)), 1), 0) AS Trasporto,
-							ISNULL(PowerBI.dbo.ListeDocumenti.TotaleImponibile / ISNULL
-                             ((SELECT        COUNT(DISTINCT Codice) AS Expr1
-                                 FROM            Logistica.dbo.View_Colli AS v1
-                                 WHERE        (ErpListaId = Logistica.dbo.View_Colli.ErpListaId)), 1), 0) AS Venduto,
-								Logistica.dbo.View_Colli.Porto, 
-								Logistica.dbo.View_Colli.CliRegione, 
-								Logistica.dbo.View_Colli.DestRegione, 
-								Logistica.dbo.View_Colli.DestProvincia, 
-								Logistica.dbo.View_Colli.CutOff, 
-								Logistica.dbo.View_Colli.PreCutOff, 
-								Logistica.dbo.View_Colli.ErpDestinatarioId, 
-								Logistica.dbo.View_Colli.ErpVettoreId, 
-								SUM(Logistica.dbo.View_Colli.CostoCollo) AS CostoStimato, 
-								PowerBI.dbo.ListeProvenienzaTipo.Descrizione AS Provenienza, 
-								LogisticaDWH.dbo.View_FactSales.AgenteKey, 
-								LogisticaDWH.dbo.View_FactSales.Agente,
-								Vettori_FattureCorrieriG.Mittente,
-								Vettori_FattureCorrieriG.Destinazione,
-								Vettori_FattureCorrieriG.CittaDestinazione
-						FROM 
-						(SELECT  CodiceFornitore, Vettore, DataFattura, NumFattura, Tracking, mittente, Destinazione, IndirizzoDestinazione, ProvinciaDestinazione, CapDestinazione, CittaDestinazione, MAX(Volume) AS Volume, MAX(PesoReale) AS PesoReale, 
-                         MAX(PesoTassabile) AS PesoTassabile, Colli, SUM(CostoSpedizione) AS CostoSpedizione, DataSpedizione, DataConsegna, Altezza AS Expr2, Larghezza AS Expr3, Profondita AS Expr4, Note, TipoSpedizione
-						FROM Logistica.dbo.Vettori_FattureCorrieri
-						GROUP BY CodiceFornitore, Vettore, DataFattura, NumFattura, Tracking,  mittente, Destinazione, IndirizzoDestinazione, ProvinciaDestinazione, CapDestinazione, CittaDestinazione, Colli, DataSpedizione, DataConsegna, Altezza, Larghezza, Profondita, Note, TipoSpedizione) as Vettori_FattureCorrieriG  LEFT OUTER JOIN
-						Logistica.dbo.View_Colli ON Vettori_FattureCorrieriG.Tracking = Logistica.dbo.View_Colli.Tracking  LEFT OUTER JOIN
-                         LogisticaDWH.dbo.View_FactSales ON LogisticaDWH.dbo.View_FactSales.ListeId = Logistica.dbo.View_Colli.ErpListaId  LEFT OUTER JOIN
-						PowerBI.dbo.Liste AS Liste_1 ON Liste_1.ID = Logistica.dbo.View_Colli.ErpListaId LEFT OUTER JOIN
-						PowerBI.dbo.Liste ON Liste_1.SorgenteListeID = PowerBI.dbo.Liste.ID  LEFT OUTER JOIN
-						PowerBI.dbo.ListeDocumenti ON Liste_1.ID = PowerBI.dbo.ListeDocumenti.ListeID LEFT OUTER JOIN
-                         PowerBI.dbo.ListeProvenienzaTipo ON PowerBI.dbo.ListeProvenienzaTipo.ID = PowerBI.dbo.Liste.ListeProvenienzaTipoID 
-GROUP BY 
-Vettori_FattureCorrieriG.CodiceFornitore, 
-Vettori_FattureCorrieriG.Vettore, 
-Vettori_FattureCorrieriG.DataFattura, 
-Vettori_FattureCorrieriG.NumFattura, 
-Vettori_FattureCorrieriG.Tracking, 
-Vettori_FattureCorrieriG.DataSpedizione,
-Vettori_FattureCorrieriG.TipoSpedizione,
-Vettori_FattureCorrieriG.Colli,
-Vettori_FattureCorrieriG.CostoSpedizione,
-Logistica.dbo.View_Colli.ErpListaId, 
-Logistica.dbo.View_Colli.ListeNumero, 
-Logistica.dbo.View_Colli.NumeroDocumento, 
-Logistica.dbo.View_Colli.DataLista, 
-Logistica.dbo.View_Colli.CliCodice, 
-Logistica.dbo.View_Colli.CliRagioneSociale, 
-Logistica.dbo.View_Colli.DestRagionesociale, 
-Logistica.dbo.View_Colli.DestNazione, 
+
+
+Vettori_FattureCorrieriG.Colli, Vettori_FattureCorrieriG.CostoSpedizione /CASE WHEN (select top 1 IsCorriereNazionale from Logistica.dbo.Vettori where CodiceFornitore = Vettori_FattureCorrieriG.CodiceFornitore) = 1 THEN CASE WHEN Isnull ((SELECT COUNT(DISTINCT (ordineId))
+
+
+FROM Logistica.dbo.Colli
+
+
+WHERE (Tracking = Vettori_FattureCorrieriG.Tracking)), 1) = 0 THEN 1 ELSE Isnull
+
+
+((SELECT COUNT(DISTINCT (ordineId))
+
+
+FROM Logistica.dbo.Colli
+
+
+WHERE (Tracking = Vettori_FattureCorrieriG.Tracking)), 1) END ELSE CASE WHEN Isnull
+
+
+((SELECT COUNT(Logistica.dbo.ColliCosti.Id)
+
+
+FROM Logistica.dbo.Colli INNER JOIN
+
+
+Logistica.dbo.ColliCosti ON Logistica.dbo.Colli.Id = Logistica.dbo.ColliCosti.ColloId
+
+
+WHERE (Logistica.dbo.Colli.Codice = Vettori_FattureCorrieriG.Tracking)), 1) = 0 THEN 1 ELSE Isnull
+
+
+((SELECT COUNT(Logistica.dbo.ColliCosti.Id)
+
+
+FROM Logistica.dbo.Colli INNER JOIN
+
+
+Logistica.dbo.ColliCosti ON Logistica.dbo.Colli.Id = Logistica.dbo.ColliCosti.ColloId
+
+
+WHERE (Logistica.dbo.Colli.Codice = Vettori_FattureCorrieriG.Tracking)), 1) END END AS [Costo Spedizione], Logistica.dbo.View_Colli.ErpListaId, Logistica.dbo.View_Colli.ListeNumero, Logistica.dbo.View_Colli.NumeroDocumento, Logistica.dbo.View_Colli.DataLista, Logistica.dbo.View_Colli.CliCodice,
+
+
+Logistica.dbo.View_Colli.DestRagionesociale, Logistica.dbo.View_Colli.DestNazione, ISNULL(Logistica.dbo.View_Colli.CliRagioneSociale, Vettori_FattureCorrieriG.TipoSpedizione) AS CliRagioneSociale,
+
+
+ISNULL(((SELECT SUM(Valore) AS Expr1
+
+
+FROM Vision.dbo.ListeDocumentiSpeseAccessorie
+
+
+WHERE (SpeseAccessorieID IN (10, 11, 3)) AND (ListeDocumentiID = Vision.dbo.ListeDocumenti.ID)) +
+
+
+ISNULL((SELECT SUM(ListeRighe.Importo) AS Expr1 FROM Vision.dbo.ListeRighe INNER JOIN
+
+
+Vision.dbo.CausaliMagazzinoListeRigheTipo ON ListeRighe.CausaliMagazzinoListeRigheTipoID = CausaliMagazzinoListeRigheTipo.ID INNER JOIN
+
+
+Vision.dbo.ListeRigheTipo ON CausaliMagazzinoListeRigheTipo.ListeRigheTipoID = ListeRigheTipo.ID
+
+
+WHERE (ListeRighe.ListeID = Vision.dbo.ListeDocumenti.ListeID) AND (ListeRigheTipo.Codice = 42)
+
+
+AND (ListeRighe.Codice IN('TR1010', 'TR1011', 'TR1012', 'IMB1111','TraspAts'))), 0))
+
+
+/
+
+
+ISNULL((SELECT COUNT(DISTINCT Codice) AS Expr1
+
+
+FROM Logistica.dbo.View_Colli AS v1
+
+
+WHERE (ErpListaId = Logistica.dbo.View_Colli.ErpListaId)), 1), 0) AS Trasporto,
+
+
+ISNULL(Vision.dbo.ListeDocumenti.TotaleImponibile / ISNULL
+
+
+((SELECT COUNT(DISTINCT Codice) AS Expr1
+
+
+FROM Logistica.dbo.View_Colli AS v1
+
+
+WHERE (ErpListaId = Logistica.dbo.View_Colli.ErpListaId)), 1), 0) AS Venduto,
+
+
 Logistica.dbo.View_Colli.Porto,
-Logistica.dbo.View_Colli.DestRegione, 
-Logistica.dbo.View_Colli.DestProvincia, 
-Logistica.dbo.View_Colli.CutOff, 
+
+
+Logistica.dbo.View_Colli.CliRegione,
+
+
+Logistica.dbo.View_Colli.DestRegione,
+
+
+Logistica.dbo.View_Colli.DestProvincia,
+
+
+Logistica.dbo.View_Colli.CutOff,
+
+
 Logistica.dbo.View_Colli.PreCutOff,
-Logistica.dbo.View_Colli.ErpDestinatarioId, 
-Logistica.dbo.View_Colli.ErpVettoreId, 
-Logistica.dbo.View_Colli.CliRegione, 
-PowerBI.dbo.ListeDocumenti.TotaleImponibile,
-PowerBI.dbo.ListeProvenienzaTipo.Descrizione,
-PowerBI.dbo.ListeDocumenti.ID,
-PowerBI.dbo.ListeDocumenti.ListeID,
-LogisticaDWH.dbo.View_FactSales.AgenteKey, 
+
+
+Logistica.dbo.View_Colli.ErpDestinatarioId,
+
+
+Logistica.dbo.View_Colli.ErpVettoreId,
+
+
+SUM(Logistica.dbo.View_Colli.CostoCollo) AS CostoStimato,
+
+
+Vision.dbo.ListeProvenienzaTipo.Descrizione AS Provenienza,
+
+
+LogisticaDWH.dbo.View_FactSales.AgenteKey,
+
+
+LogisticaDWH.dbo.View_FactSales.Agente,
+
+
+Vettori_FattureCorrieriG.Mittente,
+
+
+Vettori_FattureCorrieriG.Destinazione,
+
+
+Vettori_FattureCorrieriG.CittaDestinazione
+
+
+FROM
+
+
+(SELECT CodiceFornitore, Vettore, DataFattura, NumFattura, Tracking, mittente, Destinazione, IndirizzoDestinazione, ProvinciaDestinazione, CapDestinazione, CittaDestinazione, MAX(Volume) AS Volume, MAX(PesoReale) AS PesoReale,
+
+
+MAX(PesoTassabile) AS PesoTassabile, Colli, SUM(CostoSpedizione) AS CostoSpedizione, DataSpedizione, DataConsegna, Altezza AS Expr2, Larghezza AS Expr3, Profondita AS Expr4, Note, TipoSpedizione
+
+
+FROM Logistica.dbo.Vettori_FattureCorrieri
+
+
+GROUP BY CodiceFornitore, Vettore, DataFattura, NumFattura, Tracking, mittente, Destinazione, IndirizzoDestinazione, ProvinciaDestinazione, CapDestinazione, CittaDestinazione, Colli, DataSpedizione, DataConsegna, Altezza, Larghezza, Profondita, Note, TipoSpedizione) as Vettori_FattureCorrieriG LEFT OUTER JOIN
+
+
+Logistica.dbo.View_Colli ON Vettori_FattureCorrieriG.Tracking = Logistica.dbo.View_Colli.Tracking LEFT OUTER JOIN
+
+
+LogisticaDWH.dbo.View_FactSales ON LogisticaDWH.dbo.View_FactSales.ListeId = Logistica.dbo.View_Colli.ErpListaId LEFT OUTER JOIN
+
+
+Vision.dbo.Liste AS Liste_1 ON Liste_1.ID = Logistica.dbo.View_Colli.ErpListaId LEFT OUTER JOIN
+
+
+Vision.dbo.Liste ON Liste_1.SorgenteListeID = Vision.dbo.Liste.ID LEFT OUTER JOIN
+
+
+Vision.dbo.ListeDocumenti ON Liste_1.ID = Vision.dbo.ListeDocumenti.ListeID LEFT OUTER JOIN
+
+
+Vision.dbo.ListeProvenienzaTipo ON Vision.dbo.ListeProvenienzaTipo.ID = Vision.dbo.Liste.ListeProvenienzaTipoID
+
+
+GROUP BY
+
+
+Vettori_FattureCorrieriG.CodiceFornitore,
+
+
+Vettori_FattureCorrieriG.Vettore,
+
+
+Vettori_FattureCorrieriG.DataFattura,
+
+
+Vettori_FattureCorrieriG.NumFattura,
+
+
+Vettori_FattureCorrieriG.Tracking,
+
+
+Vettori_FattureCorrieriG.DataSpedizione,
+
+
+Vettori_FattureCorrieriG.TipoSpedizione,
+
+
+Vettori_FattureCorrieriG.Colli,
+
+
+Vettori_FattureCorrieriG.CostoSpedizione,
+
+
+Logistica.dbo.View_Colli.ErpListaId,
+
+
+Logistica.dbo.View_Colli.ListeNumero,
+
+
+Logistica.dbo.View_Colli.NumeroDocumento,
+
+
+Logistica.dbo.View_Colli.DataLista,
+
+
+Logistica.dbo.View_Colli.CliCodice,
+
+
+Logistica.dbo.View_Colli.CliRagioneSociale,
+
+
+Logistica.dbo.View_Colli.DestRagionesociale,
+
+
+Logistica.dbo.View_Colli.DestNazione,
+
+
+Logistica.dbo.View_Colli.Porto,
+
+
+Logistica.dbo.View_Colli.DestRegione,
+
+
+Logistica.dbo.View_Colli.DestProvincia,
+
+
+Logistica.dbo.View_Colli.CutOff,
+
+
+Logistica.dbo.View_Colli.PreCutOff,
+
+
+Logistica.dbo.View_Colli.ErpDestinatarioId,
+
+
+Logistica.dbo.View_Colli.ErpVettoreId,
+
+
+Logistica.dbo.View_Colli.CliRegione,
+
+
+Vision.dbo.ListeDocumenti.TotaleImponibile,
+
+
+Vision.dbo.ListeProvenienzaTipo.Descrizione,
+
+
+Vision.dbo.ListeDocumenti.ID,
+
+
+Vision.dbo.ListeDocumenti.ListeID,
+
+
+LogisticaDWH.dbo.View_FactSales.AgenteKey,
+
+
 LogisticaDWH.dbo.View_FactSales.Agente,Vettori_FattureCorrieriG.Mittente,Vettori_FattureCorrieriG.Destinazione,
+
+
 Vettori_FattureCorrieriG.CittaDestinazione;
+
 
 TRUNCATE TABLE opper.dbo.LOGISTICA_COLLI_SPESE;
 
@@ -1004,33 +1211,87 @@ INSERT INTO opper.dbo.LOGISTICA_COLLI_SPESE
 	,CODICE_FORNITORE_TOTALE		
 	,VETTORE_FATTURA		
 )
-SELECT 
+SELECT
+
+
 Logistica.dbo.View_Colli.*,
+
+
 (ISNULL((SELECT SUM(Valore) AS Expr1
-FROM PowerBI.dbo.ListeDocumentiSpeseAccessorie 
-WHERE (SpeseAccessorieID IN (10, 11, 3)) AND (ListeDocumentiID = PowerBI.dbo.ListeDocumenti.ID)),0) 
-+ ISNULL((SELECT SUM(importo) AS expr1 
-FROM PowerBI.dbo.ListeRighe WHERE (Codice IN ('TR1010', 'TR1012', 'TR1111')) AND (ListeID = Logistica.dbo.View_Colli.ErpListaId)),0)) 
-/ (CASE WHEN ISNULL((SELECT COUNT(*) AS Expr1 FROM Logistica.dbo.View_Colli AS v1  WHERE (ErpListaId = Logistica.dbo.View_Colli.ErpListaId)), 1) = 0 THEN 1 ELSE ISNULL((SELECT COUNT(*) AS Expr1 FROM Logistica.dbo.View_Colli AS v1  WHERE (ErpListaId = Logistica.dbo.View_Colli.ErpListaId)), 1) END) AS Trasporto, 
-PowerBI.dbo.ListeProvenienzaTipo.Descrizione AS Provenienza, 
+
+
+FROM Vision.dbo.ListeDocumentiSpeseAccessorie
+
+
+WHERE (SpeseAccessorieID IN (10, 11, 3)) AND (ListeDocumentiID = Vision.dbo.ListeDocumenti.ID)),0)
+
+
++ ISNULL((SELECT SUM(importo) AS expr1
+
+
+FROM Vision.dbo.ListeRighe WHERE (Codice IN ('TR1010', 'TR1012', 'TR1111')) AND (ListeID = Logistica.dbo.View_Colli.ErpListaId)),0))
+
+
+/ (CASE WHEN ISNULL((SELECT COUNT(*) AS Expr1 FROM Logistica.dbo.View_Colli AS v1 WHERE (ErpListaId = Logistica.dbo.View_Colli.ErpListaId)), 1) = 0 THEN 1 ELSE ISNULL((SELECT COUNT(*) AS Expr1 FROM Logistica.dbo.View_Colli AS v1 WHERE (ErpListaId = Logistica.dbo.View_Colli.ErpListaId)), 1) END) AS Trasporto,
+
+
+Vision.dbo.ListeProvenienzaTipo.Descrizione AS Provenienza,
+
+
 ROUND(isnull((SELECT (SUM(Logistica.dbo.ColliPrelievi.Quantita * (Logistica.dbo.OrdiniDettagli.Importo / case when Logistica.dbo.OrdiniDettagli.Quantita = 0 then 1 else Logistica.dbo.OrdiniDettagli.Quantita end))) AS ImportoCollo
-FROM Logistica.dbo.ColliPrelievi INNER JOIN 
-Logistica.dbo.OrdiniDettagliPrelievi ON Logistica.dbo.ColliPrelievi.OrdineDettaglioPrelievoId = Logistica.dbo.OrdiniDettagliPrelievi.Id INNER JOIN 
-Logistica.dbo.OrdiniDettagli ON Logistica.dbo.OrdiniDettagliPrelievi.OrdineDettaglioId = Logistica.dbo.OrdiniDettagli.Id 
-WHERE (Logistica.dbo.ColliPrelievi.ColloId = Logistica.dbo.View_Colli.id)) / (SELECT COUNT(*) AS Expr1 FROM Logistica.dbo.View_Colli AS v1 WHERE (v1.id = Logistica.dbo.View_Colli.id)) ,0), 4, 2) as ImportoCollo, 
+
+
+FROM Logistica.dbo.ColliPrelievi INNER JOIN
+
+
+Logistica.dbo.OrdiniDettagliPrelievi ON Logistica.dbo.ColliPrelievi.OrdineDettaglioPrelievoId = Logistica.dbo.OrdiniDettagliPrelievi.Id INNER JOIN
+
+
+Logistica.dbo.OrdiniDettagli ON Logistica.dbo.OrdiniDettagliPrelievi.OrdineDettaglioId = Logistica.dbo.OrdiniDettagli.Id
+
+
+WHERE (Logistica.dbo.ColliPrelievi.ColloId = Logistica.dbo.View_Colli.id)) / (SELECT COUNT(*) AS Expr1 FROM Logistica.dbo.View_Colli AS v1 WHERE (v1.id = Logistica.dbo.View_Colli.id)) ,0), 4, 2) as ImportoCollo,
+
+
 Round(isnull((SELECT (SUM(Logistica.dbo.ColliPrelievi.Quantita)) AS Imballatto
-							FROM Logistica.dbo.ColliPrelievi INNER JOIN
-                         Logistica.dbo.OrdiniDettagliPrelievi ON Logistica.dbo.ColliPrelievi.OrdineDettaglioPrelievoId = Logistica.dbo.OrdiniDettagliPrelievi.Id INNER JOIN
-                         Logistica.dbo.OrdiniDettagli ON Logistica.dbo.OrdiniDettagliPrelievi.OrdineDettaglioId = Logistica.dbo.OrdiniDettagli.Id
-							WHERE (Logistica.dbo.ColliPrelievi.ColloId = Logistica.dbo.View_Colli.id)) / (SELECT COUNT(*) AS Expr1 FROM Logistica.dbo.View_Colli AS v1 WHERE (v1.id = Logistica.dbo.View_Colli.id)) ,0), 4, 2) as  Imballatto,					 
-						Vettori_FattureCorrieriG.Totale,Vettori_FattureCorrieriG.CodiceFornitore,Vettori_FattureCorrieriG.Vettore As VettoreFattura
-                         from Logistica.dbo.View_Colli LEFT OUTER JOIN
-						PowerBI.dbo.Liste AS Liste_1 ON Liste_1.ID = Logistica.dbo.View_Colli.ErpListaId LEFT OUTER JOIN
-						PowerBI.dbo.Liste ON Liste_1.SorgenteListeID = PowerBI.dbo.Liste.ID  LEFT OUTER JOIN
-						PowerBI.dbo.ListeDocumenti ON Liste_1.ID = PowerBI.dbo.ListeDocumenti.ListeID LEFT OUTER JOIN
-                         PowerBI.dbo.ListeProvenienzaTipo ON PowerBI.dbo.ListeProvenienzaTipo.ID = PowerBI.dbo.Liste.ListeProvenienzaTipoID left outer join
-						(SELECT Tracking, SUM(CostoSpedizione) AS Totale, Vettore, CodiceFornitore
-FROM Logistica.dbo.Vettori_FattureCorrieri GROUP BY Tracking, CodiceFornitore, Vettore) as Vettori_FattureCorrieriG on Logistica.dbo.View_Colli.Tracking = Vettori_FattureCorrieriG.Tracking;
+
+
+FROM Logistica.dbo.ColliPrelievi INNER JOIN
+
+
+Logistica.dbo.OrdiniDettagliPrelievi ON Logistica.dbo.ColliPrelievi.OrdineDettaglioPrelievoId = Logistica.dbo.OrdiniDettagliPrelievi.Id INNER JOIN
+
+
+Logistica.dbo.OrdiniDettagli ON Logistica.dbo.OrdiniDettagliPrelievi.OrdineDettaglioId = Logistica.dbo.OrdiniDettagli.Id
+
+
+WHERE (Logistica.dbo.ColliPrelievi.ColloId = Logistica.dbo.View_Colli.id)) / (SELECT COUNT(*) AS Expr1 FROM Logistica.dbo.View_Colli AS v1 WHERE (v1.id = Logistica.dbo.View_Colli.id)) ,0), 4, 2) as Imballatto,
+
+
+Vettori_FattureCorrieriG.Totale,Vettori_FattureCorrieriG.CodiceFornitore,Vettori_FattureCorrieriG.Vettore As VettoreFattura
+
+
+from Logistica.dbo.View_Colli LEFT OUTER JOIN
+
+
+Vision.dbo.Liste AS Liste_1 ON Liste_1.ID = Logistica.dbo.View_Colli.ErpListaId LEFT OUTER JOIN
+
+
+Vision.dbo.Liste ON Liste_1.SorgenteListeID = Vision.dbo.Liste.ID LEFT OUTER JOIN
+
+
+Vision.dbo.ListeDocumenti ON Liste_1.ID = Vision.dbo.ListeDocumenti.ListeID LEFT OUTER JOIN
+
+
+Vision.dbo.ListeProvenienzaTipo ON Vision.dbo.ListeProvenienzaTipo.ID = Vision.dbo.Liste.ListeProvenienzaTipoID left outer join
+
+
+(SELECT Tracking, SUM(CostoSpedizione) AS Totale, Vettore, CodiceFornitore
+
+
+FROM Logistica.dbo.Vettori_FattureCorrieri GROUP BY Tracking, CodiceFornitore, Vettore) as Vettori_FattureCorrieriG on Logistica.dbo.View_Colli.Tracking = Vettori_FattureCorrieriG.Tracking;;
+
+
 
 TRUNCATE TABLE opper.dbo.LOGISTICA_IDIR_RIGHE_NEW;
 
