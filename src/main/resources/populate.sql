@@ -2166,5 +2166,80 @@ SELECT    ArticoliID as ARTICOLO_ID,
         ScortaMaxCalcolata as SCORTA_MAX_CALCOLATA
 FROM Vision.dbo.ArticoliMagazzino;
 
+TRUNCATE TABLE  opper.dbo.IDIR_KPI_ACQUISTI_DETTAGLIO;
 
+INSERT INTO opper.dbo.IDIR_KPI_ACQUISTI_DETTAGLIO
+(  
+	ID,
+	[FornitoreAnnoGruppoID],
+	[Anno],
+	[Gruppo],
+	[Precodice],
+	[CLIENTEFORNITOREID],
+	[FORNITORE],
+	[Tipo Premio],
+	[Data Iniziale],
+	[Data Finale],
+	[Scaglione Iniziale],
+	[Scaglione Finale],
+	[Obiettivo Primario],
+	[Obiettivo Crescita],
+	[Acquistato],
+	[Premio %],
+	[Premio Valore],
+	[Premio da Obiettivi %],
+	[Premio da Obiettivi Valore],
+	[Premio Fisso],
+	[Premio Fisso Valore],
+	[Crescita],
+	[Premio Crescita],
+	[Premio Totale %],
+	[Premio Totale Valore],
+	[Premio Incassato]
+)
+SELECT premi.[ID]
+,premi.[FornitoreAnnoGruppoID]
+,tab_info.Anno
+,tab_info.Gruppo
+,tab_info.Precodice
+,Vision.[dbo].[_PowerBI_PF_Fornitori].ClienteFornitoreID as CLIENTEFORNITOREID
+,Vision.[dbo].[_PowerBI_PF_Fornitori].Fornitore as FORNITORE
+,premi.[Tipo Premio]
+,premi.[Data Iniziale]
+,premi.[Data Finale]
+,premi.[Scaglione Iniziale]
+,premi.[Scaglione Finale]
+,premi.[Obiettivo Primario]
+,premi.[Obiettivo Crescita]
+,premi.[Acquistato]
+,premi.[Premio %]
+,premi.[Premio Valore]
+,premi.[Premio da Obiettivi %]
+,premi.[Premio da Obiettivi Valore]
+,premi.[Premio Fisso]
+,premi.[Premio Fisso Valore]
+,premi.[Crescita]
+,premi.[Premio Crescita]
+,premi.[Premio Totale %]
+,premi.[Premio Totale Valore]
+,premi.[Premio Incassato]
+FROM [Vision].[dbo].[_PowerBI_PF_Fornitori_Anni_Gruppi_Premi] as premi
+LEFT JOIN
+(
+SELECT DISTINCT
+a.Anno,
+g.Gruppo,
+c.Precodice,
+g.ID
+FROM Vision.dbo._PowerBI_PF_Fornitori_Anni_Gruppi_Categorie AS c
+LEFT JOIN Vision.dbo._PowerBI_PF_Fornitori_Anni_Gruppi AS g
+ON c.FornitoreAnnoGruppoID = g.ID
+LEFT JOIN Vision.dbo._PowerBI_PF_Fornitori_Anni as a ON g.FornitoreAnnoID = a.ID
+) as tab_info ON premi.[FornitoreAnnoGruppoID] = tab_info.ID
+LEFT JOIN vision.dbo._PowerBI_PF_Fornitori_Anni_Gruppi ON
+premi.FornitoreAnnoGruppoID = vision.dbo._PowerBI_PF_Fornitori_Anni_Gruppi.ID
+LEFT JOIN vision.dbo._PowerBI_PF_Fornitori_Anni ON
+vision.dbo._PowerBI_PF_Fornitori_Anni_Gruppi.FornitoreAnnoID = vision.dbo._PowerBI_PF_Fornitori_Anni.ID
+LEFT JOIN Vision.[dbo].[_PowerBI_PF_Fornitori] ON
+vision.dbo._PowerBI_PF_Fornitori_Anni.[FornitoreID] = Vision.[dbo].[_PowerBI_PF_Fornitori].ID;
 
