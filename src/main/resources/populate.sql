@@ -2158,13 +2158,17 @@ INSERT INTO opper.dbo.IDIR_ScorteMinMax
     ARTICOLO_ID,
     ID_MAGAZZINO,
     SCORTA_MIN_CALCOLATA,
-    SCORTA_MAX_CALCOLATA
+    SCORTA_MAX_CALCOLATA,
+    SCORTA_MIN_IMPUTATA,
+    SCORTA_MAX_IMPUTATA
 )
-SELECT    ArticoliID as ARTICOLO_ID,
-        MagazziniID as ID_MAGAZZINO,
-        ScortaMinimaCalcolata as SCORTA_MIN_CALCOLATA,
-        ScortaMaxCalcolata as SCORTA_MAX_CALCOLATA
-FROM Vision.dbo.ArticoliMagazzino;
+SELECT 	ArticoliID as ARTICOLO_ID,
+		MagazziniID as ID_MAGAZZINO,
+		ScortaMinimaCalcolata as SCORTA_MIN_CALCOLATA,
+		ScortaMaxCalcolata as SCORTA_MAX_CALCOLATA,
+		ScortaMinima as SCORTA_MIN_IMPUTATA,
+		ScortaMax as SCORTA_MAX_IMPUTATA
+FROM 	Vision.dbo.ArticoliMagazzino;
 
 TRUNCATE TABLE  opper.dbo.IDIR_KPI_ACQUISTI_DETTAGLIO;
 
