@@ -11,6 +11,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 import java.util.Set;
@@ -31,8 +32,6 @@ public class AccessDb {
 	private String pathFile;
 	
 	private String pathDbAccess;
-	
-	private String pathDbAccessBackup;
 	
 	private static final String IDIR_CMR = "INSERT INTO opper.dbo. IDIR_CMR(ID_CMR,Anno,Numero,ClienteFornitoreID,DestinazioneContatto,DestinazioneContattoID,LuogoPresa,DataPresa,IstruzioniMittente,PagamentoNoloID,Rimborso,ConvenzioniParticolari,CompilatoA,CompilatoIl,VettoreID,VettoreID_2,TargaMotrice,TargaRimorchio,DataFatturaTrasportatore,NumeroFatturaTrasportatore,CostoTraportatore,DocumentiRicevuti,DocumentiInBusta,MRN,FattureNsCopie,CmrAltriVettori,CmrControFirmati,Archiviato)VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 	private static final String IDIR_CMR_TRUNCATE = "TRUNCATE TABLE opper.dbo. IDIR_CMR";
@@ -68,7 +67,6 @@ public class AccessDb {
 		this.pathFile = pathFile;
 		readPropertiesFile();
 		this.pathDbAccess = properties.getProperty("pathDbAccess");
-		this.pathDbAccessBackup = properties.getProperty("pathDbAccessBackup");
 	}
 
 	public void rimuoviSpaziNomeFile() {
@@ -90,7 +88,7 @@ public class AccessDb {
                             if (rinominato) 
                                 logger.info("Rinominato: " + nomeOriginale + " -> " + nuovoNome);
                              else 
-                            	logger.info("Errore nel rinominare: " + nomeOriginale);                            
+                            	logger.error("Errore nel rinominare: " + nomeOriginale);                            
                         }
                     }
                 }
@@ -99,7 +97,7 @@ public class AccessDb {
         	logger.error("La cartella non esiste o non è una directory.");
 	}
 	
-	public void spostaFileElaborati() {
+	public void rinominaFileElaborati() {
         // Percorso della cartella sorgente e destinazione
         File cartellaSorgente = new File(pathDbAccess);
         // Controlla se la cartella sorgente esiste
@@ -107,11 +105,12 @@ public class AccessDb {
             // Prendi i file dalla cartella sorgente
             File[] files = cartellaSorgente.listFiles();
             if (files != null) {
+            	 SimpleDateFormat sdf = new SimpleDateFormat("ddMMyyyy");
                 for (File file : files) {
                 	logger.info("FILE IN FASE DI SPOSTAMENTO: " + file.getName());		
         		    if (file.isFile()) { // Solo file, non cartelle
-                        File destinazioneFile = new File(pathDbAccessBackup, file.getName());
-                        boolean spostato = file.renameTo(destinazioneFile);                        
+                        File destinazioneFile = new File(pathDbAccess, file.getName()+" "+sdf.format(new Date()));
+                        boolean spostato = file.renameTo(destinazioneFile);              
                         if (spostato) 
                         	logger.info("Spostato: " + file.getName());
                        else 

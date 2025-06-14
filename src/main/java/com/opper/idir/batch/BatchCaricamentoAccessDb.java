@@ -26,7 +26,7 @@ public class BatchCaricamentoAccessDb extends OpperBase{
 			logger.info("START RUN POPULATE ACCESS DB");
 			accessDb.rimuoviSpaziNomeFile();
 			accessDb.run();
-			accessDb.spostaFileElaborati();
+			accessDb.rinominaFileElaborati();
 			logger.info("END RUN POPULATE ACCESS DB");
 			logger.info("END BATCH");
 		} catch (Exception e) {
