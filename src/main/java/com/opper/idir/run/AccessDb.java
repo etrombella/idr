@@ -32,6 +32,8 @@ public class AccessDb {
 	
 	private String pathDbAccess;
 	
+	private String pathDbAccessBackup;
+	
 	private static final String IDIR_CMR = "INSERT INTO opper.dbo. IDIR_CMR(ID_CMR,Anno,Numero,ClienteFornitoreID,DestinazioneContatto,DestinazioneContattoID,LuogoPresa,DataPresa,IstruzioniMittente,PagamentoNoloID,Rimborso,ConvenzioniParticolari,CompilatoA,CompilatoIl,VettoreID,VettoreID_2,TargaMotrice,TargaRimorchio,DataFatturaTrasportatore,NumeroFatturaTrasportatore,CostoTraportatore,DocumentiRicevuti,DocumentiInBusta,MRN,FattureNsCopie,CmrAltriVettori,CmrControFirmati,Archiviato)VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 	private static final String IDIR_CMR_TRUNCATE = "TRUNCATE TABLE opper.dbo. IDIR_CMR";
 
@@ -66,13 +68,67 @@ public class AccessDb {
 		this.pathFile = pathFile;
 		readPropertiesFile();
 		this.pathDbAccess = properties.getProperty("pathDbAccess");
+		this.pathDbAccessBackup = properties.getProperty("pathDbAccessBackup");
 	}
 
+	public void rimuoviSpaziNomeFile() {
+		
+		File cartella = new File(pathDbAccess);
+        if (cartella.exists() && cartella.isDirectory()) {
+            File[] files = cartella.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                	logger.info("RINOMINA FILE: " + file.getName());		
+        		    // Ignora le sottocartelle
+                    if (file.isFile()) {
+                        String nomeOriginale = file.getName();
+                        if (nomeOriginale.contains(" ")) {
+                            String nuovoNome = nomeOriginale.replace(" ", "");
+                            File nuovoFile = new File(cartella, nuovoNome);                            
+                            // Rinomina il file
+                            boolean rinominato = file.renameTo(nuovoFile);
+                            if (rinominato) 
+                                logger.info("Rinominato: " + nomeOriginale + " -> " + nuovoNome);
+                             else 
+                            	logger.info("Errore nel rinominare: " + nomeOriginale);                            
+                        }
+                    }
+                }
+            }
+        } else 
+        	logger.error("La cartella non esiste o non è una directory.");
+	}
+	
+	public void spostaFileElaborati() {
+        // Percorso della cartella sorgente e destinazione
+        File cartellaSorgente = new File(pathDbAccess);
+        // Controlla se la cartella sorgente esiste
+        if (cartellaSorgente.exists() && cartellaSorgente.isDirectory()) {
+            // Prendi i file dalla cartella sorgente
+            File[] files = cartellaSorgente.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                	logger.info("FILE IN FASE DI SPOSTAMENTO: " + file.getName());		
+        		    if (file.isFile()) { // Solo file, non cartelle
+                        File destinazioneFile = new File(pathDbAccessBackup, file.getName());
+                        boolean spostato = file.renameTo(destinazioneFile);                        
+                        if (spostato) 
+                        	logger.info("Spostato: " + file.getName());
+                       else 
+                        	logger.error("Errore nello spostamento del file: " + file.getName());
+                    }
+                }
+            }
+        }else 
+        	logger.error("La cartella sorgente non esiste o non è una directory.");
+    }	
+	
 	public void run() throws IOException, ParseException, SQLException {
 		
-	File folder = new File(this.pathDbAccess);
+		File folder = new File(this.pathDbAccess);
 		for (final File fileEntry : folder.listFiles()) {
-	        if (!fileEntry.isDirectory() && fileEntry.getName().indexOf(".accdb") != -1) {
+			logger.info("FILE IN ELABORAZIONE: " + fileEntry.getName());		
+		    if (!fileEntry.isDirectory() && fileEntry.getName().indexOf(".accdb") != -1) {
 				Database opper = DatabaseBuilder.open(fileEntry);
 			    Set<String> tableName = opper.getTableNames();
 				Connection connectionDb = null;
