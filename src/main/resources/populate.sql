@@ -655,6 +655,7 @@ insert into opper.dbo.IDIR_ARTICOLI
 	,ARTICOLO_DESCRIZIONE
 	,QTA_MIN_ACQ
 	,QTA_MIN_VEND
+	,ARTICOLO_ID_WMS
 ) 
 SELECT Vision.dbo.ArticoliCodifiche.ArticoloID,
 Vision.dbo.Categorie.PrecodiciStatisticheID,
@@ -684,7 +685,8 @@ Vision.dbo.PrecodiciStatistiche.Descrizione as PrecodiciStatisticheDescrizione,
 tabListino900.Prezzo as PrezzoListino900,
 Vision.dbo.ArticoliDescrizioni.Descrizione AS ARTICOLO_DESCRIZIONE,
 Vision.dbo.Articoli.AcquistoQuantitaMin AS QTA_MIN_ACQ,
-Vision.dbo.Articoli.VenditaQuantitaMin AS QTA_MIN_VEND
+Vision.dbo.Articoli.VenditaQuantitaMin AS QTA_MIN_VEND,
+tab_articoli_log.Id as ARTICOLO_ID_WMS
 FROM Vision.dbo.ArticoliCodifiche
 INNER JOIN Vision.dbo.Precodici
 ON Vision.dbo.ArticoliCodifiche.PrecodiceID = Vision.dbo.Precodici.ID
@@ -752,6 +754,13 @@ Vision.dbo.ArticoliEquivalenzeRighe ON Vision.dbo.ArticoliEquivalenze.ID = Visio
 Vision.dbo.ArticoliEquivalenzeTipo ON Vision.dbo.ArticoliEquivalenze.ArticoliEquivalenzeTipoID = Vision.dbo.ArticoliEquivalenzeTipo.ID
 WHERE (Vision.dbo.ArticoliEquivalenzeTipo.ID = 2) AND (Vision.dbo.ArticoliEquivalenzeRighe.Sostituito = 1)
 GROUP BY Vision.dbo.ArticoliEquivalenzeRighe.ArticoliID) as articoli_sostituiti ON Vision.dbo.ArticoliCodifiche.ArticoloID = articoli_sostituiti.ArticoliID
+LEFT JOIN
+(
+SELECT
+Logistica.dbo.Articoli.Id,
+Logistica.dbo.Articoli.ErpArtId
+FROM
+Logistica.dbo.Articoli) as tab_articoli_log ON Vision.dbo.ArticoliCodifiche.ArticoloID = tab_articoli_log.Id
 WHERE (Vision.dbo.ArticoliCodifiche.ArticoliCodificheTipoID = 1)
 AND (Vision.dbo.Precodici.AziendaID = 1);
 
